@@ -27,12 +27,13 @@ import "../../contracts/Interfaces/ERC165.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetProducingInterface.sol";
 import "ew-asset-registry-contracts/Asset/AssetProducingRegistryDB.sol";
 import "../../contracts/Origin/EnergyDB.sol";
-import "../../contracts/Interfaces/ERC20Interface.sol";
 import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
+import "../../contracts/Interfaces/TradableEntityInterface.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol";
+import "ew-user-registry-contracts/Interfaces/UserContractLookupInterface.sol";
 
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
-contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165 {
+contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, TradableEntityInterface {
 
     EnergyInterface public db;
     OriginContractLookupInterface public originContractLookup;

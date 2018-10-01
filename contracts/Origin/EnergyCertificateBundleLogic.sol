@@ -33,7 +33,7 @@ import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol";
 
 
-contract EnergyCertificateBundleLogic is RoleManagement, TradableEntityLogic  {
+contract EnergyCertificateBundleLogic is TradableEntityLogic  {
 
     /// @notice Logs the creation of an event
     event LogCreatedBundle(uint indexed _bundleId, uint powerInW, address owner);

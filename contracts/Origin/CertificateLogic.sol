@@ -26,13 +26,14 @@ import "../../contracts/Origin/CertificateDB.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetProducingInterface.sol";
 import "ew-asset-registry-contracts/Asset/AssetProducingRegistryDB.sol";
 import "../../contracts/Origin/TradableEntityContract.sol";
-import "../../contracts/Interfaces/ERC20Interface.sol";
+import "../../contracts/Interfaces/AssetProducingInterface.sol";
 import "../../contracts/Origin/TradableEntityLogic.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol";
 import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
+import "../../contracts/Interfaces/CertificateInterface.sol";
 
 
-contract CertificateLogic is TradableEntityLogic  {
+contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntityLogic, TradableEntityContract {
 
     /// @notice Logs the creation of an event
     event LogCreatedCertificate(uint indexed _certificateId, uint powerInW, address owner);
@@ -48,9 +49,9 @@ contract CertificateLogic is TradableEntityLogic  {
         require(CertificateDB(db) != CertificateDB(0x0),"logic not initialized");
         _;
     }
-    
-    
-    /// @notice Constructor
+        
+    AssetContractLookupInterface public assetContractLookup;
+
     constructor(
         AssetContractLookupInterface _assetContractLookup,
         OriginContractLookupInterface _originContractLookup
@@ -130,26 +131,7 @@ contract CertificateLogic is TradableEntityLogic  {
         checktransferOwnerInternally(_certificateId, cert);    
 
     }
-
-    /*
-    /// @notice Sets a new owner for the certificate
-    /// @param _certificateId The id of the certificate
-    /// @param _newOwner The address of the new owner of the certificate
-    function changeCertificateOwner(uint _certificateId, address _newOwner) 
-        public 
-        isInitialized() 
-    {
-        CertificateDB.Certificate memory certificate = CertificateDB(db).getCertificate(_certificateId);
-        require(certificate.ownerChangeCounter < certificate.maxOwnerChanges,"changeOwner: maximum amount of ownerChanges reached");
-
-        emit LogCertificateOwnerChanged(_certificateId, certificate.tradableEntity.owner, _newOwner, 0x0);
-        simpleTransferInternal(certificate.tradableEntity.owner,_newOwner, _certificateId);
-        transferOwnerInternally(_certificateId, certificate,  _newOwner);
-
-    }
-*/
-  
-   
+     
     /// @notice Request a certificate to retire. Only Certificate owner can retire
     /// @param _certificateId The id of the certificate
     function retireCertificate(uint _certificateId) external isInitialized() {
@@ -169,12 +151,6 @@ contract CertificateLogic is TradableEntityLogic  {
         require(CertificateDB(db).removeEscrow(_certificateId, _escrow),"removeEscrow: address not found");
         emit LogEscrowRemoved(_certificateId, _escrow);
     }
-
-    /*
-    function setTradableEntityOwner(uint _entityId, address _owner) external {
-        changeCertificateOwner(_entityId, _owner);
-    }
-    */
 
     /// @notice Splits a certificate into two smaller ones, where (total - _power = 2ndCertificate)
     /// @param _certificateId The id of the certificate
@@ -334,7 +310,7 @@ contract CertificateLogic is TradableEntityLogic  {
     /// @param _cO2Saved The amount of CO2 saved
     /// @param _escrow The escrow-addresses
     function createCertificate(uint _assetId, uint _powerInW, uint _cO2Saved, address[] _escrow) 
-        public 
+        external 
         isInitialized 
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
         returns (uint) 
