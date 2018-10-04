@@ -25,7 +25,7 @@ import { OriginContractLookup } from '../wrappedContracts/OriginContractLookup';
 import { CertificateDB } from '../wrappedContracts/CertificateDB';
 import { CertificateLogic } from '../wrappedContracts/CertificateLogic';
 import { getClientVersion } from 'sloffle';
-describe('OriginContractLookup', () => {
+describe('CertificateLogic', () => {
 
     const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
 
@@ -79,83 +79,6 @@ describe('OriginContractLookup', () => {
             assert.equal(deployedBytecode, tempBytecode);
 
         });
-    });
-
-    it('should have the right owner', async () => {
-
-        assert.equal(await originRegistryContract.owner(), accountDeployment);
-
-    });
-
-    it('should have the right registries', async () => {
-
-        assert.equal(await originRegistryContract.originLogicRegistry(), certificateLogic.web3Contract._address);
-        assert.equal(await originRegistryContract.assetContractLookup(), assetRegistryContract.web3Contract._address);
-
-    });
-
-    it('should fail when trying to call init again', async () => {
-        let failed = false;
-
-        try {
-            await originRegistryContract.init(
-                '0x1000000000000000000000000000000000000005',
-                '0x1000000000000000000000000000000000000005',
-                '0x1000000000000000000000000000000000000005',
-                { privateKey: privateKeyDeployment });
-        }
-        catch (ex) {
-            failed = true;
-        }
-        assert.isTrue(failed);
-    });
-
-    it('should throw an error when calling update as non Owner', async () => {
-
-        let failed = false;
-        try {
-            await originRegistryContract.update('0x1000000000000000000000000000000000000005',
-                                                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
-        }
-        catch (ex) {
-            failed = true;
-        }
-        assert.isTrue(failed);
-    });
-
-    it('should be able to update as owner', async () => {
-
-        await originRegistryContract.update('0x1000000000000000000000000000000000000005',
-                                            { privateKey: privateKeyDeployment });
-
-        assert.equal(await originRegistryContract.originLogicRegistry(), '0x1000000000000000000000000000000000000005');
-        assert.equal(await certificateDB.owner(), '0x1000000000000000000000000000000000000005');
-
-    });
-
-    it('should throw when trying to change owner as non-owner', async () => {
-
-        let failed = false;
-
-        try {
-            await originRegistryContract.changeOwner('0x1000000000000000000000000000000000000005',
-                                                     { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
-        }
-        catch (ex) {
-            failed = true;
-
-        }
-
-        assert.isTrue(failed);
-
-    });
-
-    it('should be able to change owner ', async () => {
-
-        await originRegistryContract.changeOwner('0x1000000000000000000000000000000000000005',
-                                                 { privateKey: privateKeyDeployment });
-
-        assert.equal(await originRegistryContract.owner(), '0x1000000000000000000000000000000000000005');
     });
 
 });
