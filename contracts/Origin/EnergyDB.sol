@@ -121,6 +121,15 @@ contract EnergyDB is EnergyInterface, Owned, TradableEntityContract {
         return energyList[_entityId].tradableEntity;
     }
 
+    function getTradableEntityOwner(uint _entityId) 
+        external
+        onlyOwner
+        view 
+        returns (address)
+    {
+        return energyList[_entityId].tradableEntity.owner;
+    }
+
     function getOwnerToOperators(address _company, address _escrow) onlyOwner external view returns (bool){
         return ownerToOperators[_company][_escrow];
     }

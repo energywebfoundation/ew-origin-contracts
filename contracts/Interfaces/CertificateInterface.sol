@@ -25,7 +25,7 @@ interface CertificateInterface {
     function removeEscrow(uint _certificateId, address _escrow) external;
     function splitCertificate(uint _certificateId, uint _power) external;
     function transferOwnershipByEscrow(uint _certificateId, address _newOwner) external;
-    function getCertificate(uint _certificateId) external view returns (uint _assetId, address _owner,uint _powerInW, bool _retired, string _dataLog, uint _coSaved, address[] _escrow, uint _creationTime, uint _parentId, uint[] _children, uint _maxOwnerChanges, uint _ownerChangeCounter);
+ //   function getCertificate(uint _certificateId) external view returns (uint _assetId, address _owner,uint _powerInW, bool _retired, string _dataLog, uint _coSaved, address[] _escrow, uint _creationTime, uint _parentId, uint[] _children, uint _maxOwnerChanges, uint _ownerChangeCounter);
     function getCertificateListLength() external view returns (uint);
     function getCertificateOwner(uint _certificateId) external view returns (address);
     function isRetired(uint _certificateId) external view returns (bool);

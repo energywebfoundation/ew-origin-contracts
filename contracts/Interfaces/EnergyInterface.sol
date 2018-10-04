@@ -36,4 +36,5 @@ interface EnergyInterface {
     function getBalanceOf(address _owner) external view returns (uint);
     function getTradableEntity(uint _entityId) external view returns (TradableEntityContract.TradableEntity _entity);
     function getOwnerToOperators(address _company, address _escrow) external view returns (bool);
+    function getTradableEntityOwner(uint _entityId) external view returns (address);
 }

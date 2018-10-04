@@ -26,11 +26,11 @@ import "../../contracts/Origin/CertificateDB.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetProducingInterface.sol";
 import "ew-asset-registry-contracts/Asset/AssetProducingRegistryDB.sol";
 import "../../contracts/Origin/TradableEntityContract.sol";
-import "../../contracts/Interfaces/AssetProducingInterface.sol";
 import "../../contracts/Origin/TradableEntityLogic.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol";
 import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
 import "../../contracts/Interfaces/CertificateInterface.sol";
+import "../../contracts/Interfaces/ERC20Interface.sol";
 
 
 contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntityLogic, TradableEntityContract {
@@ -44,13 +44,9 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     event LogEscrowRemoved(uint indexed _certificateId, address _escrow);
     event LogEscrowAdded(uint indexed _certificateId, address _escrow);
     
-    /// @notice Checks if the contract is initialized
-    modifier isInitialized() {
-        require(CertificateDB(db) != CertificateDB(0x0),"logic not initialized");
-        _;
-    }
+
         
-    AssetContractLookupInterface public assetContractLookup;
+  //  AssetContractLookupInterface public assetContractLookup;
 
     constructor(
         AssetContractLookupInterface _assetContractLookup,
@@ -58,7 +54,7 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     )
         TradableEntityLogic(_assetContractLookup, _originContractLookup) 
     public {
-        assetContractLookup = _assetContractLookup;
+    //    assetContractLookup = _assetContractLookup;
     }
 
     /**
@@ -107,9 +103,9 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     /// @param _certificateId The id of the certificate
     /// @param _escrow The additional escrow address
     function addEscrowForAsset(uint _certificateId, address _escrow) external isInitialized(){
-        CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
-        require(cert.tradableEntity.owner == msg.sender,"addEscrowForAsset: wrong account");
-        require(cert.tradableEntity.escrow.length < originContractLookup.maxMatcherPerAsset(), "current matcher limit reached");
+       // CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
+        require(CertificateDB(db).getTradableEntityOwner(_certificateId) == msg.sender
+        && (CertificateDB(db).getTradableEntityEscrowLength(_certificateId) < originContractLookup.maxMatcherPerAsset()));
         db.addEscrowForAsset(_certificateId, _escrow);
         emit LogEscrowAdded(_certificateId, _escrow);
     }
@@ -121,9 +117,9 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
         onlyRole(RoleManagement.Role.Trader)
      {
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
-        require(cert.tradableEntity.acceptedToken != address(0x0),"buyCertificate: token not buyable");
+        require(cert.tradableEntity.acceptedToken != address(0x0));
 
-        require(ERC20Interface(cert.tradableEntity.acceptedToken).transferFrom(msg.sender, cert.tradableEntity.owner, cert.tradableEntity.onChainDirectPurchasePrice),"buyCertificate: transferFrom failed!");
+        require(ERC20Interface(cert.tradableEntity.acceptedToken).transferFrom(msg.sender, cert.tradableEntity.owner, cert.tradableEntity.onChainDirectPurchasePrice));
         db.addApproval(_certificateId, msg.sender);
 
         simpleTransferInternal(cert.tradableEntity.owner, msg.sender, _certificateId);
@@ -136,8 +132,8 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     /// @param _certificateId The id of the certificate
     function retireCertificate(uint _certificateId) external isInitialized() {
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
-        require(cert.tradableEntity.owner == msg.sender, "retire: wrong sender");
-        require(cert.certificateSpecific.children.length == 0,"retire: certificate was splitted");
+        require(cert.tradableEntity.owner == msg.sender);
+        require(cert.certificateSpecific.children.length == 0);
         if (!cert.certificateSpecific.retired) {
             retireCertificateAuto( _certificateId);
         }
@@ -147,8 +143,8 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     /// @param _certificateId The id of the certificate
     /// @param _escrow The address to be removed
     function removeEscrow(uint _certificateId, address _escrow) external isInitialized(){
-        require(CertificateDB(db).getCertificate(_certificateId).tradableEntity.owner == msg.sender,"removeEscrow: wrong account");
-        require(CertificateDB(db).removeEscrow(_certificateId, _escrow),"removeEscrow: address not found");
+        require(CertificateDB(db).getTradableEntityOwner(_certificateId) == msg.sender);
+        require(CertificateDB(db).removeEscrow(_certificateId, _escrow));
         emit LogEscrowRemoved(_certificateId, _escrow);
     }
 
@@ -158,73 +154,14 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     function splitCertificate(uint _certificateId, uint _power) external
     {
         CertificateDB.Certificate memory parent = CertificateDB(db).getCertificate(_certificateId);
-        require (msg.sender == parent.tradableEntity.owner || checkMatcher(parent.tradableEntity.escrow),"split: missing rights to split");
-        require(parent.tradableEntity.powerInW > _power,"split: wrong amount of power");
-        require(!parent.certificateSpecific.retired,"split: certificate already retired"); 
-        require(parent.certificateSpecific.children.length == 0,"split: certificate already splitted");
+        require (msg.sender == parent.tradableEntity.owner || checkMatcher(parent.tradableEntity.escrow));
+        require(parent.tradableEntity.powerInW > _power);
+        require(!parent.certificateSpecific.retired); 
+        require(parent.certificateSpecific.children.length == 0);
 
-        TradableEntityContract.TradableEntity memory childOneEntity = TradableEntityContract.TradableEntity({
-            assetId: parent.tradableEntity.assetId,
-            owner: parent.tradableEntity.owner,
-            powerInW: _power,
-            acceptedToken: 0x0,
-            onChainDirectPurchasePrice: 0,
-            escrow: parent.tradableEntity.escrow,
-            approvedAddress: parent.tradableEntity.approvedAddress
-         //   acceptedToken: parent.tradableEntity.acceptedToken,
-         //   onChainDirectPurchasePrice: (parent.tradableEntity.onChainDirectPurchasePrice*(_power*100000000000/parent.tradableEntity.powerInW)/100000000000)
-        });
-
-        CertificateDB.CertificateSpecific memory certificateSpecificOne = CertificateDB.CertificateSpecific({
-            retired: false,
-            dataLog: parent.certificateSpecific.dataLog,
-            coSaved: (parent.certificateSpecific.coSaved*(_power*100000000000/parent.tradableEntity.powerInW)/100000000000),
-            creationTime: parent.certificateSpecific.creationTime,
-            parentId: _certificateId,
-            children: new uint256[](0),
-            maxOwnerChanges: parent.certificateSpecific.maxOwnerChanges,
-            ownerChangeCounter: parent.certificateSpecific.ownerChangeCounter
-        });
-        
-        uint childIdOne = CertificateDB(db).createCertificate( 
-            childOneEntity,
-            certificateSpecificOne
-        );
-
-        TradableEntityContract.TradableEntity memory childTwoEntity = TradableEntityContract.TradableEntity({
-            assetId: parent.tradableEntity.assetId,
-            owner: parent.tradableEntity.owner,
-            powerInW: parent.tradableEntity.powerInW - _power,
-            acceptedToken: 0x0,
-            onChainDirectPurchasePrice: 0,
-            escrow: parent.tradableEntity.escrow,
-            approvedAddress: parent.tradableEntity.approvedAddress
-          //  acceptedToken: parent.tradableEntity.acceptedToken,
-          //  onChainDirectPurchasePrice: (parent.tradableEntity.onChainDirectPurchasePrice*(parent.tradableEntity.powerInW-_power*100000000000/parent.tradableEntity.powerInW)/100000000000)
-
-        });
-
-        CertificateDB.CertificateSpecific memory certificateSpecificTwo = CertificateDB.CertificateSpecific({
-            retired: false,
-            dataLog: parent.certificateSpecific.dataLog,
-            coSaved: (parent.certificateSpecific.coSaved*((parent.tradableEntity.powerInW - _power)*1000000/parent.tradableEntity.powerInW)/1000000),
-            creationTime: parent.certificateSpecific.creationTime,
-            parentId: _certificateId,
-            children: new uint256[](0),
-            maxOwnerChanges: parent.certificateSpecific.maxOwnerChanges,
-            ownerChangeCounter: parent.certificateSpecific.ownerChangeCounter
-        });
-
-        uint childIdTwo = CertificateDB(db).createCertificate( 
-            childTwoEntity,
-            certificateSpecificTwo
-        );
-
+        (uint childIdOne,uint childIdTwo) = CertificateDB(db).createChildCertificate(_certificateId, _power);
         emit Transfer(0, parent.tradableEntity.owner, childIdOne);
         emit Transfer(0, parent.tradableEntity.owner, childIdTwo);
-
-        CertificateDB(db).addChildren(_certificateId,childIdOne);
-        CertificateDB(db).addChildren(_certificateId,childIdTwo);
         emit LogCertificateSplit(_certificateId, childIdOne,childIdTwo);
         
     }
@@ -238,46 +175,16 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
         isInitialized 
     {   
         CertificateDB.Certificate memory certificate = CertificateDB(db).getCertificate(_certificateId);
-        require (checkMatcher(certificate.tradableEntity.escrow),"transferEscrow: account not an escrow for that certificate");
+        require (checkMatcher(certificate.tradableEntity.escrow));
         
         emit LogCertificateOwnerChanged(_certificateId, certificate.tradableEntity.owner, _newOwner, msg.sender);
         simpleTransferInternal(certificate.tradableEntity.owner,_newOwner, _certificateId);
         checktransferOwnerInternally(_certificateId, certificate);
-
-
     }
 
-    /// @notice Getter for a specific Certificate
-    /// @param _certificateId The id of the requested certificate
-    /// @return the certificate as single values
-    function getCertificate(uint _certificateId) external view 
-        returns (  
-            uint _assetId, 
-            address _owner,
-            uint _powerInW,
-            bool _retired,
-            string _dataLog,
-            uint _coSaved,
-            address[] _escrow,
-            uint _creationTime, 
-            uint _parentId,
-            uint[] _children,
-            uint _maxOwnerChanges,
-            uint _ownerChangeCounter)
-        {
-        CertificateDB.Certificate memory certificate = CertificateDB(db).getCertificate(_certificateId);
-        _assetId = certificate.tradableEntity.assetId;
-        _owner = certificate.tradableEntity.owner;
-        _powerInW = certificate.tradableEntity.powerInW;
-        _retired = certificate.certificateSpecific.retired;
-        _dataLog = certificate.certificateSpecific.dataLog;
-        _coSaved = certificate.certificateSpecific.coSaved;
-        _escrow = certificate.tradableEntity.escrow;
-        _creationTime = certificate.certificateSpecific.creationTime;
-        _parentId = certificate.certificateSpecific.parentId;
-        _children = certificate.certificateSpecific.children;
-        _maxOwnerChanges = certificate.certificateSpecific.maxOwnerChanges;
-        _ownerChangeCounter = certificate.certificateSpecific.ownerChangeCounter;
+    function getCertificate(uint _certificateId) external view returns (CertificateDB.Certificate memory certificate)
+    {
+        return CertificateDB(db).getCertificate(_certificateId);
     }
 
     /// @notice Getter for the length of the list of certificates
@@ -317,35 +224,7 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     {
         AssetProducingRegistryDB.Asset memory asset = AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getFullAsset(_assetId);
 
-        TradableEntityContract.TradableEntity memory tradableEntity = TradableEntityContract.TradableEntity({
-            assetId: _assetId,
-            owner: asset.owner,
-            powerInW: _powerInW,
-            acceptedToken: 0x0,
-            onChainDirectPurchasePrice: 0,
-            escrow: _escrow,
-            approvedAddress: 0x0
-
-        });
-
-
-        CertificateDB.CertificateSpecific memory certificateSpecificTwo = CertificateDB.CertificateSpecific({
-            retired: false,
-            dataLog: asset.lastSmartMeterReadFileHash,
-            coSaved: _cO2Saved,
-            creationTime: block.timestamp,
-            parentId: CertificateDB(db).getCertificateListLength(),
-            children: new uint256[](0),
-            maxOwnerChanges: asset.maxOwnerChanges,
-            ownerChangeCounter: 0
-        });
-        
-            
-        uint certId = CertificateDB(db).createCertificate(
-            tradableEntity,  
-            certificateSpecificTwo
-        );
-        
+        uint certId = CertificateDB(db).createCertificate(_assetId,  _powerInW,  _cO2Saved,  _escrow[0], asset.owner, asset.lastSmartMeterReadFileHash, asset.maxOwnerChanges); 
         emit Transfer(0,  asset.owner, certId);
 
         emit LogCreatedCertificate(certId, _powerInW, asset.owner);
@@ -384,9 +263,9 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     /// @param _certificateId The id of the requested certificate
     /// @param _certificate The certificate where the ownership should be transfered
     function checktransferOwnerInternally(uint _certificateId, CertificateDB.Certificate _certificate) internal {
-        require(_certificate.certificateSpecific.children.length == 0,"transferEscrow: certificate already splitted");
-        require(!_certificate.certificateSpecific.retired,"transferEscrow: certificate already retired");
-        require(_certificate.certificateSpecific.ownerChangeCounter < _certificate.certificateSpecific.maxOwnerChanges,"transferEscrow: maximum amount of ownerChanges reached");
+        require(_certificate.certificateSpecific.children.length == 0);
+        require(!_certificate.certificateSpecific.retired);
+        require(_certificate.certificateSpecific.ownerChangeCounter < _certificate.certificateSpecific.maxOwnerChanges);
         uint ownerChangeCounter = _certificate.certificateSpecific.ownerChangeCounter + 1;
         address[] memory empty; 
 
@@ -400,3 +279,12 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
         }
     }
 }
+
+/**
+bytecode tradable-Entity
+length: 29474
+KB: 14737
+bytecode certLogic
+length: 53532
+KB: 26766
+ */

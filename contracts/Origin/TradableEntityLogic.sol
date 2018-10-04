@@ -44,12 +44,12 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
 
     modifier isInitialized {
-        require(address(db) != 0x0, "contract is not yet initialized");
+        require(address(db) != 0x0);
         _;
     }
 
     modifier onlyEntityOwner(uint _entityId) {
-        require(db.getTradableEntity(_entityId).owner == msg.sender, "not the entityOwner");
+        require(db.getTradableEntityOwner(_entityId) == msg.sender);
         _;
     }
 
@@ -70,13 +70,13 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
      */
 
     function balanceOf(address _owner) isInitialized external view returns (uint256){
-        require(_owner != 0x0, "zero address not supported!");
+        require(_owner != 0x0);
         return db.getBalanceOf(_owner);
     }
 
     function ownerOf(uint256 _entityId) isInitialized external view returns (address){
-        address owner = db.getTradableEntity(_entityId).owner;
-        require(owner != 0x0, "zero address not supported!");
+        address owner = db.getTradableEntityOwner(_entityId);
+        require(owner != 0x0);
         return owner;
     }
 
@@ -97,7 +97,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
 
     function approve(address _approved, uint256 _entityId) isInitialized external payable {
         TradableEntityContract.TradableEntity memory te = db.getTradableEntity(_entityId);
-        require(te.owner == msg.sender || checkMatcher(te.escrow),"approve: not the owner or escrow addresss");
+        require(te.owner == msg.sender || checkMatcher(te.escrow));
         db.addApproval(_entityId, _approved);
 
         emit Approval(msg.sender,_approved, _entityId);
@@ -145,7 +145,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     /// @notice Initialises the contract by binding it to a logic contract
     /// @param _database Sets the logic contract
     function init(address _database, address _admin) external onlyOwner {
-        require(db == EnergyInterface(0x0),"0x0 address as db is not supported");
+        require(db == EnergyInterface(0x0));
         db = EnergyInterface(_database);
     }
 
@@ -181,24 +181,14 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     function getOnChainDirectPurchasePrice(uint _entityId) isInitialized external view returns (uint) {
         return db.getOnChainDirectPurchasePrice(_entityId);
     }
-
+   
     function getTradableEntity(uint _entityId) 
         isInitialized 
         external view 
     returns (
-        uint _assetId, 
-        address _owner, 
-        uint _powerInW, 
-        address _acceptedToken, 
-        uint _onChainDirectPurchasePrice) 
+       TradableEntityContract.TradableEntity)
     {
-        TradableEntityContract.TradableEntity memory entity = db.getTradableEntity(_entityId);
-        
-        _assetId = entity.assetId;
-        _owner = entity.owner;
-        _powerInW = entity.powerInW;
-        _acceptedToken = entity.acceptedToken;
-        _onChainDirectPurchasePrice = entity.onChainDirectPurchasePrice;
+        return db.getTradableEntity(_entityId);
     }
 
     function supportsInterface(bytes4 _interfaceID) isInitialized external view returns (bool){
@@ -214,36 +204,25 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         }
     }
 
-    /// returns the code for a given address
-    function getCodeAt(address _addr) internal view returns (bytes o_code) {
-        assembly {
-            // retrieve the size of the code, this needs assembly
-            let size := extcodesize(_addr)
-            // allocate output byte array - this could also be done without assembly
-            // by using o_code = new bytes(size)
-            o_code := mload(0x40)
-            // new "memory end" including padding
-            mstore(0x40, add(o_code, and(add(add(size, 0x20), 0x1f), not(0x1f))))
-            // store length in memory
-            mstore(o_code, size)
-            // actually retrieve the code, this needs assembly
-            extcodecopy(_addr, add(o_code, 0x20), 0, size)
-        }
+    function isContract(address _address) internal view returns (bool) {
+        uint size;
+        assembly { size := extcodesize(_address) }
+        return size > 0;
     }
 
     function simpleTransferInternal(address _from, address _to, uint256 _entityId) internal {
         TradableEntityContract.TradableEntity memory te = db.getTradableEntity(_entityId);
-        require(msg.value == 0, "Tobalaba Ether not supported");
+        require(msg.value == 0);
         require(
             te.owner == msg.sender
             || checkMatcher(te.escrow)
             || db.getOwnerToOperators(te.owner, msg.sender)
-            || te.approvedAddress == msg.sender,"safeTransferFrom: missing permission"
+            || te.approvedAddress == msg.sender
         );
 
-        require(te.owner == _from, "safeTransferFrom: address is not the owner");
-        require(_to != 0x0, "safeTransferFrom: no 0x0 address allowed");
-        require(te.owner != 0x0, "safeTransferFrom: NFT is not valid");
+        require(te.owner == _from);
+        require(_to != 0x0);
+        require(te.owner != 0x0);
         
         db.setTradableEntityOwner(_entityId, _to);
         db.addApproval(_entityId, 0x0);
@@ -252,8 +231,8 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     }
 
     function safeTransferChecks(address _from, address _to, uint256 _entityId, bytes _data) internal {
-        require(getCodeAt(_to).length>0,"receiver is not a smart contract!");
-        require(ERC721TokenReceiver(_to).onERC721Received(this,_from,_entityId,_data) == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)")),"safeTransferFrom: transfer failed!");
+        require(isContract(_to));
+        require(ERC721TokenReceiver(_to).onERC721Received(this,_from,_entityId,_data) == 0x150b7a02);
     }
 
 }

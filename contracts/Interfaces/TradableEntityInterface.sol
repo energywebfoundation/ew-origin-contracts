@@ -24,6 +24,6 @@ interface TradableEntityInterface {
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external;
     function getTradableToken(uint _entityId) external view returns (address);
     function getOnChainDirectPurchasePrice(uint _entityId) external view returns (uint);
-    function getTradableEntity(uint _entityId) external view returns (uint _assetId, address _owner, uint _powerInW, address _acceptedToken, uint _onChainDirectPurchasePrice);
+ //   function getTradableEntity(uint _entityId) external view returns (uint _assetId, address _owner, uint _powerInW, address _acceptedToken, uint _onChainDirectPurchasePrice);
     function supportsInterface(bytes4 _interfaceID) external view returns (bool);
 }

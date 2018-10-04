@@ -59,13 +59,7 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         certificateList[_entityId].tradableEntity.approvedAddress = _approve;
     }
 
-    /// @notice Adds a certificate-Id as child to an existing certificate
-    /// @param _certificateId The array position in which the parent certificate is stored
-    /// @param _childId The array position in which the child certificate is stored
-    function addChildren(uint _certificateId, uint _childId) external onlyOwner {
-        Certificate storage parent = certificateList[_certificateId];
-        parent.certificateSpecific.children.push(_childId);
-    }
+   
 
 /// @notice Adds a new escrow address to an existing certificate
     /// @param _escrow The new escrow-address
@@ -154,11 +148,18 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         return certificateList[_certificateId];
     }
 
-    /// @notice function to get the amount of all certificates
-    /// @return the amount of all certificates
-    function getCertificateListLength() external onlyOwner view returns (uint) {
-        return certificateList.length;
-    }  
+    function getCertificateChildrenLength(uint _certificateId)
+        external
+        onlyOwner
+        view 
+        returns (uint)
+    {
+        return certificateList[_certificateId].certificateSpecific.children.length;
+    }
+
+    function getCertificateRetired(uint _certificateId) external onlyOwner view returns (bool){
+        return certificateList[_certificateId].certificateSpecific.retired;
+    }
 
     function getOnChainDirectPurchasePrice(uint _entityId) external view returns (uint){
         return certificateList[_entityId].tradableEntity.onChainDirectPurchasePrice;
@@ -175,6 +176,13 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         return certificateList[_entityId].tradableEntity.acceptedToken;
     }
 
+    function getTradableEntityOwner(uint _entityId) external view returns (address){
+        return certificateList[_entityId].tradableEntity.owner;
+    }
+    
+    function getTradableEntityEscrowLength(uint _entityId) external view returns (uint){
+        return certificateList[_entityId].tradableEntity.escrow.length;
+    }
 
 
     /**
@@ -201,4 +209,136 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
             )
         ) - 1;
     }    
+
+    /// @notice Adds a certificate-Id as child to an existing certificate
+    /// @param _certificateId The array position in which the parent certificate is stored
+    /// @param _childId The array position in which the child certificate is stored
+    function addChildren(uint _certificateId, uint _childId) public onlyOwner {
+        Certificate storage parent = certificateList[_certificateId];
+        parent.certificateSpecific.children.push(_childId);
+    }
+
+    function createCertificate(
+        uint _assetId, 
+        uint _powerInW, 
+        uint _cO2Saved, 
+        address _escrow,
+        address _assetOwner,
+        string _lastSmartMeterReadFileHash,
+        uint _maxOwnerChanges
+    ) 
+        public
+        onlyOwner
+        returns (uint _certId)
+    {
+        TradableEntityContract.TradableEntity memory tradableEntity = TradableEntityContract.TradableEntity({
+            assetId: _assetId,
+            owner: _assetOwner,
+            powerInW: _powerInW,
+            acceptedToken: 0x0,
+            onChainDirectPurchasePrice: 0,
+            escrow: new address[](0),
+            approvedAddress: 0x0
+
+        });
+
+
+        CertificateDB.CertificateSpecific memory certificateSpecific= CertificateSpecific({
+            retired: false,
+            dataLog: _lastSmartMeterReadFileHash,
+            coSaved: _cO2Saved,
+            creationTime: block.timestamp,
+            parentId: getCertificateListLength(),
+            children: new uint256[](0),
+            maxOwnerChanges: _maxOwnerChanges,
+            ownerChangeCounter: 0
+        });
+        
+            
+        _certId = createCertificate(
+            tradableEntity,  
+            certificateSpecific
+        );
+    }
+
+    /// @notice Creates a new certificate
+    /// @return The id of the certificate
+    function createChildCertificate(
+        uint _parentId,
+        uint _power
+    ) 
+        public 
+        onlyOwner 
+        returns 
+        (uint _childIdOne, uint _childIdTwo) 
+    {
+        Certificate memory parent = certificateList[_parentId];
+
+        TradableEntityContract.TradableEntity memory childOneEntity = TradableEntityContract.TradableEntity({
+            assetId: parent.tradableEntity.assetId,
+            owner: parent.tradableEntity.owner,
+            powerInW: _power,
+            acceptedToken: 0x0,
+            onChainDirectPurchasePrice: 0,
+            escrow: parent.tradableEntity.escrow,
+            approvedAddress: parent.tradableEntity.approvedAddress
+         //   acceptedToken: parent.tradableEntity.acceptedToken,
+         //   onChainDirectPurchasePrice: (parent.tradableEntity.onChainDirectPurchasePrice*(_power*100000000000/parent.tradableEntity.powerInW)/100000000000)
+        });
+
+        CertificateDB.CertificateSpecific memory certificateSpecificOne = CertificateSpecific({
+            retired: false,
+            dataLog: parent.certificateSpecific.dataLog,
+            coSaved: (parent.certificateSpecific.coSaved*(_power*100000000000/parent.tradableEntity.powerInW)/100000000000),
+            creationTime: parent.certificateSpecific.creationTime,
+            parentId: _parentId,
+            children: new uint256[](0),
+            maxOwnerChanges: parent.certificateSpecific.maxOwnerChanges,
+            ownerChangeCounter: parent.certificateSpecific.ownerChangeCounter
+        });
+
+        _childIdOne = createCertificate( 
+            childOneEntity,
+            certificateSpecificOne
+        );
+
+        TradableEntityContract.TradableEntity memory childTwoEntity = TradableEntityContract.TradableEntity({
+            assetId: parent.tradableEntity.assetId,
+            owner: parent.tradableEntity.owner,
+            powerInW: parent.tradableEntity.powerInW - _power,
+            acceptedToken: 0x0,
+            onChainDirectPurchasePrice: 0,
+            escrow: parent.tradableEntity.escrow,
+            approvedAddress: parent.tradableEntity.approvedAddress
+          //  acceptedToken: parent.tradableEntity.acceptedToken,
+          //  onChainDirectPurchasePrice: (parent.tradableEntity.onChainDirectPurchasePrice*(parent.tradableEntity.powerInW-_power*100000000000/parent.tradableEntity.powerInW)/100000000000)
+
+        });
+
+        CertificateDB.CertificateSpecific memory certificateSpecificTwo = CertificateDB.CertificateSpecific({
+            retired: false,
+            dataLog: parent.certificateSpecific.dataLog,
+            coSaved: (parent.certificateSpecific.coSaved*((parent.tradableEntity.powerInW - _power)*1000000/parent.tradableEntity.powerInW)/1000000),
+            creationTime: parent.certificateSpecific.creationTime,
+            parentId: _parentId,
+            children: new uint256[](0),
+            maxOwnerChanges: parent.certificateSpecific.maxOwnerChanges,
+            ownerChangeCounter: parent.certificateSpecific.ownerChangeCounter
+        });
+
+        _childIdTwo = createCertificate( 
+            childTwoEntity,
+            certificateSpecificTwo
+        );
+
+        addChildren(_parentId, _childIdOne);
+        addChildren(_parentId, _childIdTwo);
+
+    }    
+
+    /// @notice function to get the amount of all certificates
+    /// @return the amount of all certificates
+    function getCertificateListLength() public onlyOwner view returns (uint) {
+        return certificateList.length;
+    }  
 }
