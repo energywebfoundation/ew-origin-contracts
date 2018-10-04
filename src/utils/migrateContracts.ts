@@ -25,45 +25,35 @@ export async function migrateCertificateRegistryContracts(
             { privateKey: privateKeyDeployment },
         );
 
-        console.log('originContractLookup: ' + originContractLookupWeb3._address);
-        console.log('assetContractLookupAddress: ' + assetContractLookupAddress);
-
         const assetContractLookup = new AssetContractLookup((web3 as any), assetContractLookupAddress);
-        console.log(await assetContractLookup.userRegistry());
 
         const tradableEntityLogicLogicWeb3 = await sloffle.deploy(
             path.resolve(__dirname, '../../contracts/TradableEntityLogic.json'),
             [assetContractLookupAddress, originContractLookupWeb3._address],
-            { privateKey: privateKeyDeployment, gas: 70000000 },
+            { privateKey: privateKeyDeployment },
         );
-
-        console.log('tradableEntity: ' + tradableEntityLogicLogicWeb3._address);
 
         const certificateLogicWeb3 = await sloffle.deploy(
             path.resolve(__dirname, '../../contracts/CertificateLogic.json'),
             [assetContractLookupAddress, originContractLookupWeb3._address],
-            { privateKey: privateKeyDeployment, gas: 70000000 },
+            { privateKey: privateKeyDeployment },
         );
 
-        console.log('certificateLogic: ' + certificateLogicWeb3._address);
-        /*
-                const certificateDBWeb3 = await sloffle.deploy(
-                    path.resolve(__dirname, '../../contracts/CertificateDB.json'),
-                    [certificateLogicWeb3._address],
-                    { privateKey: privateKeyDeployment },
-                );
-                
-                console.log('certificateDB: ' + certificateDBWeb3._address);
-        
-                const originContractLookup: OriginContractLookup
-                    = new OriginContractLookup((web3 as any), originContractLookupWeb3._address);
-        
-                await originContractLookup.init(
-                    assetContractLookupAddress,
-                    certificateLogicWeb3._address,
-                    certificateDBWeb3._address,
-                    { privateKey: privateKeyDeployment });
-        */
+        const certificateDBWeb3 = await sloffle.deploy(
+            path.resolve(__dirname, '../../contracts/CertificateDB.json'),
+            [certificateLogicWeb3._address],
+            { privateKey: privateKeyDeployment },
+        );
+
+        const originContractLookup: OriginContractLookup
+            = new OriginContractLookup((web3 as any), originContractLookupWeb3._address);
+
+        await originContractLookup.init(
+            assetContractLookupAddress,
+            certificateLogicWeb3._address,
+            certificateDBWeb3._address,
+            { privateKey: privateKeyDeployment });
+
         resolve(sloffle.deployedContracts);
     });
 }

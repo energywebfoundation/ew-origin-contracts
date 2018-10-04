@@ -43,11 +43,6 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
     event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
 
-    modifier isInitialized {
-        require(address(db) != 0x0);
-        _;
-    }
-
     modifier onlyEntityOwner(uint _entityId) {
         require(db.getTradableEntityOwner(_entityId) == msg.sender);
         _;
@@ -69,33 +64,33 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         TODO: token creation: function + transfer-event
      */
 
-    function balanceOf(address _owner) isInitialized external view returns (uint256){
+    function balanceOf(address _owner) external view returns (uint256){
         require(_owner != 0x0);
         return db.getBalanceOf(_owner);
     }
 
-    function ownerOf(uint256 _entityId) isInitialized external view returns (address){
+    function ownerOf(uint256 _entityId) external view returns (address){
         address owner = db.getTradableEntityOwner(_entityId);
         require(owner != 0x0);
         return owner;
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _entityId, bytes _data) isInitialized external payable {
+    function safeTransferFrom(address _from, address _to, uint256 _entityId, bytes _data) external payable {
         simpleTransferInternal(_from, _to, _entityId);
         safeTransferChecks(_from, _to, _entityId, _data);
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _entityId) isInitialized external payable {
+    function safeTransferFrom(address _from, address _to, uint256 _entityId) external payable {
         bytes memory data = "";
         simpleTransferInternal(_from, _to, _entityId);
         safeTransferChecks(_from, _to, _entityId, data);
     }
 
-    function transferFrom(address _from, address _to, uint256 _entityId) isInitialized external payable {
+    function transferFrom(address _from, address _to, uint256 _entityId) external payable {
         simpleTransferInternal(_from, _to, _entityId);
     }
 
-    function approve(address _approved, uint256 _entityId) isInitialized external payable {
+    function approve(address _approved, uint256 _entityId) external payable {
         TradableEntityContract.TradableEntity memory te = db.getTradableEntity(_entityId);
         require(te.owner == msg.sender || checkMatcher(te.escrow));
         db.addApproval(_entityId, _approved);
@@ -104,15 +99,15 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     }
 
 
-    function setApprovalForAll(address _escrow, bool _approved) isInitialized external {
+    function setApprovalForAll(address _escrow, bool _approved) external {
         db.setOwnerToOperators(msg.sender, _escrow, _approved);
     }
 
-    function getApproved(uint _tokenId) isInitialized external view returns (address) {
+    function getApproved(uint _tokenId) external view returns (address) {
         return db.getApproved(_tokenId);
     }
 
-    function isApprovedForAll(address _company, address _escrow) isInitialized external view returns (bool) {
+    function isApprovedForAll(address _company, address _escrow) external view returns (bool) {
         return db.getOwnerToOperators(_company, _escrow);
     }
 
@@ -149,41 +144,39 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         db = EnergyInterface(_database);
     }
 
-    function setTradableEntityOwner(uint _entityId, address _owner) onlyEntityOwner(_entityId) userHasRole(Role.Trader, _owner) isInitialized external {
+    function setTradableEntityOwner(uint _entityId, address _owner) onlyEntityOwner(_entityId) userHasRole(Role.Trader, _owner) external {
         db.setTradableEntityOwner(_entityId, _owner);
     }
 
     function setTradableToken(uint _entityId, address _tokenContract) 
         onlyEntityOwner(_entityId) 
-        isInitialized external 
+        external 
     {
         db.setTradableToken(_entityId, _tokenContract);
     }
 
-    function setOnChainDirectPurchasePrice(uint _entityId, uint _price) onlyEntityOwner(_entityId) isInitialized external {
+    function setOnChainDirectPurchasePrice(uint _entityId, uint _price) onlyEntityOwner(_entityId) external {
         db.setOnChainDirectPurchasePrice(_entityId, _price);
     }
 
     /// @notice Updates the logic contract
     /// @param _newLogic Address of the new logic contract
     function update(address _newLogic) 
-        isInitialized 
         external
         onlyOwner    
     {
         db.changeOwner(_newLogic);
     }
 
-    function getTradableToken(uint _entityId) isInitialized external view returns (address){
+    function getTradableToken(uint _entityId) external view returns (address){
         return db.getTradableToken(_entityId);
     }
 
-    function getOnChainDirectPurchasePrice(uint _entityId) isInitialized external view returns (uint) {
+    function getOnChainDirectPurchasePrice(uint _entityId) external view returns (uint) {
         return db.getOnChainDirectPurchasePrice(_entityId);
     }
    
-    function getTradableEntity(uint _entityId) 
-        isInitialized 
+    function getTradableEntity(uint _entityId)  
         external view 
     returns (
        TradableEntityContract.TradableEntity)
@@ -191,12 +184,12 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         return db.getTradableEntity(_entityId);
     }
 
-    function supportsInterface(bytes4 _interfaceID) isInitialized external view returns (bool){
+    function supportsInterface(bytes4 _interfaceID) external view returns (bool){
         if(_interfaceID == 0x80ac58cd) return true;
     }
 
       /// @notice Checks if the msg.sender is included in the matcher-array
-    function checkMatcher(address[] _matcher) isInitialized public view returns (bool){
+    function checkMatcher(address[] _matcher) public view returns (bool){
 
         // we iterate through the matcherarray, the length is defined by the maxMatcherPerAsset-parameter of the Coo-contract or the array-length if it's shorter
         for(uint i = 0; i < (originContractLookup.maxMatcherPerAsset() < _matcher.length? originContractLookup.maxMatcherPerAsset():_matcher.length); i++){
@@ -212,20 +205,16 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
 
     function simpleTransferInternal(address _from, address _to, uint256 _entityId) internal {
         TradableEntityContract.TradableEntity memory te = db.getTradableEntity(_entityId);
-        require(msg.value == 0);
+        
         require(
-            te.owner == msg.sender
+            (te.owner == _from) &&(_to != 0x0) && (te.owner != 0x0) && (msg.value == 0) && 
+            (te.owner == msg.sender
             || checkMatcher(te.escrow)
             || db.getOwnerToOperators(te.owner, msg.sender)
             || te.approvedAddress == msg.sender
-        );
-
-        require(te.owner == _from);
-        require(_to != 0x0);
-        require(te.owner != 0x0);
+        ));
         
-        db.setTradableEntityOwner(_entityId, _to);
-        db.addApproval(_entityId, 0x0);
+        db.setTradableEntityOwnerAndAddApproval(_entityId, _to,0x0);
         emit Transfer(_from,_to,_entityId);
       
     }

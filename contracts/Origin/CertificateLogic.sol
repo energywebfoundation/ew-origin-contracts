@@ -33,18 +33,16 @@ import "../../contracts/Interfaces/CertificateInterface.sol";
 import "../../contracts/Interfaces/ERC20Interface.sol";
 
 
-contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntityLogic, TradableEntityContract {
+contract CertificateLogic is  CertificateInterface ,RoleManagement, TradableEntityLogic, TradableEntityContract {
 
     /// @notice Logs the creation of an event
     event LogCreatedCertificate(uint indexed _certificateId, uint powerInW, address owner);
-    /// @notice Logs the request of an retirement of a certificate
     event LogCertificateRetired(uint indexed _certificateId, bool _retire);
     event LogCertificateOwnerChanged(uint indexed _certificateId, address _oldOwner, address _newOwner, address _oldEscrow);
     event LogCertificateSplit(uint indexed _certificateId, uint _childOne, uint _childTwo);
     event LogEscrowRemoved(uint indexed _certificateId, address _escrow);
     event LogEscrowAdded(uint indexed _certificateId, address _escrow);
     
-
         
   //  AssetContractLookupInterface public assetContractLookup;
 
@@ -66,8 +64,7 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
         address _to, 
         uint256 _entityId, 
         bytes _data
-    )
-        isInitialized 
+    ) 
         onlyRole(RoleManagement.Role.Trader) 
         external payable 
     {
@@ -78,8 +75,7 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
         address _from, 
         address _to, 
         uint256 _entityId
-    ) 
-        isInitialized 
+    )  
         onlyRole(RoleManagement.Role.Trader) 
         external payable 
     {
@@ -87,7 +83,7 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
         internalSafeTransfer(_from, _to, _entityId, data);
     }
 
-    function transferFrom(address _from, address _to, uint256 _entityId) isInitialized external payable {
+    function transferFrom(address _from, address _to, uint256 _entityId) external payable {
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_entityId);
         simpleTransferInternal(_from, _to, _entityId);
         emit LogCertificateOwnerChanged(_entityId, cert.tradableEntity.owner, _to, 0x0);
@@ -102,10 +98,10 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     /// @notice adds a new escrow address to a certificate
     /// @param _certificateId The id of the certificate
     /// @param _escrow The additional escrow address
-    function addEscrowForAsset(uint _certificateId, address _escrow) external isInitialized(){
-       // CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
-        require(CertificateDB(db).getTradableEntityOwner(_certificateId) == msg.sender
-        && (CertificateDB(db).getTradableEntityEscrowLength(_certificateId) < originContractLookup.maxMatcherPerAsset()));
+    function addEscrowForAsset(uint _certificateId, address _escrow) external {
+        require(
+            (CertificateDB(db).getTradableEntityOwner(_certificateId) == msg.sender)
+            && (CertificateDB(db).getTradableEntityEscrowLength(_certificateId) < originContractLookup.maxMatcherPerAsset()));
         db.addEscrowForAsset(_certificateId, _escrow);
         emit LogEscrowAdded(_certificateId, _escrow);
     }
@@ -113,7 +109,6 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
 
     function buyCertificate(uint _certificateId) 
         external
-        isInitialized
         onlyRole(RoleManagement.Role.Trader)
      {
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
@@ -130,7 +125,7 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
      
     /// @notice Request a certificate to retire. Only Certificate owner can retire
     /// @param _certificateId The id of the certificate
-    function retireCertificate(uint _certificateId) external isInitialized() {
+    function retireCertificate(uint _certificateId) external {
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
         require(cert.tradableEntity.owner == msg.sender);
         require(cert.certificateSpecific.children.length == 0);
@@ -142,7 +137,7 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     /// @notice Removes an escrow-address of a certifiacte
     /// @param _certificateId The id of the certificate
     /// @param _escrow The address to be removed
-    function removeEscrow(uint _certificateId, address _escrow) external isInitialized(){
+    function removeEscrow(uint _certificateId, address _escrow) external {
         require(CertificateDB(db).getTradableEntityOwner(_certificateId) == msg.sender);
         require(CertificateDB(db).removeEscrow(_certificateId, _escrow));
         emit LogEscrowRemoved(_certificateId, _escrow);
@@ -172,7 +167,6 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     /// @param _newOwner the new owner of the certificate
     function transferOwnershipByEscrow(uint _certificateId, address _newOwner) 
         external 
-        isInitialized 
     {   
         CertificateDB.Certificate memory certificate = CertificateDB(db).getCertificate(_certificateId);
         require (checkMatcher(certificate.tradableEntity.escrow));
@@ -218,13 +212,12 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
     /// @param _escrow The escrow-addresses
     function createCertificate(uint _assetId, uint _powerInW, uint _cO2Saved, address[] _escrow) 
         external 
-        isInitialized 
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
         returns (uint) 
     {
         AssetProducingRegistryDB.Asset memory asset = AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getFullAsset(_assetId);
 
-        uint certId = CertificateDB(db).createCertificate(_assetId,  _powerInW,  _cO2Saved,  _escrow[0], asset.owner, asset.lastSmartMeterReadFileHash, asset.maxOwnerChanges); 
+        uint certId = CertificateDB(db).createCertificateRaw(_assetId,  _powerInW,  _cO2Saved,  _escrow[0], asset.owner, asset.lastSmartMeterReadFileHash, asset.maxOwnerChanges); 
         emit Transfer(0,  asset.owner, certId);
 
         emit LogCreatedCertificate(certId, _powerInW, asset.owner);
@@ -238,9 +231,8 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
 
     /// @notice Retires a certificate
     /// @param _certificateId The id of the requested certificate
-    function retireCertificateAuto(uint _certificateId) internal isInitialized(){
-        address[] memory empty; 
-        CertificateDB(db).setCertificateEscrow(_certificateId, empty);
+    function retireCertificateAuto(uint _certificateId) internal{
+     //   CertificateDB(db).setCertificateEscrow(_certificateId, empty);
         CertificateDB(db).retireCertificate(_certificateId);
         emit LogCertificateRetired(_certificateId, true);
     }
@@ -267,24 +259,13 @@ contract CertificateLogic is  CertificateInterface,RoleManagement, TradableEntit
         require(!_certificate.certificateSpecific.retired);
         require(_certificate.certificateSpecific.ownerChangeCounter < _certificate.certificateSpecific.maxOwnerChanges);
         uint ownerChangeCounter = _certificate.certificateSpecific.ownerChangeCounter + 1;
-        address[] memory empty; 
 
-        CertificateDB(db).setOwnerChangeCounter(_certificateId,ownerChangeCounter);
-        CertificateDB(db).setCertificateEscrow(_certificateId, empty);
+        CertificateDB(db).setOwnerChangeCounterResetEscrow(_certificateId,ownerChangeCounter);
 
         if(_certificate.certificateSpecific.maxOwnerChanges <= ownerChangeCounter){
-            CertificateDB(db).setCertificateEscrow(_certificateId, empty);
+           // CertificateDB(db).setCertificateEscrow(_certificateId, new address[](0));
             CertificateDB(db).retireCertificate(_certificateId);
             emit LogCertificateRetired(_certificateId, true);
         }
     }
 }
-
-/**
-bytecode tradable-Entity
-length: 29474
-KB: 14737
-bytecode certLogic
-length: 53532
-KB: 26766
- */

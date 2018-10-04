@@ -43,9 +43,7 @@ contract EnergyDB is EnergyInterface, Owned, TradableEntityContract {
         external functions
     */
 
-    function addApproval(uint _entityId, address _approve) external onlyOwner {
-          energyList[_entityId].tradableEntity.approvedAddress = _approve;
-     }
+
 
     /// @notice Adds a new escrow address to an existing certificate
     /// @param _escrow The new escrow-address
@@ -84,13 +82,11 @@ contract EnergyDB is EnergyInterface, Owned, TradableEntityContract {
         tokenAmountMapping[_owner]++;
     } 
 
-    function setTradableEntityOwner(uint _entityId, address _owner) external onlyOwner {
+   
 
-        assert(tokenAmountMapping[energyList[_entityId].tradableEntity.owner]>0);
-        tokenAmountMapping[energyList[_entityId].tradableEntity.owner]--;
-        energyList[_entityId].tradableEntity.owner = _owner;
-        tokenAmountMapping[energyList[_entityId].tradableEntity.owner]++;
-
+    function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external onlyOwner{
+        setTradableEntityOwner(_entityId, _owner);
+        addApproval(_entityId, _approve);
     }
 
     function setTradableToken(uint _entityId, address _token) external onlyOwner {
@@ -132,5 +128,22 @@ contract EnergyDB is EnergyInterface, Owned, TradableEntityContract {
 
     function getOwnerToOperators(address _company, address _escrow) onlyOwner external view returns (bool){
         return ownerToOperators[_company][_escrow];
+    }
+
+    /** 
+    public functions
+     */
+
+    function setTradableEntityOwner(uint _entityId, address _owner) public onlyOwner {
+
+        assert(tokenAmountMapping[energyList[_entityId].tradableEntity.owner]>0);
+        tokenAmountMapping[energyList[_entityId].tradableEntity.owner]--;
+        energyList[_entityId].tradableEntity.owner = _owner;
+        tokenAmountMapping[energyList[_entityId].tradableEntity.owner]++;
+
+    }
+
+    function addApproval(uint _entityId, address _approve) public onlyOwner {
+        energyList[_entityId].tradableEntity.approvedAddress = _approve;
     }
 }

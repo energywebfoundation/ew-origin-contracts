@@ -37,4 +37,5 @@ interface EnergyInterface {
     function getTradableEntity(uint _entityId) external view returns (TradableEntityContract.TradableEntity _entity);
     function getOwnerToOperators(address _company, address _escrow) external view returns (bool);
     function getTradableEntityOwner(uint _entityId) external view returns (address);
+    function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external;
 }

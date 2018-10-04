@@ -25,7 +25,7 @@ import "../../contracts/Origin/TradableEntityContract.sol";
 import "../../contracts/Interfaces/EnergyInterface.sol";
 import "../../contracts/Origin/EnergyDB.sol";
 
-contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
+contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
 
     struct Certificate {
         TradableEntity tradableEntity;
@@ -67,15 +67,7 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         certificateList[_entityId].tradableEntity.escrow.push(_escrow);
     }
 
-    /// @notice sets the escrow-addresses of a certificate
-    /// @param _certificateId certificateId
-    /// @param _escrow new escrow-addresses
-    function setCertificateEscrow(uint _certificateId, address[] _escrow)
-        external
-        onlyOwner
-    {
-        certificateList[_certificateId].tradableEntity.escrow = _escrow;
-    }
+
 
     /// @notice Sets the owner of a certificate
     /// @param _entityId The array position in which the certificate is stored
@@ -92,12 +84,7 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         certificateList[_entityId].tradableEntity.onChainDirectPurchasePrice = _price;
     }
 
-    /// @notice Changes the OwnerChangeCounter of an existing certificate
-    /// @param _certificateId The array position in which the parent certificate is stored
-    function setOwnerChangeCounter(uint _certificateId, uint _newCounter) external onlyOwner {
-        Certificate storage certificate = certificateList[_certificateId];
-        certificate.certificateSpecific.ownerChangeCounter = _newCounter;
-    }
+  
 
     function setOwnerToOperators(address _company, address _escrow, bool _allowed) external onlyOwner {
         ownerToOperators[_company][_escrow] = _allowed;
@@ -118,12 +105,18 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         }
     }
 
+    function setOwnerChangeCounterResetEscrow(uint _certificateId, uint _newCounter) external onlyOwner {
+        setOwnerChangeCounter(_certificateId, _newCounter);
+        setCertificateEscrow(_certificateId, new address[](0));
+    }
+
     /// @notice Sets a certificate to retired
     /// @param _certificateId The array position in which the certificate is stored
     function retireCertificate(uint _certificateId) external onlyOwner{
      
         Certificate storage certificate = certificateList[_certificateId];
         certificate.certificateSpecific.retired = true;
+        certificate.tradableEntity.escrow = new address[](0);
     }
 
 
@@ -218,7 +211,7 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         parent.certificateSpecific.children.push(_childId);
     }
 
-    function createCertificate(
+    function createCertificateRaw(
         uint _assetId, 
         uint _powerInW, 
         uint _cO2Saved, 
@@ -341,4 +334,21 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
     function getCertificateListLength() public onlyOwner view returns (uint) {
         return certificateList.length;
     }  
+
+    /// @notice Changes the OwnerChangeCounter of an existing certificate
+    /// @param _certificateId The array position in which the parent certificate is stored
+    function setOwnerChangeCounter(uint _certificateId, uint _newCounter) public onlyOwner {
+        Certificate storage certificate = certificateList[_certificateId];
+        certificate.certificateSpecific.ownerChangeCounter = _newCounter;
+    }
+
+        /// @notice sets the escrow-addresses of a certificate
+    /// @param _certificateId certificateId
+    /// @param _escrow new escrow-addresses
+    function setCertificateEscrow(uint _certificateId, address[] _escrow)
+        public
+        onlyOwner
+    {
+        certificateList[_certificateId].tradableEntity.escrow = _escrow;
+    }
 }
