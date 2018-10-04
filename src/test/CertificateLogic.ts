@@ -18,7 +18,7 @@ import { assert } from 'chai';
 import * as fs from 'fs';
 import 'mocha';
 import { Web3Type } from '../types/web3';
-import { migrateUserRegistryContracts, UserLogic } from 'ew-user-registry-contracts';
+import { migrateUserRegistryContracts, UserLogic, UserContractLookup } from 'ew-user-registry-contracts';
 import { migrateAssetRegistryContracts, AssetContractLookup } from 'ew-asset-registry-contracts';
 import { migrateCertificateRegistryContracts } from '../utils/migrateContracts';
 import { OriginContractLookup } from '../wrappedContracts/OriginContractLookup';
@@ -26,6 +26,13 @@ import { CertificateDB } from '../wrappedContracts/CertificateDB';
 import { CertificateLogic } from '../wrappedContracts/CertificateLogic';
 import { getClientVersion } from 'sloffle';
 describe('CertificateLogic', () => {
+
+    let assetRegistryContract: AssetContractLookup;
+    let originRegistryContract: OriginContractLookup;
+    let certificateLogic: CertificateLogic;
+    let certificateDB: CertificateDB;
+    let isGanache: boolean;
+    let userRegistryContract: UserContractLookup;
 
     const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
 
@@ -37,48 +44,153 @@ describe('CertificateLogic', () => {
 
     const accountDeployment = web3.eth.accounts.privateKeyToAccount(privateKeyDeployment).address;
 
-    let assetRegistryContract: AssetContractLookup;
-    let originRegistryContract: OriginContractLookup;
-    let certificateLogic: CertificateLogic;
-    let certificateDB: CertificateDB;
-    let isGanache: boolean;
+    const assetOwnerPK = '0xc118b0425221384fe0cbbd093b2a81b1b65d0330810e0792c7059e518cea5383';
+    const accountAssetOwner = web3.eth.accounts.privateKeyToAccount(assetOwnerPK).address;
 
-    it('should deploy the contracts', async () => {
+    const traderPK = '0x2dc5120c26df339dbd9861a0f39a79d87e0638d30fdedc938861beac77bbd3f5';
+    const accountTrader = web3.eth.accounts.privateKeyToAccount(traderPK).address;
 
-        isGanache = (await getClientVersion(web3)).includes('EthereumJS');
+    describe('init checks', () => {
 
-        const userContracts = await migrateUserRegistryContracts(web3);
+        it('should deploy the contracts', async () => {
 
-        const userLogic = new UserLogic((web3 as any),
-                                        userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+            isGanache = (await getClientVersion(web3)).includes('EthereumJS');
 
-        await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
+            const userContracts = await migrateUserRegistryContracts(web3);
 
-        await userLogic.setRoles(accountDeployment, 3, { privateKey: privateKeyDeployment });
+            const userLogic = new UserLogic((web3 as any),
+                                            userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
 
-        const userContractLookupAddr = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
+            await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
-        const assetContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr);
+            await userLogic.setRoles(accountDeployment, 3, { privateKey: privateKeyDeployment });
 
-        const assetRegistryLookupAddr = assetContracts[process.cwd() + '/node_modules/ew-asset-registry-contracts/dist/contracts/AssetContractLookup.json'];
+            const userContractLookupAddr = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
 
-        const originContracts = await migrateCertificateRegistryContracts(web3, assetRegistryLookupAddr);
+            userRegistryContract = new UserContractLookup((web3 as any), userContractLookupAddr);
+            const assetContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr);
 
-        assetRegistryContract = new AssetContractLookup((web3 as any), assetRegistryLookupAddr);
-        originRegistryContract = new OriginContractLookup((web3 as any));
-        certificateLogic = new CertificateLogic((web3 as any));
-        certificateDB = new CertificateDB((web3 as any));
-        Object.keys(originContracts).forEach(async (key) => {
+            const assetRegistryLookupAddr = assetContracts[process.cwd() + '/node_modules/ew-asset-registry-contracts/dist/contracts/AssetContractLookup.json'];
 
-            const deployedBytecode = await web3.eth.getCode(originContracts[key]);
-            assert.isTrue(deployedBytecode.length > 0);
+            const originContracts = await migrateCertificateRegistryContracts(web3, assetRegistryLookupAddr);
 
-            const contractInfo = JSON.parse(fs.readFileSync(key, 'utf8'));
+            assetRegistryContract = new AssetContractLookup((web3 as any), assetRegistryLookupAddr);
+            originRegistryContract = new OriginContractLookup((web3 as any));
+            certificateLogic = new CertificateLogic((web3 as any));
+            certificateDB = new CertificateDB((web3 as any));
+            Object.keys(originContracts).forEach(async (key) => {
 
-            const tempBytecode = '0x' + contractInfo.deployedBytecode;
-            assert.equal(deployedBytecode, tempBytecode);
+                const deployedBytecode = await web3.eth.getCode(originContracts[key]);
+                assert.isTrue(deployedBytecode.length > 0);
+
+                const contractInfo = JSON.parse(fs.readFileSync(key, 'utf8'));
+
+                const tempBytecode = '0x' + contractInfo.deployedBytecode;
+                assert.equal(deployedBytecode, tempBytecode);
+
+            });
+        });
+
+        it('should have the right owner', async () => {
+
+            assert.equal(await certificateLogic.owner(), originRegistryContract.web3Contract._address);
 
         });
+
+        it('should have the lookup-contracts', async () => {
+
+            assert.equal(await certificateLogic.assetContractLookup(), assetRegistryContract.web3Contract._address);
+            assert.equal(await certificateLogic.userContractLookup(), userRegistryContract.web3Contract._address);
+        });
+
+        it('should the correct DB', async () => {
+
+            assert.equal(await certificateLogic.db(), certificateDB.web3Contract._address);
+        });
+
+    });
+
+    describe('ERC721 checks', () => {
+
+        it('should have balances of 0', async () => {
+
+            assert.equal(await certificateLogic.balanceOf(accountDeployment), 0);
+            assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 0);
+            assert.equal(await certificateLogic.balanceOf(accountTrader), 0);
+
+        });
+
+        it('should throw for balance of address 0x0', async () => {
+
+            let failed = false;
+            try {
+                await certificateLogic.balanceOf('0x0000000000000000000000000000000000000000');
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should throw when trying to access a non existing certificate', async () => {
+            let failed = false;
+            try {
+                await certificateLogic.ownerOf(0);
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should throw when trying to call safeTransferFrom a non existing certificate', async () => {
+            let failed = false;
+            try {
+                await certificateLogic.safeTransferFrom(accountDeployment, accountTrader, 0, '0x00', { privateKey: privateKeyDeployment });
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should throw when trying to call safeTransferFrom a non existing certificate', async () => {
+            let failed = false;
+            try {
+                await certificateLogic.safeTransferFrom(accountDeployment, accountTrader, 0, { privateKey: privateKeyDeployment });
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should throw when trying to call transferFrom a non existing certificate', async () => {
+            let failed = false;
+            try {
+                await certificateLogic.transferFrom(accountDeployment, accountTrader, 0, { privateKey: privateKeyDeployment });
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should throw when trying to call approve a non existing certificate', async () => {
+            let failed = false;
+            try {
+                await certificateLogic.approve(accountTrader, 0, { privateKey: privateKeyDeployment });
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+    });
+
+    describe('Certificate checks', () => {
+
     });
 
 });

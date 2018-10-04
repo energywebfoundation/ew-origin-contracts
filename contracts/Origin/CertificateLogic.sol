@@ -33,7 +33,7 @@ import "../../contracts/Interfaces/CertificateInterface.sol";
 import "../../contracts/Interfaces/ERC20Interface.sol";
 
 
-contract CertificateLogic is  CertificateInterface ,RoleManagement, TradableEntityLogic, TradableEntityContract {
+contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntityLogic, TradableEntityContract {
 
     /// @notice Logs the creation of an event
     event LogCreatedCertificate(uint indexed _certificateId, uint powerInW, address owner);
@@ -101,7 +101,7 @@ contract CertificateLogic is  CertificateInterface ,RoleManagement, TradableEnti
     function addEscrowForAsset(uint _certificateId, address _escrow) external {
         require(
             (CertificateDB(db).getTradableEntityOwner(_certificateId) == msg.sender)
-            && (CertificateDB(db).getTradableEntityEscrowLength(_certificateId) < originContractLookup.maxMatcherPerAsset()));
+            && (CertificateDB(db).getTradableEntityEscrowLength(_certificateId) < OriginContractLookupInterface(owner).maxMatcherPerAsset()));
         db.addEscrowForAsset(_certificateId, _escrow);
         emit LogEscrowAdded(_certificateId, _escrow);
     }

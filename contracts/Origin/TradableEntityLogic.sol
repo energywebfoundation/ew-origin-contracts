@@ -36,7 +36,6 @@ import "ew-user-registry-contracts/Interfaces/UserContractLookupInterface.sol";
 contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, TradableEntityInterface {
 
     EnergyInterface public db;
-    OriginContractLookupInterface public originContractLookup;
     AssetContractLookupInterface public assetContractLookup;
 
     event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
@@ -112,31 +111,9 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     }
 
      /**
-        external non erc721 functions
-     
-
-    function createTradableEntity(
-        uint _assetId, 
-        address _owner, 
-        uint _powerInW, 
-        address _acceptedToken, 
-        uint _onChainDirectPurchasePrice
-    ) 
-        isInitialized
-        onlyRole(RoleManagement.Role.Trader) 
-        external 
-        returns (uint tradableEntityId)
-    {
-        tradableEntityId = EnergyDB(db).createTradableEntityEntry(_assetId, _owner, _powerInW, _acceptedToken, _onChainDirectPurchasePrice);
-        
-        AssetProducingRegistryDB.Asset memory asset = AssetProducingRegistryLogic(address(cooContract.assetProducingRegistry())).getFullAsset(_assetId);
-
-        EnergyDB(db).setEscrow(tradableEntityId, asset.matcher);
-        
-        emit Transfer(0, _owner, tradableEntityId);
-
-    }
- */
+        external non erc721 functions  
+    */
+    
     /// @notice Initialises the contract by binding it to a logic contract
     /// @param _database Sets the logic contract
     function init(address _database, address _admin) external onlyOwner {
@@ -192,7 +169,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     function checkMatcher(address[] _matcher) public view returns (bool){
 
         // we iterate through the matcherarray, the length is defined by the maxMatcherPerAsset-parameter of the Coo-contract or the array-length if it's shorter
-        for(uint i = 0; i < (originContractLookup.maxMatcherPerAsset() < _matcher.length? originContractLookup.maxMatcherPerAsset():_matcher.length); i++){
+        for(uint i = 0; i < (OriginContractLookupInterface(owner).maxMatcherPerAsset() < _matcher.length? OriginContractLookupInterface(owner).maxMatcherPerAsset():_matcher.length); i++){
             if(_matcher[i] == msg.sender) return true;
         }
     }

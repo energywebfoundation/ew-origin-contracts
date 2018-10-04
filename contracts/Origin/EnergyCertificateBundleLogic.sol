@@ -31,9 +31,9 @@ import "../../contracts/Origin/TradableEntityLogic.sol";
 import "../../contracts/Origin/EnergyCertificateBundleDB.sol";
 import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol";
+import "../../contracts/Interfaces/EnergyCertificateBundleInterface.sol";
 
-
-contract EnergyCertificateBundleLogic is TradableEntityLogic  {
+contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateBundleInterface  {
 
     /// @notice Logs the creation of an event
     event LogCreatedBundle(uint indexed _bundleId, uint powerInW, address owner);
@@ -109,7 +109,7 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic  {
     function addEscrowForAsset(uint _bundleId, address _escrow) external isInitialized(){
         EnergyCertificateBundleDB.EnergyCertificateBundle memory bundle = EnergyCertificateBundleDB(db).getBundle(_bundleId);
         require(bundle.tradableEntity.owner == msg.sender,"addEscrowForAsset: wrong account");
-        require(bundle.tradableEntity.escrow.length < originContractLookup.maxMatcherPerAsset(), "current matcher limit reached");
+        require(bundle.tradableEntity.escrow.length < OriginContractLookupInterface(owner).maxMatcherPerAsset(), "current matcher limit reached");
         db.addEscrowForAsset(_bundleId, _escrow);
         emit LogEscrowAdded(_bundleId, _escrow);
     }
@@ -215,7 +215,7 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic  {
     /// @param _cO2Saved The amount of CO2 saved
     /// @param _escrow The escrow-addresses
     function createBundle(uint _assetId, uint _powerInW, uint _cO2Saved, address[] _escrow) 
-        public 
+        external 
         isInitialized 
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
         returns (uint) 
