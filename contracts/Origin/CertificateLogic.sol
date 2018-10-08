@@ -83,7 +83,11 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         internalSafeTransfer(_from, _to, _entityId, data);
     }
 
-    function transferFrom(address _from, address _to, uint256 _entityId) external payable {
+    function transferFrom(address _from, address _to, uint256 _entityId) 
+        onlyRole(RoleManagement.Role.Trader) 
+        external 
+        payable 
+    {
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_entityId);
         simpleTransferInternal(_from, _to, _entityId);
         emit LogCertificateOwnerChanged(_entityId, cert.tradableEntity.owner, _to, 0x0);
@@ -267,5 +271,21 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
             CertificateDB(db).retireCertificate(_certificateId);
             emit LogCertificateRetired(_certificateId, true);
         }
+    }
+
+    function simpleTransferInternal(address _from, address _to, uint256 _entityId) internal {
+        TradableEntityContract.TradableEntity memory te = CertificateDB(db).getTradableEntity(_entityId);
+
+        require(
+            (te.owner == _from) 
+            &&(_to != 0x0) 
+            && (te.owner != 0x0) 
+            && (msg.value == 0) 
+            &&  (te.owner == msg.sender || checkMatcher(te.escrow)|| db.getOwnerToOperators(te.owner, msg.sender) || te.approvedAddress == msg.sender )
+        );
+        
+        CertificateDB(db).setTradableEntityOwnerAndAddApproval(_entityId, _to,0x0);
+        emit Transfer(_from,_to,_entityId);
+      
     }
 }

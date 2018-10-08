@@ -55,7 +55,7 @@ contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
     /**
         external functions
     */
-    function addApproval(uint _entityId, address _approve) external onlyOwner {
+    function addApproval(uint _entityId, address _approve) public onlyOwner {
         certificateList[_entityId].tradableEntity.approvedAddress = _approve;
     }
 
@@ -72,8 +72,10 @@ contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
     /// @notice Sets the owner of a certificate
     /// @param _entityId The array position in which the certificate is stored
     /// @param _owner The address of the new owner
-    function setTradableEntityOwner(uint _entityId, address _owner) external onlyOwner {
+    function setTradableEntityOwner(uint _entityId, address _owner) public onlyOwner {
+        address oldOwner = certificateList[_entityId].tradableEntity.owner;
         certificateList[_entityId].tradableEntity.owner = _owner;
+        changeCertOwner(oldOwner,_owner);
     }
 
     function setTradableToken(uint _entityId, address _token) external onlyOwner {
@@ -201,7 +203,13 @@ contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
                 _certificateSpecific
             )
         ) - 1;
+        tokenAmountMapping[_tradableEntity.owner]++;
     }    
+
+    function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external onlyOwner{
+        setTradableEntityOwner(_entityId, _owner);
+        addApproval(_entityId, _approve);
+    }
 
     /// @notice Adds a certificate-Id as child to an existing certificate
     /// @param _certificateId The array position in which the parent certificate is stored
@@ -295,6 +303,8 @@ contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
             certificateSpecificOne
         );
 
+
+
         TradableEntityContract.TradableEntity memory childTwoEntity = TradableEntityContract.TradableEntity({
             assetId: parent.tradableEntity.assetId,
             owner: parent.tradableEntity.owner,
@@ -323,7 +333,6 @@ contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
             childTwoEntity,
             certificateSpecificTwo
         );
-
         addChildren(_parentId, _childIdOne);
         addChildren(_parentId, _childIdTwo);
 
@@ -350,5 +359,12 @@ contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
         onlyOwner
     {
         certificateList[_certificateId].tradableEntity.escrow = _escrow;
+    }
+
+    function changeCertOwner(address _old, address _new) internal {
+        require(tokenAmountMapping[_old] > 0);
+        tokenAmountMapping[_old]--;
+        tokenAmountMapping[_new]++;
+
     }
 }

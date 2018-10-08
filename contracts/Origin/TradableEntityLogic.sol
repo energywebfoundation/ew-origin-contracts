@@ -106,8 +106,8 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         return db.getApproved(_tokenId);
     }
 
-    function isApprovedForAll(address _company, address _escrow) external view returns (bool) {
-        return db.getOwnerToOperators(_company, _escrow);
+    function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
+        return db.getOwnerToOperators(_owner, _operator);
     }
 
      /**
@@ -182,7 +182,8 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
 
     function simpleTransferInternal(address _from, address _to, uint256 _entityId) internal {
         TradableEntityContract.TradableEntity memory te = db.getTradableEntity(_entityId);
-        
+
+       
         require(
             (te.owner == _from) &&(_to != 0x0) && (te.owner != 0x0) && (msg.value == 0) && 
             (te.owner == msg.sender
