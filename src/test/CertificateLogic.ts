@@ -58,6 +58,12 @@ describe('CertificateLogic', () => {
     const assetSmartmeterPK = '0x2dc5120c26df339dbd9861a0f39a79d87e0638d30fdedc938861beac77bbd3f5';
     const assetSmartmeter = web3.eth.accounts.privateKeyToAccount(assetSmartmeterPK).address;
 
+    const matcherPK = '0xd9d5e7a2ebebbad1eb22a63baa739a6c6a6f15d07fcc990ea4dea5c64022a87a';
+    const matcherAccount = web3.eth.accounts.privateKeyToAccount(matcherPK).address;
+
+    const approvedPK = '0x7da67da863672d4cc2984e93ce28d98b0d782d8caa43cd1c977b919c0209541b';
+    const approvedAccount = web3.eth.accounts.privateKeyToAccount(approvedPK).address;
+
     describe('init checks', () => {
 
         it('should deploy the contracts', async () => {
@@ -67,7 +73,7 @@ describe('CertificateLogic', () => {
             const userContracts = await migrateUserRegistryContracts(web3);
 
             userLogic = new UserLogic((web3 as any),
-                                      userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+                userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
 
             await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
@@ -218,11 +224,11 @@ describe('CertificateLogic', () => {
         it('should onboard an asset', async () => {
 
             await assetRegistry.createAsset(assetSmartmeter,
-                                            accountAssetOwner,
-                                            2,
-                                            '0x1000000000000000000000000000000000000005',
-                                            true,
-                                            'propertiesDocuementHash',
+                accountAssetOwner,
+                2,
+                '0x1000000000000000000000000000000000000005',
+                true,
+                'propertiesDocuementHash',
                                             'url',
                                             { privateKey: privateKeyDeployment });
         });
@@ -233,6 +239,14 @@ describe('CertificateLogic', () => {
 
             assert.equal(await assetRegistry.getMarketLookupContract(0), originRegistryContract.web3Contract._address);
         });
+
+        it('should return right interface', async () => {
+
+            assert.isTrue(await certificateLogic.supportsInterface('0x80ac58cd'));
+            assert.isFalse(await certificateLogic.supportsInterface('0x80ac58c1'));
+
+        });
+
         describe('transferFrom', () => {
 
             it('should have 0 certificates', async () => {
@@ -321,7 +335,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntity.powerInW, 100);
                 assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntity.escrow.length, 0);
+                assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005']);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
             });
@@ -377,7 +391,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntityParent.powerInW, 100);
                 assert.equal(tradableEntityParent.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntityParent.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntityParent.escrow.length, 0);
+                assert.deepEqual(tradableEntityParent.escrow, ['0x1000000000000000000000000000000000000005']);
                 assert.equal(tradableEntityParent.approvedAddress, '0x0000000000000000000000000000000000000000');
 
                 // child 1
@@ -398,7 +412,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntityChildOne.powerInW, 40);
                 assert.equal(tradableEntityChildOne.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntityChildOne.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntityChildOne.escrow.length, 0);
+                assert.deepEqual(tradableEntityChildOne.escrow, ['0x1000000000000000000000000000000000000005']);
                 assert.equal(tradableEntityChildOne.approvedAddress, '0x0000000000000000000000000000000000000000');
 
                 // child 2
@@ -419,7 +433,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntityChildTwo.powerInW, 60);
                 assert.equal(tradableEntityChildTwo.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntityChildTwo.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntityChildTwo.escrow.length, 0);
+                assert.deepEqual(tradableEntityChildTwo.escrow, ['0x1000000000000000000000000000000000000005']);
                 assert.equal(tradableEntityChildTwo.approvedAddress, '0x0000000000000000000000000000000000000000');
 
                 if (isGanache) {
@@ -574,7 +588,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntity.powerInW, 40);
                 assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntity.escrow.length, 0);
+                assert.deepEqual(tradableEntity.escrow, []);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
             });
@@ -632,7 +646,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntity.powerInW, 40);
                 assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntity.escrow.length, 0);
+                assert.deepEqual(tradableEntity.escrow, []);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
             });
@@ -760,7 +774,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntity.powerInW, 100);
                 assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntity.escrow.length, 0);
+                assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005']);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
             });
@@ -871,7 +885,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntity.powerInW, 100);
                 assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntity.escrow.length, 0);
+                assert.deepEqual(tradableEntity.escrow, []);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
             });
@@ -936,7 +950,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntity.powerInW, 100);
                 assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntity.escrow.length, 0);
+                assert.deepEqual(tradableEntity.escrow, []);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
             });
@@ -1020,7 +1034,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntity.powerInW, 100);
                 assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntity.escrow.length, 0);
+                assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005']);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
             });
@@ -1131,7 +1145,7 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntity.powerInW, 100);
                 assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntity.escrow.length, 0);
+                assert.deepEqual(tradableEntity.escrow, []);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
             });
@@ -1195,18 +1209,1130 @@ describe('CertificateLogic', () => {
                 assert.equal(tradableEntity.powerInW, 100);
                 assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
-                assert.equal(tradableEntity.escrow.length, 0);
+                assert.deepEqual(tradableEntity.escrow, []);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
             });
 
         });
-        describe('escrow', () => {
+        describe('escrow and approval', () => {
             it('should set an escrow to the asset', async () => {
+                await assetRegistry.addMatcher(0, matcherAccount, { privateKey: assetOwnerPK });
+                assert.deepEqual(await assetRegistry.getMatcher(0),
+                                 ['0x1000000000000000000000000000000000000005', matcherAccount]);
+            });
+
+            it('should return correct approval', async () => {
+                assert.isFalse(await certificateLogic.isApprovedForAll(accountAssetOwner, approvedAccount));
+                assert.isFalse(await certificateLogic.isApprovedForAll(accountTrader, approvedAccount));
+
+                const tx = await certificateLogic.setApprovalForAll(approvedAccount, true, { privateKey: assetOwnerPK });
+                assert.isTrue(await certificateLogic.isApprovedForAll(accountAssetOwner, approvedAccount));
+                assert.isFalse(await certificateLogic.isApprovedForAll(accountTrader, approvedAccount));
+
+                const allApprovalEvents = await certificateLogic.getAllApprovalForAllEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                assert.equal(allApprovalEvents.length, 1);
+                assert.equal(allApprovalEvents[0].event, 'ApprovalForAll');
+                assert.deepEqual(allApprovalEvents[0].returnValues, {
+                    0: accountAssetOwner,
+                    1: approvedAccount,
+                    2: true,
+                    _owner: accountAssetOwner,
+                    _operator: approvedAccount,
+                    _approved: true,
+                });
+            });
+
+            it('should add 2nd approval', async () => {
+                const tx = await certificateLogic.setApprovalForAll('0x1000000000000000000000000000000000000005', true, { privateKey: assetOwnerPK });
+                const allApprovalEvents = await certificateLogic.getAllApprovalForAllEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                assert.equal(allApprovalEvents.length, 1);
+                assert.equal(allApprovalEvents[0].event, 'ApprovalForAll');
+                assert.deepEqual(allApprovalEvents[0].returnValues, {
+                    0: accountAssetOwner,
+                    1: '0x1000000000000000000000000000000000000005',
+                    2: true,
+                    _owner: accountAssetOwner,
+                    _operator: '0x1000000000000000000000000000000000000005',
+                    _approved: true,
+                });
+
+                assert.isTrue(await certificateLogic.isApprovedForAll(accountAssetOwner, approvedAccount));
+                assert.isTrue(await certificateLogic.isApprovedForAll(accountAssetOwner, '0x1000000000000000000000000000000000000005'));
 
             });
 
-        });
+            it('should remove approval', async () => {
+                const tx = await certificateLogic.setApprovalForAll('0x1000000000000000000000000000000000000005', false, { privateKey: assetOwnerPK });
+                const allApprovalEvents = await certificateLogic.getAllApprovalForAllEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
 
+                assert.equal(allApprovalEvents.length, 1);
+                assert.equal(allApprovalEvents[0].event, 'ApprovalForAll');
+                assert.deepEqual(allApprovalEvents[0].returnValues, {
+                    0: accountAssetOwner,
+                    1: '0x1000000000000000000000000000000000000005',
+                    2: false,
+                    _owner: accountAssetOwner,
+                    _operator: '0x1000000000000000000000000000000000000005',
+                    _approved: false,
+                });
+
+                assert.isTrue(await certificateLogic.isApprovedForAll(accountAssetOwner, approvedAccount));
+                assert.isFalse(await certificateLogic.isApprovedForAll(accountAssetOwner, '0x1000000000000000000000000000000000000005'));
+
+            });
+
+            it('should return correct getApproved', async () => {
+
+                assert.equal(await certificateLogic.getApproved(0), '0x0000000000000000000000000000000000000000');
+                assert.equal(await certificateLogic.getApproved(1), '0x0000000000000000000000000000000000000000');
+                assert.equal(await certificateLogic.getApproved(2), '0x0000000000000000000000000000000000000000');
+                assert.equal(await certificateLogic.getApproved(3), '0x0000000000000000000000000000000000000000');
+                assert.equal(await certificateLogic.getApproved(4), '0x0000000000000000000000000000000000000000');
+
+                await certificateLogic.approve('0x1000000000000000000000000000000000000005', 2, { privateKey: assetOwnerPK });
+
+                assert.equal(await certificateLogic.getApproved(0), '0x0000000000000000000000000000000000000000');
+                assert.equal(await certificateLogic.getApproved(1), '0x0000000000000000000000000000000000000000');
+                assert.equal(await certificateLogic.getApproved(2), '0x1000000000000000000000000000000000000005');
+                assert.equal(await certificateLogic.getApproved(3), '0x0000000000000000000000000000000000000000');
+                assert.equal(await certificateLogic.getApproved(4), '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should throw when calling getApproved for a non valid token', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.getApproved(5);
+                } catch (ex) {
+                    failed = true;
+                }
+                assert.isTrue(failed);
+            });
+
+            it('should throw trying to transfer old certificate with new matcher', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.transferFrom(accountAssetOwner, accountTrader, 2, { privateKey: matcherPK });
+
+                } catch (ex) {
+                    failed = true;
+                    if (isGanache) {
+                        assert.include(ex.message, 'revert user does not have the required role');
+                    }
+                }
+                assert.isTrue(failed);
+            });
+
+            it('should log energy again (certificate #5)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    400,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    400,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '300',
+                    2: '400',
+                    3: false,
+                    4: '100',
+                    5: '300',
+                    6: '400',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '300',
+                    _newMeterRead: '400',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '300',
+                    _newCO2OffsetReading: '400',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '5',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '5',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 6);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 1);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 2);
+            });
+
+            it('should return the certificate #5 again', async () => {
+                const cert = await certificateLogic.getCertificate(5);
+
+                const certificateSpecific = cert.certificateSpecific;
+
+                assert.isFalse(certificateSpecific.retired);
+                assert.equal(certificateSpecific.dataLog, 'lastSmartMeterReadFileHash');
+                assert.equal(certificateSpecific.coSaved, 100);
+                assert.equal(certificateSpecific.parentId, 5);
+                assert.equal(certificateSpecific.children.length, 0);
+                assert.equal(certificateSpecific.maxOwnerChanges, 2);
+                assert.equal(certificateSpecific.ownerChangeCounter, 0);
+
+                const tradableEntity = cert.tradableEntity;
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005', matcherAccount]);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should throw trying to transfer old certificate with new matcher but missing role', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.transferFrom(accountAssetOwner, accountTrader, 5, { privateKey: matcherPK });
+
+                } catch (ex) {
+                    failed = true;
+                    if (isGanache) {
+                        assert.include(ex.message, 'revert user does not have the required role');
+                    }
+                }
+                assert.isTrue(failed);
+            });
+
+            it('should throw trying to safeTransferFrom without data old certificate with new matcher but missing role', async () => {
+
+                let failed = false;
+                try {
+                    const tx = await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 5, null, { privateKey: matcherPK });
+
+                } catch (ex) {
+                    failed = true;
+                    if (isGanache) {
+                        assert.include(ex.message, 'revert user does not have the required role');
+                    }
+                }
+                assert.isTrue(failed);
+            });
+
+            it('should throw trying to safeTransferFrom with data old certificate with new matcher but missing role', async () => {
+
+                let failed = false;
+                try {
+                    const tx = await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 5, '0x01', { privateKey: matcherPK });
+
+                } catch (ex) {
+                    failed = true;
+                    if (isGanache) {
+                        assert.include(ex.message, 'revert user does not have the required role');
+                    }
+                }
+                assert.isTrue(failed);
+            });
+
+            it('should set matcherAccount roles', async () => {
+                await userLogic.setUser(matcherAccount, 'matcherAccount', { privateKey: privateKeyDeployment });
+                await userLogic.setRoles(matcherAccount, 16, { privateKey: privateKeyDeployment });
+            });
+
+            it('should transfer certificate #5 as matcher', async () => {
+
+                // console.log(await certificateLogic.checkMatcher((await assetRegistry.getMatcher(5) as any)));
+                assert.equal(await certificateLogic.getApproved(5), '0x0000000000000000000000000000000000000000');
+
+                const tx = await certificateLogic.transferFrom(
+                    accountAssetOwner,
+                    accountTrader,
+                    5,
+                    { privateKey: matcherPK });
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: accountTrader,
+                        2: '5',
+                        _from: accountAssetOwner,
+                        _to: accountTrader,
+                        _tokenId: '5',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 6);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 2);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 2);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 2);
+                assert.equal(await certificateLogic.getApproved(5), '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should throw trying to call transer certificate #5 with matcher after it has been transfered', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.transferFrom(accountTrader, accountTrader, 5, { privateKey: matcherPK });
+
+                } catch (ex) {
+                    failed = true;
+                }
+                assert.isTrue(failed);
+            });
+
+            it('should log energy again (certificate #6)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    500,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    500,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '400',
+                    2: '500',
+                    3: false,
+                    4: '100',
+                    5: '400',
+                    6: '500',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '400',
+                    _newMeterRead: '500',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '400',
+                    _newCO2OffsetReading: '500',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '6',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '6',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 7);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 2);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 2);
+            });
+
+            it('should transferFrom without data certificate #6 as matcher', async () => {
+
+                assert.equal(await certificateLogic.getApproved(6), '0x0000000000000000000000000000000000000000');
+
+                const tx = await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 6, null, { privateKey: matcherPK });
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: testreceiver.web3Contract._address,
+                        2: '6',
+                        _from: accountAssetOwner,
+                        _to: testreceiver.web3Contract._address,
+                        _tokenId: '6',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 7);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 2);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 2);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 3);
+                assert.equal(await certificateLogic.getApproved(6), '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should log energy again (certificate #7)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    600,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    600,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '500',
+                    2: '600',
+                    3: false,
+                    4: '100',
+                    5: '500',
+                    6: '600',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '500',
+                    _newMeterRead: '600',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '500',
+                    _newCO2OffsetReading: '600',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '7',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '7',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 8);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 2);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 3);
+            });
+
+            it('should transfer without data certificate #7 as matcher', async () => {
+
+                assert.equal(await certificateLogic.getApproved(7), '0x0000000000000000000000000000000000000000');
+
+                const tx = await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 7, '0x01', { privateKey: matcherPK });
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: testreceiver.web3Contract._address,
+                        2: '7',
+                        _from: accountAssetOwner,
+                        _to: testreceiver.web3Contract._address,
+                        _tokenId: '7',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 8);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 2);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 2);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 4);
+                assert.equal(await certificateLogic.getApproved(7), '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should log energy again (certificate #8)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    700,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    700,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '600',
+                    2: '700',
+                    3: false,
+                    4: '100',
+                    5: '600',
+                    6: '700',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '600',
+                    _newMeterRead: '700',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '600',
+                    _newCO2OffsetReading: '700',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '8',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '8',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 9);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 2);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 4);
+            });
+
+            it('should throw trying to transfer old certificate#8 with new matcher but missing role', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.transferFrom(accountAssetOwner, accountTrader, 8, { privateKey: approvedPK });
+
+                } catch (ex) {
+                    failed = true;
+                    if (isGanache) {
+                        assert.include(ex.message, 'revert user does not have the required role');
+                    }
+                }
+                assert.isTrue(failed);
+            });
+
+            it('should throw trying to safeTransferFrom without data old certificate#8 with new approvedAccount but missing role', async () => {
+
+                let failed = false;
+                try {
+                    const tx = await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 8, null, { privateKey: approvedPK });
+
+                } catch (ex) {
+                    failed = true;
+                    if (isGanache) {
+                        assert.include(ex.message, 'revert user does not have the required role');
+                    }
+                }
+                assert.isTrue(failed);
+            });
+
+            it('should throw trying to safeTransferFrom with data old certificate#8 with new approvedAccount but missing role', async () => {
+
+                let failed = false;
+                try {
+                    const tx = await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 8, '0x01', { privateKey: approvedPK });
+
+                } catch (ex) {
+                    failed = true;
+                    if (isGanache) {
+                        assert.include(ex.message, 'revert user does not have the required role');
+                    }
+                }
+                assert.isTrue(failed);
+            });
+
+            it('should set approvedAccount roles', async () => {
+                await userLogic.setUser(approvedAccount, 'approvedAccount', { privateKey: privateKeyDeployment });
+                await userLogic.setRoles(approvedAccount, 16, { privateKey: privateKeyDeployment });
+            });
+
+            it('should transfer certificate#8 with approved account', async () => {
+
+                assert.equal(await certificateLogic.getApproved(8), '0x0000000000000000000000000000000000000000');
+
+                const tx = await certificateLogic.transferFrom(accountAssetOwner, accountTrader, 8, { privateKey: approvedPK });
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: accountTrader,
+                        2: '8',
+                        _from: accountAssetOwner,
+                        _to: accountTrader,
+                        _tokenId: '8',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 9);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 2);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 3);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 4);
+                assert.equal(await certificateLogic.getApproved(8), '0x0000000000000000000000000000000000000000');
+            });
+
+            it('should log energy again (certificate #9)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    800,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    800,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '700',
+                    2: '800',
+                    3: false,
+                    4: '100',
+                    5: '700',
+                    6: '800',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '700',
+                    _newMeterRead: '800',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '700',
+                    _newCO2OffsetReading: '800',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '9',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '9',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 10);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 3);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 4);
+            });
+
+            it('should safeTransferFrom without data certificate #9 as approved', async () => {
+
+                assert.equal(await certificateLogic.getApproved(9), '0x0000000000000000000000000000000000000000');
+
+                const tx = await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 9, null, { privateKey: approvedPK });
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: testreceiver.web3Contract._address,
+                        2: '9',
+                        _from: accountAssetOwner,
+                        _to: testreceiver.web3Contract._address,
+                        _tokenId: '9',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 10);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 2);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 3);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 5);
+                assert.equal(await certificateLogic.getApproved(9), '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should log energy again (certificate #10)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    900,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    900,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '800',
+                    2: '900',
+                    3: false,
+                    4: '100',
+                    5: '800',
+                    6: '900',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '800',
+                    _newMeterRead: '900',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '800',
+                    _newCO2OffsetReading: '900',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '10',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '10',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 11);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 3);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 5);
+            });
+
+            it('should safeTransferFrom with data certificate #10 as approved', async () => {
+
+                assert.equal(await certificateLogic.getApproved(10), '0x0000000000000000000000000000000000000000');
+
+                const tx = await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 10, '0x01', { privateKey: approvedPK });
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: testreceiver.web3Contract._address,
+                        2: '10',
+                        _from: accountAssetOwner,
+                        _to: testreceiver.web3Contract._address,
+                        _tokenId: '10',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 11);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 2);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 3);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 6);
+                assert.equal(await certificateLogic.getApproved(9), '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should log energy again (certificate #11)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    1000,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    1000,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '900',
+                    2: '1000',
+                    3: false,
+                    4: '100',
+                    5: '900',
+                    6: '1000',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '900',
+                    _newMeterRead: '1000',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '900',
+                    _newCO2OffsetReading: '1000',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '11',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '11',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 12);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 3);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 6);
+            });
+
+            it('should fail when trying to approve cert#11 as admin', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.approve(approvedAccount, 11, { privateKey: privateKeyDeployment });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should fail when trying to approve cert#11 as trader', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.approve(approvedAccount, 11, { privateKey: traderPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should be able to approve as cert-owner', async () => {
+
+                const tx = await certificateLogic.approve(approvedAccount, 11, { privateKey: assetOwnerPK });
+
+                if (isGanache) {
+                    const allApprovedEvents = await certificateLogic.getAllApprovalEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allApprovedEvents.length, 1);
+                    assert.equal(allApprovedEvents[0].event, 'Approval');
+                    assert.deepEqual(allApprovedEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: approvedAccount,
+                        2: '11',
+                        _owner: accountAssetOwner,
+                        _approved: approvedAccount,
+                        _tokenId: '11',
+                    });
+                }
+            });
+
+            it('should call transferFrom with cert#11 with approved account', async () => {
+
+                assert.equal(await certificateLogic.getApproved(11), approvedAccount);
+
+                const tx = await certificateLogic.transferFrom(accountAssetOwner, accountTrader, 11, { privateKey: approvedPK });
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: accountTrader,
+                        2: '11',
+                        _from: accountAssetOwner,
+                        _to: accountTrader,
+                        _tokenId: '11',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 12);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 2);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 4);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 6);
+                assert.equal(await certificateLogic.getApproved(11), '0x0000000000000000000000000000000000000000');
+            });
+
+            it('should log energy again (certificate #12)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    1100,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    1100,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '1000',
+                    2: '1100',
+                    3: false,
+                    4: '100',
+                    5: '1000',
+                    6: '1100',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '1000',
+                    _newMeterRead: '1100',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '1000',
+                    _newCO2OffsetReading: '1100',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '12',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '12',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 13);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 4);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 6);
+            });
+
+            it('should be able to approve cert#12 as cert-owner', async () => {
+
+                const tx = await certificateLogic.approve(approvedAccount, 12, { privateKey: assetOwnerPK });
+
+                if (isGanache) {
+                    const allApprovedEvents = await certificateLogic.getAllApprovalEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allApprovedEvents.length, 1);
+                    assert.equal(allApprovedEvents[0].event, 'Approval');
+                    assert.deepEqual(allApprovedEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: approvedAccount,
+                        2: '12',
+                        _owner: accountAssetOwner,
+                        _approved: approvedAccount,
+                        _tokenId: '12',
+                    });
+                }
+            });
+
+            it('should safeTransferFrom withut data certificate #12 as approved', async () => {
+
+                assert.equal(await certificateLogic.getApproved(12), approvedAccount);
+
+                const tx = await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 12, null, { privateKey: approvedPK });
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: testreceiver.web3Contract._address,
+                        2: '12',
+                        _from: accountAssetOwner,
+                        _to: testreceiver.web3Contract._address,
+                        _tokenId: '12',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 13);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 2);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 4);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 7);
+                assert.equal(await certificateLogic.getApproved(9), '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should log energy again (certificate #13)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    1200,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    1200,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '1100',
+                    2: '1200',
+                    3: false,
+                    4: '100',
+                    5: '1100',
+                    6: '1200',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '1100',
+                    _newMeterRead: '1200',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '1100',
+                    _newCO2OffsetReading: '1200',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '13',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '13',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 14);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 4);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 7);
+            });
+
+            it('should be able to approve cert#13 as cert-owner', async () => {
+
+                const tx = await certificateLogic.approve(approvedAccount, 13, { privateKey: assetOwnerPK });
+
+                if (isGanache) {
+                    const allApprovedEvents = await certificateLogic.getAllApprovalEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allApprovedEvents.length, 1);
+                    assert.equal(allApprovedEvents[0].event, 'Approval');
+                    assert.deepEqual(allApprovedEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: approvedAccount,
+                        2: '13',
+                        _owner: accountAssetOwner,
+                        _approved: approvedAccount,
+                        _tokenId: '13',
+                    });
+                }
+            });
+
+            it('should safeTransferFrom withut data certificate #13 as approved', async () => {
+
+                assert.equal(await certificateLogic.getApproved(13), approvedAccount);
+
+                const tx = await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 13, null, { privateKey: approvedPK });
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: testreceiver.web3Contract._address,
+                        2: '13',
+                        _from: accountAssetOwner,
+                        _to: testreceiver.web3Contract._address,
+                        _tokenId: '13',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 14);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 2);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 4);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 8);
+                assert.equal(await certificateLogic.getApproved(13), '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should be able to burn (to = 0x0) a certificate', async () => {
+
+                const tx = await certificateLogic.transferFrom(accountTrader, '0x0000000000000000000000000000000000000000', 11, { privateKey: traderPK });
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountTrader,
+                        1: '0x0000000000000000000000000000000000000000',
+                        2: '11',
+                        _from: accountTrader,
+                        _to: '0x0000000000000000000000000000000000000000',
+                        _tokenId: '11',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 14);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 2);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 3);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 8);
+                assert.equal(await certificateLogic.getApproved(13), '0x0000000000000000000000000000000000000000');
+            });
+        });
     });
 });

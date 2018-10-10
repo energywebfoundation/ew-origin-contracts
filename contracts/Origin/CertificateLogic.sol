@@ -43,16 +43,12 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     event LogEscrowRemoved(uint indexed _certificateId, address _escrow);
     event LogEscrowAdded(uint indexed _certificateId, address _escrow);
     
-        
-  //  AssetContractLookupInterface public assetContractLookup;
-
     constructor(
         AssetContractLookupInterface _assetContractLookup,
         OriginContractLookupInterface _originContractLookup
     )
         TradableEntityLogic(_assetContractLookup, _originContractLookup) 
     public {
-    //    assetContractLookup = _assetContractLookup;
     }
 
     /**
@@ -215,13 +211,13 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     /// @param _cO2Saved The amount of CO2 saved
     /// @param _escrow The escrow-addresses
     function createCertificate(uint _assetId, uint _powerInW, uint _cO2Saved, address[] _escrow) 
-        external 
+        public 
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
         returns (uint) 
     {
         AssetProducingRegistryDB.Asset memory asset = AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getFullAsset(_assetId);
 
-        uint certId = CertificateDB(db).createCertificateRaw(_assetId,  _powerInW,  _cO2Saved,  _escrow[0], asset.owner, asset.lastSmartMeterReadFileHash, asset.maxOwnerChanges); 
+        uint certId = CertificateDB(db).createCertificateRaw(_assetId,  _powerInW,  _cO2Saved,  _escrow, asset.owner, asset.lastSmartMeterReadFileHash, asset.maxOwnerChanges); 
         emit Transfer(0,  asset.owner, certId);
 
         emit LogCreatedCertificate(certId, _powerInW, asset.owner);
@@ -278,10 +274,10 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
 
         require(
             (te.owner == _from) 
-            &&(_to != 0x0) 
+     //       &&(_to != 0x0) 
             && (te.owner != 0x0) 
             && (msg.value == 0) 
-            &&  (te.owner == msg.sender || checkMatcher(te.escrow)|| db.getOwnerToOperators(te.owner, msg.sender) || te.approvedAddress == msg.sender )
+            &&  (te.owner == msg.sender || checkMatcher(te.escrow)|| db.getOwnerToOperators(te.owner, msg.sender) || te.approvedAddress == msg.sender ),"simpleTransferInternal"
         );
         
         CertificateDB(db).setTradableEntityOwnerAndAddApproval(_entityId, _to,0x0);

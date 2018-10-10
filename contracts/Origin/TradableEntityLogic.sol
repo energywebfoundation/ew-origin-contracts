@@ -100,6 +100,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
 
     function setApprovalForAll(address _escrow, bool _approved) external {
         db.setOwnerToOperators(msg.sender, _escrow, _approved);
+        emit ApprovalForAll(msg.sender, _escrow, _approved);
     }
 
     function getApproved(uint _tokenId) external view returns (address) {
@@ -169,7 +170,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     function checkMatcher(address[] _matcher) public view returns (bool){
 
         // we iterate through the matcherarray, the length is defined by the maxMatcherPerAsset-parameter of the Coo-contract or the array-length if it's shorter
-        for(uint i = 0; i < (OriginContractLookupInterface(owner).maxMatcherPerAsset() < _matcher.length? OriginContractLookupInterface(owner).maxMatcherPerAsset():_matcher.length); i++){
+        for(uint i = 0; i < ( AssetContractLookupInterface(assetContractLookup).maxMatcherPerAsset() < _matcher.length? AssetContractLookupInterface(assetContractLookup).maxMatcherPerAsset():_matcher.length); i++){
             if(_matcher[i] == msg.sender) return true;
         }
     }

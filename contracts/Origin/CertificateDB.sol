@@ -25,7 +25,7 @@ import "../../contracts/Origin/TradableEntityContract.sol";
 import "../../contracts/Interfaces/EnergyInterface.sol";
 import "../../contracts/Origin/EnergyDB.sol";
 
-contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
+contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
 
     struct Certificate {
         TradableEntity tradableEntity;
@@ -92,6 +92,7 @@ contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
         ownerToOperators[_company][_escrow] = _allowed;
     }
 
+    
     /// @notice Removes an escrow-address of an existing certificate
     /// @param _certificateId The array position in which the parent certificate is stored
     /// @param _escrow the escrow-address to be removed
@@ -106,6 +107,7 @@ contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
             }
         }
     }
+    
 
     function setOwnerChangeCounterResetEscrow(uint _certificateId, uint _newCounter) external onlyOwner {
         setOwnerChangeCounter(_certificateId, _newCounter);
@@ -223,7 +225,7 @@ contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
         uint _assetId, 
         uint _powerInW, 
         uint _cO2Saved, 
-        address _escrow,
+        address[] _escrow,
         address _assetOwner,
         string _lastSmartMeterReadFileHash,
         uint _maxOwnerChanges
@@ -238,7 +240,8 @@ contract CertificateDB is /*EnergyInterface,*/ Owned, TradableEntityContract {
             powerInW: _powerInW,
             acceptedToken: 0x0,
             onChainDirectPurchasePrice: 0,
-            escrow: new address[](0),
+            escrow: _escrow,
+           // escrow: new address[](0),
             approvedAddress: 0x0
 
         });
