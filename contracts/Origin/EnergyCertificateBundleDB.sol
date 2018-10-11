@@ -46,7 +46,7 @@ contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityCont
     /**
         external functions
     */
-    function addApproval(uint _entityId, address _approve) external onlyOwner {
+    function addApproval(uint _entityId, address _approve) public onlyOwner {
         bundleList[_entityId].tradableEntity.approvedAddress = _approve;
     }
 
@@ -69,7 +69,7 @@ contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityCont
     /// @notice Sets the owner of a bundle
     /// @param _entityId The array position in which the bundle is stored
     /// @param _owner The address of the new owner
-    function setTradableEntityOwner(uint _entityId, address _owner) external onlyOwner {
+    function setTradableEntityOwner(uint _entityId, address _owner) public onlyOwner {
         bundleList[_entityId].tradableEntity.owner = _owner;
     }
 
@@ -154,10 +154,19 @@ contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityCont
         return bundleList[_entityId].tradableEntity;
     }
 
+    function getTradableEntityOwner(uint _entityId) external view returns (address){
+        return bundleList[_entityId].tradableEntity.owner;
+    }
+    
+
     function getTradableToken(uint _entityId) external view returns (address) {
         return bundleList[_entityId].tradableEntity.acceptedToken;
     }
 
+    function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external onlyOwner{
+        setTradableEntityOwner(_entityId, _owner);
+        addApproval(_entityId, _approve);
+    }
     /**
         public functions
     */

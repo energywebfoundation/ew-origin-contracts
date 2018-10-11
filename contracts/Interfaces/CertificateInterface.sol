@@ -21,12 +21,9 @@ import "../../contracts/Origin/CertificateDB.sol";
 
 interface CertificateInterface {
 
-    function addEscrowForAsset(uint _certificateId, address _escrow) external;
     function buyCertificate(uint _certificateId) external;
     function retireCertificate(uint _certificateId) external;
-    function removeEscrow(uint _certificateId, address _escrow) external;
     function splitCertificate(uint _certificateId, uint _power) external;
-    function transferOwnershipByEscrow(uint _certificateId, address _newOwner) external;
     function getCertificate(uint _certificateId) external view returns (CertificateDB.Certificate certificate);
     function getCertificateListLength() external view returns (uint);
     function getCertificateOwner(uint _certificateId) external view returns (address);

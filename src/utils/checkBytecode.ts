@@ -25,6 +25,22 @@ const main = async () => {
     console.log('length: ' + certDBBytecode.length);
     console.log('KB: ' + (certDBBytecode.length) / 2);
     console.log('');
+
+    const bundleLogicFIle = JSON.parse(fs.readFileSync(process.cwd() + '/dist/contracts/EnergyCertificateBundleLogic.json', 'utf8'));
+    const bundleLogicByteCode = bundleLogicFIle.bytecode;
+
+    console.log('bytecode bundleLogic');
+    console.log('length: ' + bundleLogicByteCode.length);
+    console.log('KB: ' + (bundleLogicByteCode.length) / 2);
+    console.log('');
+
+    const bunldeDBFile = JSON.parse(fs.readFileSync(process.cwd() + '/dist/contracts/EnergyCertificateBundleDB.json', 'utf8'));
+    const bundleDBByteCode = bunldeDBFile.bytecode;
+
+    console.log('bytecode bundleDB');
+    console.log('length: ' + bundleDBByteCode.length);
+    console.log('KB: ' + (bundleDBByteCode.length) / 2);
+    console.log('');
 };
 
 main();

@@ -92,6 +92,11 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         ownerToOperators[_company][_escrow] = _allowed;
     }
 
+    function removeTokenAndPrice(uint _entityId) external onlyOwner {
+        certificateList[_entityId].tradableEntity.onChainDirectPurchasePrice = 0;
+        certificateList[_entityId].tradableEntity.acceptedToken = 0;
+
+    }
     
     /// @notice Removes an escrow-address of an existing certificate
     /// @param _certificateId The array position in which the parent certificate is stored

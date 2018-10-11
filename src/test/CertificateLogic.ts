@@ -26,6 +26,7 @@ import { CertificateDB } from '../wrappedContracts/CertificateDB';
 import { CertificateLogic } from '../wrappedContracts/CertificateLogic';
 import { getClientVersion, Sloffle } from 'sloffle';
 import { TestReceiver } from '../wrappedContracts/TestReceiver';
+import { Erc20TestToken } from '../wrappedContracts/Erc20TestToken';
 
 describe('CertificateLogic', () => {
 
@@ -38,6 +39,7 @@ describe('CertificateLogic', () => {
     let assetRegistry: AssetProducingRegistryLogic;
     let userLogic: UserLogic;
     let testreceiver: TestReceiver;
+    let erc20Test: Erc20TestToken
 
     const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
 
@@ -108,14 +110,21 @@ describe('CertificateLogic', () => {
             });
         });
 
-        it('should deploy a testreceiver-contract', async () => {
+        it('should deploy a testtoken contracts', async () => {
             const sloffle = new Sloffle(web3);
 
-            const addressTest = await sloffle.deploy(process.cwd() + '/dist/contracts/TestReceiver.json', [certificateLogic.web3Contract._address], {
+            await sloffle.deploy(process.cwd() + '/dist/contracts/TestReceiver.json', [certificateLogic.web3Contract._address], {
                 privateKey: privateKeyDeployment,
             });
 
+            await sloffle.deploy(process.cwd() + '/dist/contracts/Erc20TestToken.json', [accountTrader], {
+                privateKey: privateKeyDeployment,
+            });
+
+            const addressTest = sloffle.deployedContracts
             testreceiver = new TestReceiver(web3, addressTest[0]);
+            erc20Test = new Erc20TestToken(web3, addressTest[1])
+
 
         });
 
@@ -229,8 +238,8 @@ describe('CertificateLogic', () => {
                 '0x1000000000000000000000000000000000000005',
                 true,
                 'propertiesDocuementHash',
-                                            'url',
-                                            { privateKey: privateKeyDeployment });
+                'url',
+                { privateKey: privateKeyDeployment });
         });
 
         it('should set MarketLogicAddress', async () => {
@@ -2333,6 +2342,425 @@ describe('CertificateLogic', () => {
                 assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 8);
                 assert.equal(await certificateLogic.getApproved(13), '0x0000000000000000000000000000000000000000');
             });
+
+            it('should log energy again (certificate #14)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    1300,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    1300,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '1200',
+                    2: '1300',
+                    3: false,
+                    4: '100',
+                    5: '1200',
+                    6: '1300',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '1200',
+                    _newMeterRead: '1300',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '1200',
+                    _newCO2OffsetReading: '1300',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '14',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '14',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 15);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 3);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 8);
+            });
+
+            it('should fail when trying to retire cert#14 as admin', async () => {
+
+                let failed = false;
+
+                try {
+                    await certificateLogic.retireCertificate(14, { privateKey: accountDeployment });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should fail when trying to retire cert#14 as trader', async () => {
+
+                let failed = false;
+
+                try {
+                    await certificateLogic.retireCertificate(14, { privateKey: traderPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should retire cert#14 as owner', async () => {
+
+                assert.isFalse(await certificateLogic.isRetired(14));
+                const tx = await certificateLogic.retireCertificate(14, { privateKey: assetOwnerPK });
+                assert.isTrue(await certificateLogic.isRetired(14));
+
+                const retiredEvents = await certificateLogic.getAllLogCertificateRetiredEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                assert.equal(retiredEvents.length, 1);
+                assert.equal(retiredEvents[0].event, 'LogCertificateRetired');
+                assert.deepEqual(retiredEvents[0].returnValues, {
+                    0: '14', 1: true, _certificateId: '14', _retire: true,
+                });
+            });
+
+            it('should be able to call retire cert#14 as owner, but no event', async () => {
+
+                assert.isTrue(await certificateLogic.isRetired(14));
+                const tx = await certificateLogic.retireCertificate(14, { privateKey: assetOwnerPK });
+                assert.isTrue(await certificateLogic.isRetired(14));
+
+                const retiredEvents = await certificateLogic.getAllLogCertificateRetiredEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                assert.equal(retiredEvents.length, 0);
+
+            });
+
+            it('should throw when trying to retire a splitted certificate', async () => {
+
+                assert.isFalse(await certificateLogic.isRetired(0));
+
+                let failed = false;
+                try {
+                    await certificateLogic.retireCertificate(0, { privateKey: accountAssetOwner });
+                }
+                catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+
+            });
+        });
+
+        describe('ERC20', () => {
+            it('should have correct balanes', async () => {
+                assert.equal(await erc20Test.balanceOf(accountTrader), 1000000);
+                assert.equal(await erc20Test.balanceOf(accountDeployment), 99999999999999000000);
+                assert.equal(await erc20Test.balanceOf(accountAssetOwner), 0);
+            });
+
+            it('should log energy again (certificate #15)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    1400,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    1400,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '1300',
+                    2: '1400',
+                    3: false,
+                    4: '100',
+                    5: '1300',
+                    6: '1400',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '1300',
+                    _newMeterRead: '1400',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '1300',
+                    _newCO2OffsetReading: '1400',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '15',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '15',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 16);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 4);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 3);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 8);
+            });
+
+            it('should not have an acceptedToken after creation', async () => {
+                assert.equal(await certificateLogic.getTradableToken(15), '0x0000000000000000000000000000000000000000');
+            });
+
+            it('should not have a tokenprice', async () => {
+                assert.equal(await certificateLogic.getOnChainDirectPurchasePrice(15), 0);
+            });
+
+            it('should fail when trying to set tradableToken as admin', async () => {
+
+                let failed = false;
+
+                try {
+                    await certificateLogic.setTradableToken(
+                        15,
+                        erc20Test.web3Contract._address,
+                        { privateKey: privateKeyDeployment });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should fail when trying to set tradableToken as trader', async () => {
+
+                let failed = false;
+
+                try {
+                    await certificateLogic.setTradableToken(
+                        15,
+                        erc20Test.web3Contract._address,
+                        { privateKey: traderPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should set tradableToken as owner', async () => {
+                await certificateLogic.setTradableToken(
+                    15,
+                    erc20Test.web3Contract._address,
+                    { privateKey: assetOwnerPK });
+
+                assert.equal(await certificateLogic.getTradableToken(15), erc20Test.web3Contract._address);
+
+            });
+
+            it('should fail when trying to buy a token with a price of 0', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.buyCertificate(15, { privateKey: traderPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should fail when trying to set the onchainPrice as admin', async () => {
+
+                let failed = false;
+
+                try {
+                    await certificateLogic.setOnChainDirectPurchasePrice(
+                        15, 1000,
+                        { privateKey: privateKeyDeployment });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should fail when trying to set the onchainPrice as trader', async () => {
+
+                let failed = false;
+
+                try {
+                    await certificateLogic.setOnChainDirectPurchasePrice(
+                        15, 1000,
+                        { privateKey: traderPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should set the onchainPrice as certOwner', async () => {
+                assert.equal(await certificateLogic.getOnChainDirectPurchasePrice(15), 0);
+
+                await certificateLogic.setOnChainDirectPurchasePrice(
+                    15, 100,
+                    { privateKey: assetOwnerPK });
+                assert.equal(await certificateLogic.getOnChainDirectPurchasePrice(15), 100);
+            });
+
+            it('should return the certificate #15', async () => {
+                const cert = await certificateLogic.getCertificate(15);
+
+                const certificateSpecific = cert.certificateSpecific;
+
+                assert.isFalse(certificateSpecific.retired);
+                assert.equal(certificateSpecific.dataLog, 'lastSmartMeterReadFileHash');
+                assert.equal(certificateSpecific.coSaved, 100);
+                assert.equal(certificateSpecific.parentId, 15);
+                assert.equal(certificateSpecific.children.length, 0);
+                assert.equal(certificateSpecific.maxOwnerChanges, 2);
+                assert.equal(certificateSpecific.ownerChangeCounter, 0);
+
+                const tradableEntity = cert.tradableEntity;
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, erc20Test.web3Contract._address);
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 100);
+                assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005', matcherAccount]);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should return the correct tradableEntity (Cert#15)', async () => {
+
+                const tradableEntity = await certificateLogic.getTradableEntity(15);
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, erc20Test.web3Contract._address);
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 100);
+                assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005', matcherAccount]);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should fail when trying to buy a token when the tokens are not approved', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.buyCertificate(15, { privateKey: traderPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should fail when trying to buy a token when not enough tokens are not approved', async () => {
+                await erc20Test.approve(accountAssetOwner, 99, { privateKey: traderPK });
+
+                let failed = false;
+                try {
+                    await certificateLogic.buyCertificate(15, { privateKey: traderPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should be able to buy a certficate', async () => {
+                await erc20Test.approve(accountAssetOwner, 100, { privateKey: traderPK });
+
+                const tx = await certificateLogic.buyCertificate(15, { privateKey: traderPK });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: accountAssetOwner,
+                        1: accountTrader,
+                        2: '15',
+                        _from: accountAssetOwner,
+                        _to: accountTrader,
+                        _tokenId: '15',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 16);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 3);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 4);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 8);
+
+            });
+
+            it('should return the correct tradableEntity (Cert#15)', async () => {
+
+                const tradableEntity = await certificateLogic.getTradableEntity(15);
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountTrader);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, []);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should return the certificate #15', async () => {
+                const cert = await certificateLogic.getCertificate(15);
+
+                const certificateSpecific = cert.certificateSpecific;
+
+                assert.isFalse(certificateSpecific.retired);
+                assert.equal(certificateSpecific.dataLog, 'lastSmartMeterReadFileHash');
+                assert.equal(certificateSpecific.coSaved, 100);
+                assert.equal(certificateSpecific.parentId, 15);
+                assert.equal(certificateSpecific.children.length, 0);
+                assert.equal(certificateSpecific.maxOwnerChanges, 2);
+                assert.equal(certificateSpecific.ownerChangeCounter, 1);
+
+                const tradableEntity = cert.tradableEntity;
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountTrader);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, []);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
         });
     });
 });

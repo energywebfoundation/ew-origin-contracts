@@ -43,8 +43,6 @@ contract EnergyDB is EnergyInterface, Owned, TradableEntityContract {
         external functions
     */
 
-
-
     /// @notice Adds a new escrow address to an existing certificate
     /// @param _escrow The new escrow-address
     function addEscrowForAsset(uint _entityId, address _escrow) external onlyOwner {

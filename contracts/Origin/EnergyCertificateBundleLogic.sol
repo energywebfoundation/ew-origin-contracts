@@ -44,12 +44,6 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
     event LogEscrowAdded(uint indexed _bundleId, address _escrow);
     
     AssetContractLookupInterface public assetContractLookup;
-
-    /// @notice Checks if the contract is initialized
-    modifier isInitialized() {
-        require(EnergyCertificateBundleDB(db) != EnergyCertificateBundleDB(0x0),"logic not initialized");
-        _;
-    }
     
    /// @notice Constructor
     constructor(
@@ -57,9 +51,7 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
         OriginContractLookupInterface _originContractLookup
     )
         TradableEntityLogic(_assetContractLookup, _originContractLookup) 
-    public {
-        assetContractLookup = _assetContractLookup;
-    }
+    public { }
 
     /**
         ERC721 functions to overwrite
@@ -71,9 +63,9 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
         uint256 _entityId, 
         bytes _data
     )
-        isInitialized 
-        onlyRole(RoleManagement.Role.Trader) 
-        external payable 
+        external
+        onlyRole(RoleManagement.Role.Trader)  
+        payable 
     {
         internalSafeTransfer(_from, _to, _entityId, _data);
     }
@@ -83,15 +75,15 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
         address _to, 
         uint256 _entityId
     ) 
-        isInitialized 
+        external
         onlyRole(RoleManagement.Role.Trader) 
-        external payable 
+        payable 
     {
         bytes memory data = "";
         internalSafeTransfer(_from, _to, _entityId, data);
     }
 
-    function transferFrom(address _from, address _to, uint256 _entityId) isInitialized external payable {
+    function transferFrom(address _from, address _to, uint256 _entityId) external payable {
         EnergyCertificateBundleDB.EnergyCertificateBundle memory bundle = EnergyCertificateBundleDB(db).getBundle(_entityId);
         simpleTransferInternal(_from, _to, _entityId);
         emit LogBundleOwnerChanged(_entityId, bundle.tradableEntity.owner, _to, 0x0);
@@ -106,20 +98,22 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
     /// @notice adds a new escrow address to a bundle
     /// @param _bundleId The id of the bundle
     /// @param _escrow The additional escrow address
-    function addEscrowForAsset(uint _bundleId, address _escrow) external isInitialized(){
+    function addEscrowForAsset(uint _bundleId, address _escrow) 
+        external
+    {
         EnergyCertificateBundleDB.EnergyCertificateBundle memory bundle = EnergyCertificateBundleDB(db).getBundle(_bundleId);
-        require(bundle.tradableEntity.owner == msg.sender,"addEscrowForAsset: wrong account");
-        require(bundle.tradableEntity.escrow.length < OriginContractLookupInterface(owner).maxMatcherPerAsset(), "current matcher limit reached");
+        require(bundle.tradableEntity.owner == msg.sender);
+        require(bundle.tradableEntity.escrow.length < OriginContractLookupInterface(owner).maxMatcherPerAsset());
         db.addEscrowForAsset(_bundleId, _escrow);
         emit LogEscrowAdded(_bundleId, _escrow);
     }
  
     /// @notice Request a bundle to retire. Only bundle owner can retire
     /// @param _bundleId The id of the bundle
-    function retireBundle(uint _bundleId) external isInitialized() {
+    function retireBundle(uint _bundleId) external {
         EnergyCertificateBundleDB.EnergyCertificateBundle memory bundle = EnergyCertificateBundleDB(db).getBundle(_bundleId);
-        require(bundle.tradableEntity.owner == msg.sender, "retire: wrong sender");
-        require(bundle.certificateSpecific.children.length == 0,"retire: bundle was splitted");
+        require(bundle.tradableEntity.owner == msg.sender);
+        require(bundle.certificateSpecific.children.length == 0);
         if (!bundle.certificateSpecific.retired) {
             retireBundleAuto(_bundleId);
         }
@@ -128,9 +122,9 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
     /// @notice Removes an escrow-address of a bundle
     /// @param _bundleId The id of the bundl
     /// @param _escrow The address to be removed
-    function removeEscrow(uint _bundleId, address _escrow) external isInitialized() {
-        require(EnergyCertificateBundleDB(db).getBundle(_bundleId).tradableEntity.owner == msg.sender,"removeEscrow: wrong account");
-        require(EnergyCertificateBundleDB(db).removeEscrow(_bundleId, _escrow),"removeEscrow: address not found");
+    function removeEscrow(uint _bundleId, address _escrow) external {
+        require(EnergyCertificateBundleDB(db).getBundle(_bundleId).tradableEntity.owner == msg.sender);
+        require(EnergyCertificateBundleDB(db).removeEscrow(_bundleId, _escrow));
         emit LogEscrowRemoved(_bundleId, _escrow);
     }
 
@@ -140,10 +134,9 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
     /// @param _newOwner the new owner of the bundle
     function transferOwnershipByEscrow(uint _bundleId, address _newOwner) 
         external 
-        isInitialized 
     {   
         EnergyCertificateBundleDB.EnergyCertificateBundle memory bundle = EnergyCertificateBundleDB(db).getBundle(_bundleId);
-        require (checkMatcher(bundle.tradableEntity.escrow),"transferEscrow: account not an escrow for that bundle");
+        require (checkMatcher(bundle.tradableEntity.escrow));
         
         emit LogBundleOwnerChanged(_bundleId, bundle.tradableEntity.owner, _newOwner, msg.sender);
         simpleTransferInternal(bundle.tradableEntity.owner,_newOwner, _bundleId);
@@ -215,8 +208,7 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
     /// @param _cO2Saved The amount of CO2 saved
     /// @param _escrow The escrow-addresses
     function createBundle(uint _assetId, uint _powerInW, uint _cO2Saved, address[] _escrow) 
-        external 
-        isInitialized 
+        external  
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
         returns (uint) 
     {
@@ -262,7 +254,7 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
 
     /// @notice Retires a bundle
     /// @param _bundleId The id of the requested bundle
-    function retireBundleAuto(uint _bundleId) internal isInitialized(){
+    function retireBundleAuto(uint _bundleId) internal{
         address[] memory empty; 
         EnergyCertificateBundleDB(db).setBundleEscrow(_bundleId, empty);
         EnergyCertificateBundleDB(db).retireBundle(_bundleId);
@@ -288,9 +280,9 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
     /// @param _bundleId The id of the requested bundle
     /// @param _bundle The bundle where the ownership should be transfered
     function checktransferOwnerInternally(uint _bundleId, EnergyCertificateBundleDB.EnergyCertificateBundle _bundle) internal {
-        require(_bundle.certificateSpecific.children.length == 0,"transferEscrow: bundle already splitted");
-        require(!_bundle.certificateSpecific.retired,"transferEscrow: bundle already retired");
-        require(_bundle.certificateSpecific.ownerChangeCounter < _bundle.certificateSpecific.maxOwnerChanges, "transferEscrow: maximum amount of ownerChanges reached");
+        require(_bundle.certificateSpecific.children.length == 0);
+        require(!_bundle.certificateSpecific.retired);
+        require(_bundle.certificateSpecific.ownerChangeCounter < _bundle.certificateSpecific.maxOwnerChanges);
         uint ownerChangeCounter = _bundle.certificateSpecific.ownerChangeCounter + 1;
         address[] memory empty; 
 

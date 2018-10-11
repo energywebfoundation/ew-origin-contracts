@@ -38,7 +38,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     /// @notice Logs the creation of an event
     event LogCreatedCertificate(uint indexed _certificateId, uint powerInW, address owner);
     event LogCertificateRetired(uint indexed _certificateId, bool _retire);
-    event LogCertificateOwnerChanged(uint indexed _certificateId, address _oldOwner, address _newOwner, address _oldEscrow);
+    // event LogCertificateOwnerChanged(uint indexed _certificateId, address _oldOwner, address _newOwner, address _oldEscrow);
     event LogCertificateSplit(uint indexed _certificateId, uint _childOne, uint _childTwo);
     event LogEscrowRemoved(uint indexed _certificateId, address _escrow);
     event LogEscrowAdded(uint indexed _certificateId, address _escrow);
@@ -86,7 +86,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     {
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_entityId);
         simpleTransferInternal(_from, _to, _entityId);
-        emit LogCertificateOwnerChanged(_entityId, cert.tradableEntity.owner, _to, 0x0);
+     //   emit LogCertificateOwnerChanged(_entityId, cert.tradableEntity.owner, _to, 0x0);
         checktransferOwnerInternally(_entityId, cert);
     }
 
@@ -95,6 +95,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         external functions
     */
 
+    /*
     /// @notice adds a new escrow address to a certificate
     /// @param _certificateId The id of the certificate
     /// @param _escrow The additional escrow address
@@ -105,7 +106,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         db.addEscrowForAsset(_certificateId, _escrow);
         emit LogEscrowAdded(_certificateId, _escrow);
     }
- 
+    */
 
     function buyCertificate(uint _certificateId) 
         external
@@ -134,6 +135,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         }
     }
 
+    /*
     /// @notice Removes an escrow-address of a certifiacte
     /// @param _certificateId The id of the certificate
     /// @param _escrow The address to be removed
@@ -142,6 +144,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         require(CertificateDB(db).removeEscrow(_certificateId, _escrow));
         emit LogEscrowRemoved(_certificateId, _escrow);
     }
+    */
 
     /// @notice Splits a certificate into two smaller ones, where (total - _power = 2ndCertificate)
     /// @param _certificateId The id of the certificate
@@ -161,6 +164,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         
     }
 
+    /*
     /// @notice function to allow an escrow-address to change the ownership of a certificate
     /// @dev this function can only be called by the demandLogic
     /// @param _certificateId the certificate-id
@@ -171,10 +175,11 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         CertificateDB.Certificate memory certificate = CertificateDB(db).getCertificate(_certificateId);
         require (checkMatcher(certificate.tradableEntity.escrow));
         
-        emit LogCertificateOwnerChanged(_certificateId, certificate.tradableEntity.owner, _newOwner, msg.sender);
+     //   emit LogCertificateOwnerChanged(_certificateId, certificate.tradableEntity.owner, _newOwner, msg.sender);
         simpleTransferInternal(certificate.tradableEntity.owner,_newOwner, _certificateId);
         checktransferOwnerInternally(_certificateId, certificate);
     }
+    */
 
     function getCertificate(uint _certificateId) external view returns (CertificateDB.Certificate memory certificate)
     {
@@ -248,7 +253,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_entityId);
         simpleTransferInternal(_from, _to, _entityId);
         safeTransferChecks(_from, _to, _entityId, _data);
-        emit LogCertificateOwnerChanged(_entityId, cert.tradableEntity.owner, _to, 0x0);
+     //   emit LogCertificateOwnerChanged(_entityId, cert.tradableEntity.owner, _to, 0x0);
         checktransferOwnerInternally(_entityId, cert);
     }
     /// @notice Transfers the ownership, checks if the requirements are met
@@ -277,10 +282,11 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
      //       &&(_to != 0x0) 
             && (te.owner != 0x0) 
             && (msg.value == 0) 
-            &&  (te.owner == msg.sender || checkMatcher(te.escrow)|| db.getOwnerToOperators(te.owner, msg.sender) || te.approvedAddress == msg.sender ),"simpleTransferInternal"
-        );
+            &&  (te.owner == msg.sender || checkMatcher(te.escrow)|| db.getOwnerToOperators(te.owner, msg.sender) || te.approvedAddress == msg.sender ));
         
         CertificateDB(db).setTradableEntityOwnerAndAddApproval(_entityId, _to,0x0);
+        CertificateDB(db).removeTokenAndPrice(_entityId);
+
         emit Transfer(_from,_to,_entityId);
       
     }
