@@ -17,14 +17,17 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
+import "../../contracts/Origin/EnergyCertificateBundleDB.sol";
 
 interface EnergyCertificateBundleInterface {
 
     function addEscrowForAsset(uint _bundleId, address _escrow) external;
     function retireBundle(uint _bundleId) external;
     function removeEscrow(uint _bundleId, address _escrow) external;
-    function transferOwnershipByEscrow(uint _bundleId, address _newOwner) external;
-    function getBundle(uint _bundleId) external view returns (uint _assetId, address _owner,uint _powerInW,bool _retired,string _dataLog,uint _coSaved,address[] _escrow,uint _creationTime, uint _parentId,uint[] _children,uint _maxOwnerChanges,uint _ownerChangeCounter);
+   // function transferOwnershipByEscrow(uint _bundleId, address _newOwner) external;
+  //  function getBundle(uint _bundleId) external view returns (uint _assetId, address _owner,uint _powerInW,bool _retired,string _dataLog,uint _coSaved,address[] _escrow,uint _creationTime, uint _parentId,uint[] _children,uint _maxOwnerChanges,uint _ownerChangeCounter);
+    
+    function getBundle(uint _bundleId) external view returns (EnergyCertificateBundleDB.EnergyCertificateBundle);
     function getBundleListLength() external view returns (uint);
     function getBundleOwner(uint _bundleId) external view returns (address);
     function isRetired(uint _bundleId) external view returns (bool);

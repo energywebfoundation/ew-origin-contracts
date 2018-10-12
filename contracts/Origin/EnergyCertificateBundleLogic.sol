@@ -33,7 +33,7 @@ import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol";
 import "../../contracts/Interfaces/EnergyCertificateBundleInterface.sol";
 
-contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateBundleInterface  {
+contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleManagement, TradableEntityLogic, TradableEntityContract {
 
     /// @notice Logs the creation of an event
     event LogCreatedBundle(uint indexed _bundleId, uint powerInW, address owner);
@@ -42,16 +42,15 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
     event LogBundleOwnerChanged(uint indexed _bundleId, address _oldOwner, address _newOwner, address _oldEscrow);
     event LogEscrowRemoved(uint indexed _bundleId, address _escrow);
     event LogEscrowAdded(uint indexed _bundleId, address _escrow);
-    
-    AssetContractLookupInterface public assetContractLookup;
-    
+        
    /// @notice Constructor
     constructor(
         AssetContractLookupInterface _assetContractLookup,
         OriginContractLookupInterface _originContractLookup
     )
         TradableEntityLogic(_assetContractLookup, _originContractLookup) 
-    public { }
+    public {
+    }
 
     /**
         ERC721 functions to overwrite
@@ -128,6 +127,7 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
         emit LogEscrowRemoved(_bundleId, _escrow);
     }
 
+/*
     /// @notice function to allow an escrow-address to change the ownership of a bundle
     /// @dev this function can only be called by the demandLogic
     /// @param _bundleId the bundle-id
@@ -141,10 +141,18 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
         emit LogBundleOwnerChanged(_bundleId, bundle.tradableEntity.owner, _newOwner, msg.sender);
         simpleTransferInternal(bundle.tradableEntity.owner,_newOwner, _bundleId);
         checktransferOwnerInternally(_bundleId, bundle);
-
-
     }
+    */
 
+    function getBundle(uint _bundleId) 
+        external 
+        view 
+        returns (EnergyCertificateBundleDB.EnergyCertificateBundle)
+    {
+        return EnergyCertificateBundleDB(db).getBundle(_bundleId);
+    }
+    
+    /*
     /// @notice Getter for a specific Bundle
     /// @param _bundleId The id of the requested bundle
     /// @return the bundle as single values
@@ -177,6 +185,7 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
         _maxOwnerChanges = bundle.certificateSpecific.maxOwnerChanges;
         _ownerChangeCounter = bundle.certificateSpecific.ownerChangeCounter;
     }
+    */
 
     /// @notice Getter for the length of the list of bundles
     /// @return the length of the array

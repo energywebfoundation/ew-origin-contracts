@@ -39,7 +39,6 @@ describe('EnergyCertificateBundleLogic', () => {
     let userRegistryContract: UserContractLookup;
     let assetRegistry: AssetProducingRegistryLogic;
     let userLogic: UserLogic;
-    let testreceiver: TestReceiver;
 
     const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
 
@@ -110,6 +109,247 @@ describe('EnergyCertificateBundleLogic', () => {
             });
         });
 
+        it('should have the right owner', async () => {
+
+            assert.equal(await energyCertificateBundleLogic.owner(), originRegistryContract.web3Contract._address);
+
+        });
+
+        it('should have the lookup-contracts', async () => {
+
+            assert.equal(await energyCertificateBundleLogic.assetContractLookup(), assetRegistryContract.web3Contract._address);
+            assert.equal(await energyCertificateBundleLogic.userContractLookup(), userRegistryContract.web3Contract._address);
+        });
+
+        it('should the correct DB', async () => {
+
+            assert.equal(await energyCertificateBundleLogic.db(), energyCertificateBundleDB.web3Contract._address);
+        });
+
+        it('should have balances of 0', async () => {
+
+            assert.equal(await energyCertificateBundleLogic.balanceOf(accountDeployment), 0);
+            assert.equal(await energyCertificateBundleLogic.balanceOf(accountAssetOwner), 0);
+            assert.equal(await energyCertificateBundleLogic.balanceOf(accountTrader), 0);
+
+        });
+
+        it('should throw for balance of address 0x0', async () => {
+
+            let failed = false;
+            try {
+                await energyCertificateBundleLogic.balanceOf('0x0000000000000000000000000000000000000000');
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should throw when trying to access a non existing certificate', async () => {
+            let failed = false;
+            try {
+                await energyCertificateBundleLogic.ownerOf(0);
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should throw when trying to call safeTransferFrom a non existing certificate', async () => {
+            let failed = false;
+            try {
+                await energyCertificateBundleLogic.safeTransferFrom(accountDeployment, accountTrader, 0, '0x00', { privateKey: privateKeyDeployment });
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should throw when trying to call safeTransferFrom a non existing certificate', async () => {
+            let failed = false;
+            try {
+                await energyCertificateBundleLogic.safeTransferFrom(accountDeployment, accountTrader, 0, { privateKey: privateKeyDeployment });
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should throw when trying to call transferFrom a non existing certificate', async () => {
+            let failed = false;
+            try {
+                await energyCertificateBundleLogic.transferFrom(accountDeployment, accountTrader, 0, { privateKey: privateKeyDeployment });
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should throw when trying to call approve a non existing certificate', async () => {
+            let failed = false;
+            try {
+                await energyCertificateBundleLogic.approve(accountTrader, 0, { privateKey: privateKeyDeployment });
+            } catch (ex) {
+                failed = true;
+            }
+
+            assert.isTrue(failed);
+        });
+
+        it('should set right roles to users', async () => {
+            await userLogic.setUser(accountTrader, 'trader', { privateKey: privateKeyDeployment });
+            await userLogic.setUser(accountAssetOwner, 'assetOwner', { privateKey: privateKeyDeployment });
+            //   await userLogic.setUser(testreceiver.web3Contract._address, 'testreceiver', { privateKey: privateKeyDeployment });
+
+            //    await userLogic.setRoles(testreceiver.web3Contract._address, 16, { privateKey: privateKeyDeployment });
+            await userLogic.setRoles(accountTrader, 16, { privateKey: privateKeyDeployment });
+            await userLogic.setRoles(accountAssetOwner, 24, { privateKey: privateKeyDeployment });
+        });
+
+        it('should onboard an asset', async () => {
+
+            await assetRegistry.createAsset(assetSmartmeter,
+                accountAssetOwner,
+                2,
+                '0x1000000000000000000000000000000000000005',
+                true,
+                'propertiesDocuementHash',
+                'url',
+                { privateKey: privateKeyDeployment });
+        });
+
+        it('should set MarketLogicAddress', async () => {
+
+            await assetRegistry.setMarketLookupContract(0, originRegistryContract.web3Contract._address, { privateKey: assetOwnerPK });
+
+            assert.equal(await assetRegistry.getMarketLookupContract(0), originRegistryContract.web3Contract._address);
+        });
+
+        it('should return right interface', async () => {
+
+            assert.isTrue(await energyCertificateBundleLogic.supportsInterface('0x80ac58cd'));
+            assert.isFalse(await energyCertificateBundleLogic.supportsInterface('0x80ac58c1'));
+
+        });
+
+        describe('transferFrom', () => {
+
+            it('should have 0 certificates', async () => {
+                assert.equal(await energyCertificateBundleLogic.getBundleListLength(), 0);
+            });
+
+            it('should log energy', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterReadBundle(
+                    0,
+                    100,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    100,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '0',
+                    2: '100',
+                    3: false,
+                    4: '0',
+                    5: '0',
+                    6: '100',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '0',
+                    _newMeterRead: '100',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '0',
+                    _oldCO2OffsetReading: '0',
+                    _newCO2OffsetReading: '100',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '0',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '0',
+                    });
+                }
+            });
+
+            it('should have 1 certificate', async () => {
+                assert.equal(await energyCertificateBundleLogic.getBundleListLength(), 1);
+            });
+
+            it('should return the bundle', async () => {
+                const bundle = await energyCertificateBundleLogic.getBundle(0);
+
+                const bundleSpecific = bundle.certificateSpecific;
+
+                assert.isFalse(bundleSpecific.retired);
+                assert.equal(bundleSpecific.dataLog, 'lastSmartMeterReadFileHash');
+                assert.equal(bundleSpecific.coSaved, 100);
+                assert.equal(bundleSpecific.parentId, 0);
+                assert.equal(bundleSpecific.children.length, 0);
+                assert.equal(bundleSpecific.maxOwnerChanges, 2);
+                assert.equal(bundleSpecific.ownerChangeCounter, 0);
+
+                const tradableEntity = bundle.tradableEntity;
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005']);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should hava balance of 1 for assetOwner address', async () => {
+
+                assert.equal(await energyCertificateBundleLogic.balanceOf(accountAssetOwner), 1);
+
+            });
+
+            it('should return the correct owner', async () => {
+
+                assert.equal(await energyCertificateBundleLogic.ownerOf(0), accountAssetOwner);
+
+            });
+
+            it('should return correct approvedFor', async () => {
+
+                assert.equal(await energyCertificateBundleLogic.getApproved(0), '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should return correct isApprovedForAll', async () => {
+
+                assert.isFalse(await energyCertificateBundleLogic.isApprovedForAll(accountAssetOwner, accountDeployment));
+                assert.isFalse(await energyCertificateBundleLogic.isApprovedForAll(accountAssetOwner, accountTrader));
+
+            });
+
+
+        });
 
     });
 });
