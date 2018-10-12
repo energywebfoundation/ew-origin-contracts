@@ -52,7 +52,7 @@ contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityCont
 
     /// @notice Adds a new escrow address to an existing bundle
     /// @param _escrow The new escrow-address
-    function addEscrowForAsset(uint _entityId, address _escrow) external onlyOwner {
+    function addEscrowForCertificate(uint _entityId, address _escrow) external onlyOwner {
         bundleList[_entityId].tradableEntity.escrow.push(_escrow);
     }
 

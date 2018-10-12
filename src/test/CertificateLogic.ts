@@ -901,8 +901,8 @@ describe('CertificateLogic', () => {
 
             it('should be able to transfer token again', async () => {
                 const tx = await testreceiver.safeTransferFrom(testreceiver.web3Contract._address,
-                                                               testreceiver.web3Contract._address,
-                                                               3, '', {
+                    testreceiver.web3Contract._address,
+                    3, '', {
                         privateKey: traderPK,
                     });
 
@@ -1161,8 +1161,8 @@ describe('CertificateLogic', () => {
 
             it('should be able to transfer token again', async () => {
                 const tx = await testreceiver.safeTransferFrom(testreceiver.web3Contract._address,
-                                                               testreceiver.web3Contract._address,
-                                                               4, '0x01', {
+                    testreceiver.web3Contract._address,
+                    4, '0x01', {
                         privateKey: traderPK,
                     });
 
@@ -1228,7 +1228,7 @@ describe('CertificateLogic', () => {
             it('should set an escrow to the asset', async () => {
                 await assetRegistry.addMatcher(0, matcherAccount, { privateKey: assetOwnerPK });
                 assert.deepEqual(await assetRegistry.getMatcher(0),
-                                 ['0x1000000000000000000000000000000000000005', matcherAccount]);
+                    ['0x1000000000000000000000000000000000000005', matcherAccount]);
             });
 
             it('should return correct approval', async () => {
@@ -2759,6 +2759,331 @@ describe('CertificateLogic', () => {
                 assert.deepEqual(tradableEntity.escrow, []);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
+            });
+
+            it('should log energy again (certificate #16)', async () => {
+
+                const tx = await assetRegistry.saveSmartMeterRead(
+                    0,
+                    1500,
+                    false,
+                    'lastSmartMeterReadFileHash',
+                    1500,
+                    false,
+                    { privateKey: assetSmartmeterPK });
+
+                const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
+
+                assert.equal(event.event, 'LogNewMeterRead');
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '1400',
+                    2: '1500',
+                    3: false,
+                    4: '100',
+                    5: '1400',
+                    6: '1500',
+                    7: false,
+                    _assetId: '0',
+                    _oldMeterRead: '1400',
+                    _newMeterRead: '1500',
+                    _smartMeterDown: false,
+                    _certificatesCreatedForWh: '100',
+                    _oldCO2OffsetReading: '1400',
+                    _newCO2OffsetReading: '1500',
+                    _serviceDown: false,
+                });
+
+                if (isGanache) {
+                    const allTransferEvents = await certificateLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
+
+                    assert.equal(allTransferEvents.length, 1);
+
+                    assert.equal(allTransferEvents.length, 1);
+                    assert.equal(allTransferEvents[0].event, 'Transfer');
+                    assert.deepEqual(allTransferEvents[0].returnValues, {
+                        0: '0x0000000000000000000000000000000000000000',
+                        1: accountAssetOwner,
+                        2: '16',
+                        _from: '0x0000000000000000000000000000000000000000',
+                        _to: accountAssetOwner,
+                        _tokenId: '16',
+                    });
+                }
+                assert.equal(await certificateLogic.getCertificateListLength(), 17);
+                assert.equal(await certificateLogic.balanceOf(accountAssetOwner), 4);
+                assert.equal(await certificateLogic.balanceOf(accountTrader), 4);
+                assert.equal(await certificateLogic.balanceOf(testreceiver.web3Contract._address), 8);
+            });
+
+            it('should return the correct tradableEntity (Cert#16)', async () => {
+
+                const tradableEntity = await certificateLogic.getTradableEntity(16);
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005', matcherAccount]);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should throw when trying to remove not existing escrow as admin', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000004', { privateKey: privateKeyDeployment });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should throw when trying to remove not existing escrow as trader', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000004', { privateKey: traderPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should throw when trying to remove not existing escrow as owner', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000004', { privateKey: assetOwnerPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should throw when trying to remove existing escrow as admin', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000005', { privateKey: privateKeyDeployment });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should throw when trying to remove existing escrow as trader', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000005', { privateKey: traderPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should remove existing escrow', async () => {
+
+                await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000005', { privateKey: assetOwnerPK });
+
+            });
+
+            it('should return the correct tradableEntity (Cert#16)', async () => {
+
+                const tradableEntity = await certificateLogic.getTradableEntity(16);
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, [matcherAccount]);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should return the certificate #16', async () => {
+                const cert = await certificateLogic.getCertificate(16);
+
+                const certificateSpecific = cert.certificateSpecific;
+
+                assert.isFalse(certificateSpecific.retired);
+                assert.equal(certificateSpecific.dataLog, 'lastSmartMeterReadFileHash');
+                assert.equal(certificateSpecific.coSaved, 100);
+                assert.equal(certificateSpecific.parentId, 16);
+                assert.equal(certificateSpecific.children.length, 0);
+                assert.equal(certificateSpecific.maxOwnerChanges, 2);
+                assert.equal(certificateSpecific.ownerChangeCounter, 0);
+
+                const tradableEntity = cert.tradableEntity;
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, [matcherAccount]);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should remove remaining escrow', async () => {
+
+                await certificateLogic.removeEscrow(16, matcherAccount, { privateKey: assetOwnerPK });
+
+            });
+
+            it('should return the correct tradableEntity (Cert#16)', async () => {
+
+                const tradableEntity = await certificateLogic.getTradableEntity(16);
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, []);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should return the certificate #16', async () => {
+                const cert = await certificateLogic.getCertificate(16);
+
+                const certificateSpecific = cert.certificateSpecific;
+
+                assert.isFalse(certificateSpecific.retired);
+                assert.equal(certificateSpecific.dataLog, 'lastSmartMeterReadFileHash');
+                assert.equal(certificateSpecific.coSaved, 100);
+                assert.equal(certificateSpecific.parentId, 16);
+                assert.equal(certificateSpecific.children.length, 0);
+                assert.equal(certificateSpecific.maxOwnerChanges, 2);
+                assert.equal(certificateSpecific.ownerChangeCounter, 0);
+
+                const tradableEntity = cert.tradableEntity;
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, []);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should throw when trying to add escrow as trader', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.addEscrowForCertificate(16, '0x1000000000000000000000000000000000000000', { privateKey: traderPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should throw when trying to add escrow as admin', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.addEscrowForCertificate(16, '0x1000000000000000000000000000000000000000', { privateKey: privateKeyDeployment });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should add escrow as owner of cert', async () => {
+
+                await certificateLogic.addEscrowForCertificate(16, '0x1000000000000000000000000000000000000000', { privateKey: assetOwnerPK });
+
+            });
+
+            it('should add more escrows as owner of cert', async () => {
+
+                for (let i = 1; i < 10; i++) {
+                    await certificateLogic.addEscrowForCertificate(16, '0x100000000000000000000000000000000000000' + i, { privateKey: assetOwnerPK });
+                }
+            });
+
+            it('should return the correct tradableEntity (Cert#16)', async () => {
+
+                const tradableEntity = await certificateLogic.getTradableEntity(16);
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000000',
+                    '0x1000000000000000000000000000000000000001',
+                    '0x1000000000000000000000000000000000000002',
+                    '0x1000000000000000000000000000000000000003',
+                    '0x1000000000000000000000000000000000000004',
+                    '0x1000000000000000000000000000000000000005',
+                    '0x1000000000000000000000000000000000000006',
+                    '0x1000000000000000000000000000000000000007',
+                    '0x1000000000000000000000000000000000000008',
+                    '0x1000000000000000000000000000000000000009']);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should return the certificate #16', async () => {
+                const cert = await certificateLogic.getCertificate(16);
+
+                const certificateSpecific = cert.certificateSpecific;
+
+                assert.isFalse(certificateSpecific.retired);
+                assert.equal(certificateSpecific.dataLog, 'lastSmartMeterReadFileHash');
+                assert.equal(certificateSpecific.coSaved, 100);
+                assert.equal(certificateSpecific.parentId, 16);
+                assert.equal(certificateSpecific.children.length, 0);
+                assert.equal(certificateSpecific.maxOwnerChanges, 2);
+                assert.equal(certificateSpecific.ownerChangeCounter, 0);
+
+                const tradableEntity = cert.tradableEntity;
+
+                assert.equal(tradableEntity.assetId, 0);
+                assert.equal(tradableEntity.owner, accountAssetOwner);
+                assert.equal(tradableEntity.powerInW, 100);
+                assert.equal(tradableEntity.acceptedToken, '0x0000000000000000000000000000000000000000');
+                assert.equal(tradableEntity.onChainDirectPurchasePrice, 0);
+                assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000000',
+                    '0x1000000000000000000000000000000000000001',
+                    '0x1000000000000000000000000000000000000002',
+                    '0x1000000000000000000000000000000000000003',
+                    '0x1000000000000000000000000000000000000004',
+                    '0x1000000000000000000000000000000000000005',
+                    '0x1000000000000000000000000000000000000006',
+                    '0x1000000000000000000000000000000000000007',
+                    '0x1000000000000000000000000000000000000008',
+                    '0x1000000000000000000000000000000000000009']);
+                assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
+
+            });
+
+            it('should throw when trying to add too much escrow', async () => {
+
+                let failed = false;
+                try {
+                    await certificateLogic.addEscrowForCertificate(16, '0x1000000000000000000000000000000000000010', { privateKey: assetOwnerPK });
+                } catch (ex) {
+                    failed = true;
+                }
+
+                assert.isTrue(failed);
             });
 
         });

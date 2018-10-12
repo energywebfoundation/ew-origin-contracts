@@ -28,11 +28,11 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface {
     Updatable public originLogicRegistry;
     AssetContractLookupInterface public assetContractLookup;
 
-    uint public maxMatcherPerAsset;
+    uint public maxMatcherPerCertificate;
 
     /// @notice The constructor 
     constructor() Owned(msg.sender) public{ 
-        maxMatcherPerAsset = 10;
+        maxMatcherPerCertificate = 10;
     } 
 
     /// @notice function to initialize the contracts, setting the needed contract-addresses
@@ -57,11 +57,11 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface {
         originLogicRegistry.init(_originDB, msg.sender);
     }
 
-    function setMaxMatcherPerAsset(uint _new)
+    function setMaxMatcherPerCertificate(uint _new)
         external 
         onlyOwner 
     {
-        maxMatcherPerAsset = _new;
+        maxMatcherPerCertificate = _new;
     }
 
    
@@ -86,8 +86,8 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface {
         return assetContractLookup;
     }
 
-    function maxMatcherPerAsset() external view returns (uint){
-        return maxMatcherPerAsset;
+    function maxMatcherPerCertificate() external view returns (uint){
+        return maxMatcherPerCertificate;
     }
 
 

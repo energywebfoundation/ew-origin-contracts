@@ -23,7 +23,7 @@ import "../../contracts/Origin/TradableEntityContract.sol";
 interface EnergyInterface {
 
     function addApproval(uint _entityId, address _approve) external;
-    function addEscrowForAsset(uint _entityId, address _address) external;
+    function addEscrowForCertificate(uint _entityId, address _address) external;
  //   function createEnergy(uint _assetId, address _owner, uint _powerInW, address _acceptedToken, uint _onChainDirectPurchasePrice, address[] _escrow) external returns (uint);
     function setOwnerToOperators(address _company, address _escrow, bool _allowed) external;
     function changeOwner(address _newOwner) external;

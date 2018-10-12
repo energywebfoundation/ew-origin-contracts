@@ -95,18 +95,18 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         external functions
     */
 
-    /*
+    
     /// @notice adds a new escrow address to a certificate
     /// @param _certificateId The id of the certificate
     /// @param _escrow The additional escrow address
-    function addEscrowForAsset(uint _certificateId, address _escrow) external {
+    function addEscrowForCertificate(uint _certificateId, address _escrow) external {
         require(
             (CertificateDB(db).getTradableEntityOwner(_certificateId) == msg.sender)
-            && (CertificateDB(db).getTradableEntityEscrowLength(_certificateId) < OriginContractLookupInterface(owner).maxMatcherPerAsset()));
-        db.addEscrowForAsset(_certificateId, _escrow);
+            && (CertificateDB(db).getTradableEntityEscrowLength(_certificateId) < OriginContractLookupInterface(owner).maxMatcherPerCertificate()));
+        db.addEscrowForCertificate(_certificateId, _escrow);
         emit LogEscrowAdded(_certificateId, _escrow);
     }
-    */
+    
 
     function buyCertificate(uint _certificateId) 
         external
@@ -135,7 +135,6 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         }
     }
 
-    /*
     /// @notice Removes an escrow-address of a certifiacte
     /// @param _certificateId The id of the certificate
     /// @param _escrow The address to be removed
@@ -144,7 +143,6 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         require(CertificateDB(db).removeEscrow(_certificateId, _escrow));
         emit LogEscrowRemoved(_certificateId, _escrow);
     }
-    */
 
     /// @notice Splits a certificate into two smaller ones, where (total - _power = 2ndCertificate)
     /// @param _certificateId The id of the certificate
@@ -163,23 +161,6 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         emit LogCertificateSplit(_certificateId, childIdOne,childIdTwo);
         
     }
-
-    /*
-    /// @notice function to allow an escrow-address to change the ownership of a certificate
-    /// @dev this function can only be called by the demandLogic
-    /// @param _certificateId the certificate-id
-    /// @param _newOwner the new owner of the certificate
-    function transferOwnershipByEscrow(uint _certificateId, address _newOwner) 
-        external 
-    {   
-        CertificateDB.Certificate memory certificate = CertificateDB(db).getCertificate(_certificateId);
-        require (checkMatcher(certificate.tradableEntity.escrow));
-        
-     //   emit LogCertificateOwnerChanged(_certificateId, certificate.tradableEntity.owner, _newOwner, msg.sender);
-        simpleTransferInternal(certificate.tradableEntity.owner,_newOwner, _certificateId);
-        checktransferOwnerInternally(_certificateId, certificate);
-    }
-    */
 
     function getCertificate(uint _certificateId) external view returns (CertificateDB.Certificate memory certificate)
     {

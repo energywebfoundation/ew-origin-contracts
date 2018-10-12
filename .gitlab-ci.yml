@@ -38,7 +38,7 @@ test-parity:
 
 test-parity-POA:
   tags:
-    - short-jobs
+    - long-jobs
   stage: test
   services:
     - name: docker.slock.it/build-images/parity:v1.11.8-tobalaba-poa

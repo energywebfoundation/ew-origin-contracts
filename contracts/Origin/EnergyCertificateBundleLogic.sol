@@ -103,8 +103,8 @@ contract EnergyCertificateBundleLogic is TradableEntityLogic, EnergyCertificateB
     {
         EnergyCertificateBundleDB.EnergyCertificateBundle memory bundle = EnergyCertificateBundleDB(db).getBundle(_bundleId);
         require(bundle.tradableEntity.owner == msg.sender);
-        require(bundle.tradableEntity.escrow.length < OriginContractLookupInterface(owner).maxMatcherPerAsset());
-        db.addEscrowForAsset(_bundleId, _escrow);
+        require(bundle.tradableEntity.escrow.length < OriginContractLookupInterface(owner).maxMatcherPerCertificate());
+        db.addEscrowForCertificate(_bundleId, _escrow);
         emit LogEscrowAdded(_bundleId, _escrow);
     }
  

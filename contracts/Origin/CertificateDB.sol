@@ -63,7 +63,7 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
 
 /// @notice Adds a new escrow address to an existing certificate
     /// @param _escrow The new escrow-address
-    function addEscrowForAsset(uint _entityId, address _escrow) external onlyOwner {
+    function addEscrowForCertificate(uint _entityId, address _escrow) external onlyOwner {
         certificateList[_entityId].tradableEntity.escrow.push(_escrow);
     }
 
