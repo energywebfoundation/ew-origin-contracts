@@ -27,6 +27,7 @@ import "../../contracts/Interfaces/ERC165.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetProducingInterface.sol";
 import "ew-asset-registry-contracts/Asset/AssetProducingRegistryDB.sol";
 import "../../contracts/Origin/EnergyDB.sol";
+import "../../contracts/Interfaces/TradableEntityDBInterface.sol";
 import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
 import "../../contracts/Interfaces/TradableEntityInterface.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol";
@@ -43,7 +44,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
 
     modifier onlyEntityOwner(uint _entityId) {
-        require(db.getTradableEntityOwner(_entityId) == msg.sender);
+        require(TradableEntityDBInterface(db).getTradableEntityOwner(_entityId) == msg.sender);
         _;
     }
 
@@ -65,11 +66,11 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
 
     function balanceOf(address _owner) external view returns (uint256){
         require(_owner != 0x0);
-        return db.getBalanceOf(_owner);
+        return TradableEntityDBInterface(db).getBalanceOf(_owner);
     }
 
     function ownerOf(uint256 _entityId) external view returns (address){
-        address owner = db.getTradableEntityOwner(_entityId);
+        address owner = TradableEntityDBInterface(db).getTradableEntityOwner(_entityId);
         require(owner != 0x0);
         return owner;
     }
@@ -92,23 +93,23 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     function approve(address _approved, uint256 _entityId) external payable {
         TradableEntityContract.TradableEntity memory te = db.getTradableEntity(_entityId);
         require(te.owner == msg.sender || checkMatcher(te.escrow));
-        db.addApproval(_entityId, _approved);
+        TradableEntityDBInterface(db).addApproval(_entityId, _approved);
 
         emit Approval(msg.sender,_approved, _entityId);
     }
 
 
     function setApprovalForAll(address _escrow, bool _approved) external {
-        db.setOwnerToOperators(msg.sender, _escrow, _approved);
+        TradableEntityDBInterface(db).setOwnerToOperators(msg.sender, _escrow, _approved);
         emit ApprovalForAll(msg.sender, _escrow, _approved);
     }
 
     function getApproved(uint _tokenId) external view returns (address) {
-        return db.getApproved(_tokenId);
+        return TradableEntityDBInterface(db).getApproved(_tokenId);
     }
 
     function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
-        return db.getOwnerToOperators(_owner, _operator);
+        return TradableEntityDBInterface(db).getOwnerToOperators(_owner, _operator);
     }
 
      /**
@@ -123,18 +124,18 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     }
 
     function setTradableEntityOwner(uint _entityId, address _owner) onlyEntityOwner(_entityId) userHasRole(Role.Trader, _owner) external {
-        db.setTradableEntityOwner(_entityId, _owner);
+         TradableEntityDBInterface(db).setTradableEntityOwner(_entityId, _owner);
     }
 
     function setTradableToken(uint _entityId, address _tokenContract) 
         onlyEntityOwner(_entityId) 
         external 
     {
-        db.setTradableToken(_entityId, _tokenContract);
+        TradableEntityDBInterface(db).setTradableToken(_entityId, _tokenContract);
     }
 
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) onlyEntityOwner(_entityId) external {
-        db.setOnChainDirectPurchasePrice(_entityId, _price);
+        TradableEntityDBInterface(db).setOnChainDirectPurchasePrice(_entityId, _price);
     }
 
     /// @notice Updates the logic contract
@@ -143,15 +144,15 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         external
         onlyOwner    
     {
-        db.changeOwner(_newLogic);
+        Owned(db).changeOwner(_newLogic);
     }
 
     function getTradableToken(uint _entityId) external view returns (address){
-        return db.getTradableToken(_entityId);
+        return TradableEntityDBInterface(db).getTradableToken(_entityId);
     }
 
     function getOnChainDirectPurchasePrice(uint _entityId) external view returns (uint) {
-        return db.getOnChainDirectPurchasePrice(_entityId);
+        return TradableEntityDBInterface(db).getOnChainDirectPurchasePrice(_entityId);
     }
    
     function getTradableEntity(uint _entityId)  
@@ -189,11 +190,11 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
             (te.owner == _from) &&(_to != 0x0) && (te.owner != 0x0) && (msg.value == 0) && 
             (te.owner == msg.sender
             || checkMatcher(te.escrow)
-            || db.getOwnerToOperators(te.owner, msg.sender)
+            || TradableEntityDBInterface(db).getOwnerToOperators(te.owner, msg.sender)
             || te.approvedAddress == msg.sender
         ));
         
-        db.setTradableEntityOwnerAndAddApproval(_entityId, _to,0x0);
+        TradableEntityDBInterface(db).setTradableEntityOwnerAndAddApproval(_entityId, _to,0x0);
         emit Transfer(_from,_to,_entityId);
       
     }

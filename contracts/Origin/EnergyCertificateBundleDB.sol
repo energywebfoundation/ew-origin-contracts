@@ -20,13 +20,13 @@ pragma experimental ABIEncoderV2;
 /// @title The Database contract for the Certificate of Origin list
 /// @notice This contract only provides getter and setter methods
 
-import "ew-utils-general-contracts/Msc/Owned.sol";
 import "../../contracts/Origin/TradableEntityContract.sol";
 import "../../contracts/Interfaces/EnergyInterface.sol";
 import "../../contracts/Origin/EnergyDB.sol";
 import "../../contracts/Origin/CertificateDB.sol";
+import "../../contracts/Origin/TradableEntityDB.sol";
 
-contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityContract {
+contract EnergyCertificateBundleDB is TradableEntityDB, EnergyInterface, TradableEntityContract {
 
     struct EnergyCertificateBundle {
         TradableEntity tradableEntity;
@@ -36,19 +36,13 @@ contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityCont
 
     /// @notice An array containing all created bundles
     EnergyCertificateBundle[] private bundleList;
-    mapping(address => uint) private tokenAmountMapping;
-    mapping(address => mapping (address => bool)) ownerToOperators;
 
     /// @notice Constructor
-    /// @param _bundleLogic The address of the corresbonding logic contract
-    constructor(address _bundleLogic) Owned(_bundleLogic) public { }
+    constructor(address _certificateLogic) TradableEntityDB(_certificateLogic) public { }
 
     /**
         external functions
     */
-    function addApproval(uint _entityId, address _approve) public onlyOwner {
-        bundleList[_entityId].tradableEntity.approvedAddress = _approve;
-    }
 
     /// @notice Adds a new escrow address to an existing bundle
     /// @param _escrow The new escrow-address
@@ -66,21 +60,6 @@ contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityCont
         bundleList[_bundleId].tradableEntity.escrow = _escrow;
     }
 
-    /// @notice Sets the owner of a bundle
-    /// @param _entityId The array position in which the bundle is stored
-    /// @param _owner The address of the new owner
-    function setTradableEntityOwner(uint _entityId, address _owner) public onlyOwner {
-        bundleList[_entityId].tradableEntity.owner = _owner;
-    }
-
-    function setTradableToken(uint _entityId, address _token) external onlyOwner {
-        bundleList[_entityId].tradableEntity.acceptedToken = _token;
-    }
-
-    function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external onlyOwner {
-        bundleList[_entityId].tradableEntity.onChainDirectPurchasePrice = _price;
-    }
-
     /// @notice Changes the OwnerChangeCounter of an existing bundle
     /// @param _bundleId The array position in which the parent certificate is stored
     function setOwnerChangeCounter(uint _bundleId, uint _newCounter) external onlyOwner {
@@ -88,9 +67,6 @@ contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityCont
         certificate.certificateSpecific.ownerChangeCounter = _newCounter;
     }
 
-    function setOwnerToOperators(address _company, address _escrow, bool _allowed) external onlyOwner {
-        ownerToOperators[_company][_escrow] = _allowed;
-    }
 
     /// @notice Removes an escrow-address of an existing bundle
     /// @param _bundleId The array position in which the parent certificate is stored
@@ -115,16 +91,6 @@ contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityCont
         bundle.certificateSpecific.retired = true;
     }
 
-
-    function getApproved(uint256 _entityId) onlyOwner external view returns (address){
-        return bundleList[_entityId].tradableEntity.approvedAddress;
-    }
-
-    function getBalanceOf(address _owner) external onlyOwner view returns (uint){
-        return tokenAmountMapping[_owner];
-    }
-    
-
     /// @notice Returns the certificate that corresponds to the given array id
     /// @param _bundleID The array position in which the certificate is stored
     /// @return Certificate as struct
@@ -143,30 +109,11 @@ contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityCont
         return bundleList.length;
     }  
 
-    function getOnChainDirectPurchasePrice(uint _entityId) external view returns (uint){
-        return bundleList[_entityId].tradableEntity.onChainDirectPurchasePrice;
-    }
-
-    function getOwnerToOperators(address _company, address _escrow) onlyOwner external view returns (bool){
-        return ownerToOperators[_company][_escrow];
-    }
-    function getTradableEntity(uint _entityId) external view returns (TradableEntityContract.TradableEntity _entity){
+    
+    function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity _entity){
         return bundleList[_entityId].tradableEntity;
     }
 
-    function getTradableEntityOwner(uint _entityId) external view returns (address){
-        return bundleList[_entityId].tradableEntity.owner;
-    }
-    
-
-    function getTradableToken(uint _entityId) external view returns (address) {
-        return bundleList[_entityId].tradableEntity.acceptedToken;
-    }
-
-    function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external onlyOwner{
-        setTradableEntityOwner(_entityId, _owner);
-        addApproval(_entityId, _approve);
-    }
     /**
         public functions
     */
@@ -190,5 +137,13 @@ contract EnergyCertificateBundleDB is EnergyInterface, Owned, TradableEntityCont
                 _certificateSpecific
             )
         ) - 1;
+
+        tokenAmountMapping[_tradableEntity.owner]++;
+
     }  
+
+
+    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public onlyOwner {
+        bundleList[_entityId].tradableEntity = _entity;
+    }
 }

@@ -111,7 +111,7 @@ contract EnergyDB is EnergyInterface, Owned, TradableEntityContract {
         return energyList[_entityId].tradableEntity.onChainDirectPurchasePrice;
     }
 
-    function getTradableEntity(uint _entityId) onlyOwner external view returns (TradableEntityContract.TradableEntity _entity){
+    function getTradableEntity(uint _entityId) onlyOwner public view returns (TradableEntityContract.TradableEntity _entity){
         return energyList[_entityId].tradableEntity;
     }
 

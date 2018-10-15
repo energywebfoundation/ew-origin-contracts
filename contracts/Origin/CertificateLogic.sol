@@ -31,6 +31,7 @@ import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol"
 import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
 import "../../contracts/Interfaces/CertificateInterface.sol";
 import "../../contracts/Interfaces/ERC20Interface.sol";
+import "../../contracts/Interfaces/TradableEntityDBInterface.sol";
 
 
 contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntityLogic, TradableEntityContract {
@@ -116,7 +117,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         require(cert.tradableEntity.acceptedToken != address(0x0));
 
         require(ERC20Interface(cert.tradableEntity.acceptedToken).transferFrom(msg.sender, cert.tradableEntity.owner, cert.tradableEntity.onChainDirectPurchasePrice));
-        db.addApproval(_certificateId, msg.sender);
+        TradableEntityDBInterface(db).addApproval(_certificateId, msg.sender);
 
         simpleTransferInternal(cert.tradableEntity.owner, msg.sender, _certificateId);
       //  emit Transfer(cert.tradableEntity.owner, msg.sender, _certificateId);
@@ -263,7 +264,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
      //       &&(_to != 0x0) 
             && (te.owner != 0x0) 
             && (msg.value == 0) 
-            &&  (te.owner == msg.sender || checkMatcher(te.escrow)|| db.getOwnerToOperators(te.owner, msg.sender) || te.approvedAddress == msg.sender ));
+            &&  (te.owner == msg.sender || checkMatcher(te.escrow)|| TradableEntityDBInterface(db).getOwnerToOperators(te.owner, msg.sender) || te.approvedAddress == msg.sender ));
         
         CertificateDB(db).setTradableEntityOwnerAndAddApproval(_entityId, _to,0x0);
         CertificateDB(db).removeTokenAndPrice(_entityId);

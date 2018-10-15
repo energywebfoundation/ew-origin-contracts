@@ -20,12 +20,12 @@ pragma experimental ABIEncoderV2;
 /// @title The Database contract for the Certificate of Origin list
 /// @notice This contract only provides getter and setter methods
 
-import "ew-utils-general-contracts/Msc/Owned.sol";
 import "../../contracts/Origin/TradableEntityContract.sol";
 import "../../contracts/Interfaces/EnergyInterface.sol";
 import "../../contracts/Origin/EnergyDB.sol";
+import "../../contracts/Origin/TradableEntityDB.sol";
 
-contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
+contract CertificateDB is TradableEntityDB, EnergyInterface, TradableEntityContract {
 
     struct Certificate {
         TradableEntity tradableEntity;
@@ -45,20 +45,14 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
 
     /// @notice An array containing all created certificates
     Certificate[] private certificateList;
-    mapping(address => uint) private tokenAmountMapping;
-    mapping(address => mapping (address => bool)) ownerToOperators;
 
     /// @notice Constructor
     /// @param _certificateLogic The address of the corresbonding logic contract
-    constructor(address _certificateLogic) Owned(_certificateLogic) public { }
+    constructor(address _certificateLogic) TradableEntityDB(_certificateLogic) public { }
 
     /**
         external functions
     */
-    function addApproval(uint _entityId, address _approve) public onlyOwner {
-        certificateList[_entityId].tradableEntity.approvedAddress = _approve;
-    }
-
    
 
 /// @notice Adds a new escrow address to an existing certificate
@@ -67,37 +61,6 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         certificateList[_entityId].tradableEntity.escrow.push(_escrow);
     }
 
-
-
-    /// @notice Sets the owner of a certificate
-    /// @param _entityId The array position in which the certificate is stored
-    /// @param _owner The address of the new owner
-    function setTradableEntityOwner(uint _entityId, address _owner) public onlyOwner {
-        address oldOwner = certificateList[_entityId].tradableEntity.owner;
-        certificateList[_entityId].tradableEntity.owner = _owner;
-        changeCertOwner(oldOwner,_owner);
-    }
-
-    function setTradableToken(uint _entityId, address _token) external onlyOwner {
-        certificateList[_entityId].tradableEntity.acceptedToken = _token;
-    }
-
-    function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external onlyOwner {
-        certificateList[_entityId].tradableEntity.onChainDirectPurchasePrice = _price;
-    }
-
-  
-
-    function setOwnerToOperators(address _company, address _escrow, bool _allowed) external onlyOwner {
-        ownerToOperators[_company][_escrow] = _allowed;
-    }
-
-    function removeTokenAndPrice(uint _entityId) external onlyOwner {
-        certificateList[_entityId].tradableEntity.onChainDirectPurchasePrice = 0;
-        certificateList[_entityId].tradableEntity.acceptedToken = 0;
-
-    }
-    
     /// @notice Removes an escrow-address of an existing certificate
     /// @param _certificateId The array position in which the parent certificate is stored
     /// @param _escrow the escrow-address to be removed
@@ -112,7 +75,6 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
             }
         }
     }
-    
 
     function setOwnerChangeCounterResetEscrow(uint _certificateId, uint _newCounter) external onlyOwner {
         setOwnerChangeCounter(_certificateId, _newCounter);
@@ -127,16 +89,6 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         certificate.certificateSpecific.retired = true;
         certificate.tradableEntity.escrow = new address[](0);
     }
-
-
-    function getApproved(uint256 _entityId) onlyOwner external view returns (address){
-        return certificateList[_entityId].tradableEntity.approvedAddress;
-    }
-
-    function getBalanceOf(address _owner) external onlyOwner view returns (uint){
-        return tokenAmountMapping[_owner];
-    }
-    
 
     /// @notice Returns the certificate that corresponds to the given array id
     /// @param _certificateId The array position in which the certificate is stored
@@ -163,30 +115,6 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         return certificateList[_certificateId].certificateSpecific.retired;
     }
 
-    function getOnChainDirectPurchasePrice(uint _entityId) external view returns (uint){
-        return certificateList[_entityId].tradableEntity.onChainDirectPurchasePrice;
-    }
-
-    function getOwnerToOperators(address _company, address _escrow) onlyOwner external view returns (bool){
-        return ownerToOperators[_company][_escrow];
-    }
-    function getTradableEntity(uint _entityId) external view returns (TradableEntityContract.TradableEntity _entity){
-        return certificateList[_entityId].tradableEntity;
-    }
-
-    function getTradableToken(uint _entityId) external view returns (address) {
-        return certificateList[_entityId].tradableEntity.acceptedToken;
-    }
-
-    function getTradableEntityOwner(uint _entityId) external view returns (address){
-        return certificateList[_entityId].tradableEntity.owner;
-    }
-    
-    function getTradableEntityEscrowLength(uint _entityId) external view returns (uint){
-        return certificateList[_entityId].tradableEntity.escrow.length;
-    }
-
-
     /**
         public functions
     */
@@ -212,11 +140,6 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         ) - 1;
         tokenAmountMapping[_tradableEntity.owner]++;
     }    
-
-    function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external onlyOwner{
-        setTradableEntityOwner(_entityId, _owner);
-        addApproval(_entityId, _approve);
-    }
 
     /// @notice Adds a certificate-Id as child to an existing certificate
     /// @param _certificateId The array position in which the parent certificate is stored
@@ -369,10 +292,16 @@ contract CertificateDB is EnergyInterface, Owned, TradableEntityContract {
         certificateList[_certificateId].tradableEntity.escrow = _escrow;
     }
 
-    function changeCertOwner(address _old, address _new) internal {
-        require(tokenAmountMapping[_old] > 0);
-        tokenAmountMapping[_old]--;
-        tokenAmountMapping[_new]++;
-
+    function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity){
+        require(msg.sender == owner || msg.sender == address(this));
+        return certificateList[_entityId].tradableEntity;
     }
+
+    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public  {
+        require(msg.sender == owner || msg.sender == address(this));
+
+        certificateList[_entityId].tradableEntity = _entity;
+    }
+
+
 }

@@ -74,7 +74,7 @@ describe('EnergyCertificateBundleLogic', () => {
             const userContracts = await migrateUserRegistryContracts(web3);
 
             userLogic = new UserLogic((web3 as any),
-                userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+                                      userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
 
             await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
@@ -214,13 +214,13 @@ describe('EnergyCertificateBundleLogic', () => {
         it('should onboard an asset', async () => {
 
             await assetRegistry.createAsset(assetSmartmeter,
-                accountAssetOwner,
-                2,
-                '0x1000000000000000000000000000000000000005',
-                true,
-                'propertiesDocuementHash',
-                'url',
-                { privateKey: privateKeyDeployment });
+                                            accountAssetOwner,
+                                            2,
+                                            '0x1000000000000000000000000000000000000005',
+                                            true,
+                                            'propertiesDocuementHash',
+                                            'url',
+                                            { privateKey: privateKeyDeployment });
         });
 
         it('should set MarketLogicAddress', async () => {
@@ -323,7 +323,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
             });
 
-            it('should hava balance of 1 for assetOwner address', async () => {
+            it('should have a balance of 1 for assetOwner address', async () => {
 
                 assert.equal(await energyCertificateBundleLogic.balanceOf(accountAssetOwner), 1);
 
@@ -347,7 +347,6 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.isFalse(await energyCertificateBundleLogic.isApprovedForAll(accountAssetOwner, accountTrader));
 
             });
-
 
         });
 
