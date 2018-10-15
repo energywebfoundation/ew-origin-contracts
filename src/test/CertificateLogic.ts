@@ -901,8 +901,8 @@ describe('CertificateLogic', () => {
 
             it('should be able to transfer token again', async () => {
                 const tx = await testreceiver.safeTransferFrom(testreceiver.web3Contract._address,
-                    testreceiver.web3Contract._address,
-                    3, '', {
+                                                               testreceiver.web3Contract._address,
+                                                               3, '', {
                         privateKey: traderPK,
                     });
 
@@ -1161,8 +1161,8 @@ describe('CertificateLogic', () => {
 
             it('should be able to transfer token again', async () => {
                 const tx = await testreceiver.safeTransferFrom(testreceiver.web3Contract._address,
-                    testreceiver.web3Contract._address,
-                    4, '0x01', {
+                                                               testreceiver.web3Contract._address,
+                                                               4, '0x01', {
                         privateKey: traderPK,
                     });
 
@@ -1228,7 +1228,7 @@ describe('CertificateLogic', () => {
             it('should set an escrow to the asset', async () => {
                 await assetRegistry.addMatcher(0, matcherAccount, { privateKey: assetOwnerPK });
                 assert.deepEqual(await assetRegistry.getMatcher(0),
-                    ['0x1000000000000000000000000000000000000005', matcherAccount]);
+                                 ['0x1000000000000000000000000000000000000005', matcherAccount]);
             });
 
             it('should return correct approval', async () => {

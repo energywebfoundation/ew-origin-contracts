@@ -19,15 +19,18 @@ pragma experimental ABIEncoderV2;
 
 interface TradableEntityDBInterface {
     function addApproval(uint _entityId, address _approve) public;
+    function addEscrowForCertificate(uint _entityId, address _escrow) external;
     function setTradableEntityOwner(uint _entityId, address _owner) public;
     function setTradableToken(uint _entityId, address _token) external;
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external;
     function removeTokenAndPrice(uint _entityId) external;
-    function getBalanceOf(address _owner) external view returns (uint);
+    function removeEscrow(uint _certificateId, address _escrow) external returns (bool);
     function setOwnerToOperators(address _company, address _escrow, bool _allowed) external;
     function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external;
-    
+    function setTradableEntityEscrow(uint _entityId, address[] _escrow) public;
+
     function getApproved(uint256 _entityId) external view returns (address);
+    function getBalanceOf(address _owner) external view returns (uint);
     function getTradableToken(uint _entityId) external view returns (address);
     function getTradableEntityOwner(uint _entityId) external view returns (address);
     function getTradableEntityEscrowLength(uint _entityId) external view returns (uint);

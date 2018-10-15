@@ -31,7 +31,6 @@ contract EnergyCertificateBundleDB is TradableEntityDB, EnergyInterface, Tradabl
     struct EnergyCertificateBundle {
         TradableEntity tradableEntity;
         CertificateDB.CertificateSpecific certificateSpecific;
-
     }
 
     /// @notice An array containing all created bundles
@@ -96,10 +95,10 @@ contract EnergyCertificateBundleDB is TradableEntityDB, EnergyInterface, Tradabl
     /// @return Certificate as struct
     function getBundle(uint _bundleID) 
         external 
-        onlyOwner
         view 
         returns (EnergyCertificateBundle) 
     {
+        require(msg.sender == owner || msg.sender == address(this));
         return bundleList[_bundleID];
     }
 
@@ -110,7 +109,12 @@ contract EnergyCertificateBundleDB is TradableEntityDB, EnergyInterface, Tradabl
     }  
 
     
-    function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity _entity){
+    function getTradableEntity(uint _entityId) 
+        public 
+        view 
+        returns (TradableEntityContract.TradableEntity _entity)
+    {
+        require(msg.sender == owner || msg.sender == address(this));
         return bundleList[_entityId].tradableEntity;
     }
 
@@ -143,7 +147,13 @@ contract EnergyCertificateBundleDB is TradableEntityDB, EnergyInterface, Tradabl
     }  
 
 
-    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public onlyOwner {
+    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public {
+        require(msg.sender == owner || msg.sender == address(this));
         bundleList[_entityId].tradableEntity = _entity;
     }
+
+    function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
+        require(msg.sender == owner || msg.sender == address(this));
+        return bundleList[_entityId].tradableEntity;
+     }
 }

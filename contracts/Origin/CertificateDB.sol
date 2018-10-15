@@ -25,7 +25,7 @@ import "../../contracts/Interfaces/EnergyInterface.sol";
 import "../../contracts/Origin/EnergyDB.sol";
 import "../../contracts/Origin/TradableEntityDB.sol";
 
-contract CertificateDB is TradableEntityDB, EnergyInterface, TradableEntityContract {
+contract CertificateDB is TradableEntityDB, TradableEntityContract {
 
     struct Certificate {
         TradableEntity tradableEntity;
@@ -60,7 +60,7 @@ contract CertificateDB is TradableEntityDB, EnergyInterface, TradableEntityContr
     function addEscrowForCertificate(uint _entityId, address _escrow) external onlyOwner {
         certificateList[_entityId].tradableEntity.escrow.push(_escrow);
     }
-
+    
     /// @notice Removes an escrow-address of an existing certificate
     /// @param _certificateId The array position in which the parent certificate is stored
     /// @param _escrow the escrow-address to be removed
@@ -78,7 +78,7 @@ contract CertificateDB is TradableEntityDB, EnergyInterface, TradableEntityContr
 
     function setOwnerChangeCounterResetEscrow(uint _certificateId, uint _newCounter) external onlyOwner {
         setOwnerChangeCounter(_certificateId, _newCounter);
-        setCertificateEscrow(_certificateId, new address[](0));
+        setTradableEntityEscrow(_certificateId, new address[](0));
     }
 
     /// @notice Sets a certificate to retired
@@ -282,20 +282,15 @@ contract CertificateDB is TradableEntityDB, EnergyInterface, TradableEntityContr
         certificate.certificateSpecific.ownerChangeCounter = _newCounter;
     }
 
-        /// @notice sets the escrow-addresses of a certificate
-    /// @param _certificateId certificateId
-    /// @param _escrow new escrow-addresses
-    function setCertificateEscrow(uint _certificateId, address[] _escrow)
-        public
-        onlyOwner
-    {
-        certificateList[_certificateId].tradableEntity.escrow = _escrow;
-    }
-
     function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity){
         require(msg.sender == owner || msg.sender == address(this));
         return certificateList[_entityId].tradableEntity;
     }
+
+    function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
+        require(msg.sender == owner || msg.sender == address(this));
+        return certificateList[_entityId].tradableEntity;
+     }
 
     function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public  {
         require(msg.sender == owner || msg.sender == address(this));

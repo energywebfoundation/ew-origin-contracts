@@ -30,6 +30,11 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
   /// @notice Constructor
     constructor(address _certificateLogic) Owned(_certificateLogic) public { }
     
+    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public;
+    function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity _entity);
+
+    function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity);
+
     function changeCertOwner(address _old, address _new) internal {
         require(tokenAmountMapping[_old] > 0);
         tokenAmountMapping[_old]--;
@@ -58,10 +63,10 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
         EnergyInterface(this).setTradableEntity(_entityId,te);
     }
 
-     /// @notice Sets the owner of a certificate
+    /// @notice Sets the owner of a certificate
     /// @param _entityId The array position in which the certificate is stored
     /// @param _owner The address of the new owner
-    function setTradableEntityOwner(uint _entityId, address _owner) public  {
+    function setTradableEntityOwner(uint _entityId, address _owner) public onlyOwner {
         TradableEntityContract.TradableEntity memory te = EnergyInterface(this).getTradableEntity(_entityId);
         address oldOwner = te.owner;
         te.owner = _owner;
@@ -74,6 +79,18 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
         TradableEntityContract.TradableEntity memory te = EnergyInterface(this).getTradableEntity(_entityId);
         te.acceptedToken = _token;
         EnergyInterface(this).setTradableEntity(_entityId,te);
+    }
+
+    /// @notice sets the escrow-addresses of a certificate
+    /// @param _escrow new escrow-addresses
+    function setTradableEntityEscrow(uint _entityId, address[] _escrow)
+        public
+        onlyOwner
+    {
+        TradableEntityContract.TradableEntity memory te = EnergyInterface(this).getTradableEntity(_entityId);
+        te.escrow = _escrow;
+        EnergyInterface(this).setTradableEntity(_entityId,te);
+
     }
 
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external onlyOwner {
@@ -94,23 +111,23 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
         return EnergyInterface(this).getTradableEntity(_entityId).approvedAddress;
     }
 
-    function getOnChainDirectPurchasePrice(uint _entityId) external view returns (uint){
+    function getOnChainDirectPurchasePrice(uint _entityId) external onlyOwner view returns (uint){
         return EnergyInterface(this).getTradableEntity(_entityId).onChainDirectPurchasePrice;
     }
 
-    function getTradableToken(uint _entityId) external view returns (address) {
+    function getTradableToken(uint _entityId) external onlyOwner view returns (address) {
         return EnergyInterface(this).getTradableEntity(_entityId).acceptedToken;
     }
 
-    function getTradableEntityOwner(uint _entityId) external view returns (address){
+    function getTradableEntityOwner(uint _entityId) external onlyOwner view returns (address){
         return EnergyInterface(this).getTradableEntity(_entityId).owner;
     }
     
-    function getTradableEntityEscrowLength(uint _entityId) external view returns (uint){
+    function getTradableEntityEscrowLength(uint _entityId) external onlyOwner view returns (uint){
         return EnergyInterface(this).getTradableEntity(_entityId).escrow.length;
     }
 
-    function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external onlyOwner{
+    function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external onlyOwner {
         setTradableEntityOwner(_entityId, _owner);
         addApproval(_entityId, _approve);
     }

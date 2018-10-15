@@ -104,7 +104,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         require(
             (CertificateDB(db).getTradableEntityOwner(_certificateId) == msg.sender)
             && (CertificateDB(db).getTradableEntityEscrowLength(_certificateId) < OriginContractLookupInterface(owner).maxMatcherPerCertificate()));
-        db.addEscrowForCertificate(_certificateId, _escrow);
+        TradableEntityDBInterface(db).addEscrowForCertificate(_certificateId, _escrow);
         emit LogEscrowAdded(_certificateId, _escrow);
     }
     

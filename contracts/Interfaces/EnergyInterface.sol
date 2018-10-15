@@ -22,7 +22,7 @@ import "../../contracts/Origin/TradableEntityContract.sol";
 /// @title this interface defines the functions that both consuming and producing assets are sharing
 interface EnergyInterface {
 
-    function addEscrowForCertificate(uint _entityId, address _address) external;
     function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public;
     function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity _entity);
+
 }

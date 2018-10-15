@@ -103,7 +103,7 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
         EnergyCertificateBundleDB.EnergyCertificateBundle memory bundle = EnergyCertificateBundleDB(db).getBundle(_bundleId);
         require(bundle.tradableEntity.owner == msg.sender);
         require(bundle.tradableEntity.escrow.length < OriginContractLookupInterface(owner).maxMatcherPerCertificate());
-        db.addEscrowForCertificate(_bundleId, _escrow);
+        TradableEntityDBInterface(db).addEscrowForCertificate(_bundleId, _escrow);
         emit LogEscrowAdded(_bundleId, _escrow);
     }
  
@@ -127,22 +127,6 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
         emit LogEscrowRemoved(_bundleId, _escrow);
     }
 
-/*
-    /// @notice function to allow an escrow-address to change the ownership of a bundle
-    /// @dev this function can only be called by the demandLogic
-    /// @param _bundleId the bundle-id
-    /// @param _newOwner the new owner of the bundle
-    function transferOwnershipByEscrow(uint _bundleId, address _newOwner) 
-        external 
-    {   
-        EnergyCertificateBundleDB.EnergyCertificateBundle memory bundle = EnergyCertificateBundleDB(db).getBundle(_bundleId);
-        require (checkMatcher(bundle.tradableEntity.escrow));
-        
-        emit LogBundleOwnerChanged(_bundleId, bundle.tradableEntity.owner, _newOwner, msg.sender);
-        simpleTransferInternal(bundle.tradableEntity.owner,_newOwner, _bundleId);
-        checktransferOwnerInternally(_bundleId, bundle);
-    }
-    */
 
     function getBundle(uint _bundleId) 
         external 
