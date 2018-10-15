@@ -55,30 +55,24 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
 
 
     function addApproval(uint _entityId, address _approve) public onlyOwner {
-
-        TradableEntityContract.TradableEntity memory te  = EnergyInterface(this).getTradableEntity(_entityId);
-
+        TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         te.approvedAddress = _approve;
-
-        EnergyInterface(this).setTradableEntity(_entityId,te);
     }
 
     /// @notice Sets the owner of a certificate
     /// @param _entityId The array position in which the certificate is stored
     /// @param _owner The address of the new owner
     function setTradableEntityOwner(uint _entityId, address _owner) public onlyOwner {
-        TradableEntityContract.TradableEntity memory te = EnergyInterface(this).getTradableEntity(_entityId);
+        TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         address oldOwner = te.owner;
         te.owner = _owner;
         changeCertOwner(oldOwner,_owner);
-        EnergyInterface(this).setTradableEntity(_entityId,te);
 
     }
 
     function setTradableToken(uint _entityId, address _token) external onlyOwner {
-        TradableEntityContract.TradableEntity memory te = EnergyInterface(this).getTradableEntity(_entityId);
+        TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         te.acceptedToken = _token;
-        EnergyInterface(this).setTradableEntity(_entityId,te);
     }
 
     /// @notice sets the escrow-addresses of a certificate
@@ -87,24 +81,19 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
         public
         onlyOwner
     {
-        TradableEntityContract.TradableEntity memory te = EnergyInterface(this).getTradableEntity(_entityId);
+        TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         te.escrow = _escrow;
-        EnergyInterface(this).setTradableEntity(_entityId,te);
-
     }
 
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external onlyOwner {
-        TradableEntityContract.TradableEntity memory te = EnergyInterface(this).getTradableEntity(_entityId);
+        TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         te.onChainDirectPurchasePrice = _price;
-        EnergyInterface(this).setTradableEntity(_entityId,te);
     }
 
     function removeTokenAndPrice(uint _entityId) external onlyOwner {
-        TradableEntityContract.TradableEntity memory te = EnergyInterface(this).getTradableEntity(_entityId);
+        TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         te.onChainDirectPurchasePrice = 0;
         te.acceptedToken = 0;
-        EnergyInterface(this).setTradableEntity(_entityId,te);
-
     }
 
     function getApproved(uint256 _entityId) onlyOwner external view returns (address){
