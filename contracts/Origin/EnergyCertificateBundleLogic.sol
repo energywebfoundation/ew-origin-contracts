@@ -32,8 +32,9 @@ import "../../contracts/Origin/EnergyCertificateBundleDB.sol";
 import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol";
 import "../../contracts/Interfaces/EnergyCertificateBundleInterface.sol";
+import "../../contracts/Origin/CertificateSpecificContract.sol";
 
-contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleManagement, TradableEntityLogic, TradableEntityContract {
+contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleManagement, TradableEntityLogic, TradableEntityContract, CertificateSpecificContract {
 
     /// @notice Logs the creation of an event
     event LogCreatedBundle(uint indexed _bundleId, uint powerInW, address owner);
@@ -218,7 +219,7 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
 
         });
 
-        CertificateDB.CertificateSpecific memory certificateSpecific = CertificateDB.CertificateSpecific({
+        CertificateSpecific memory certificateSpecific = CertificateSpecific({
             retired: false,
             dataLog: asset.lastSmartMeterReadFileHash,
             coSaved: _cO2Saved,

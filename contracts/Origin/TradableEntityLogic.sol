@@ -20,7 +20,6 @@ pragma experimental ABIEncoderV2;
 import "ew-user-registry-contracts/Users/RoleManagement.sol";
 import "ew-utils-general-contracts/Interfaces/Updatable.sol";
 import "../../contracts/Origin/TradableEntityContract.sol";
-import "../../contracts/Interfaces/EnergyInterface.sol";
 import "../../contracts/Interfaces/ERC721.sol";
 import "../../contracts/Interfaces/ERC721TokenReceiver.sol";
 import "../../contracts/Interfaces/ERC165.sol";
@@ -36,7 +35,7 @@ import "ew-user-registry-contracts/Interfaces/UserContractLookupInterface.sol";
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
 contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, TradableEntityInterface {
 
-    EnergyInterface public db;
+    TradableEntityDBInterface public db;
     AssetContractLookupInterface public assetContractLookup;
 
     event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
@@ -44,7 +43,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
 
     modifier onlyEntityOwner(uint _entityId) {
-        require(TradableEntityDBInterface(db).getTradableEntityOwner(_entityId) == msg.sender);
+        require(db.getTradableEntityOwner(_entityId) == msg.sender);
         _;
     }
 
@@ -66,11 +65,11 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
 
     function balanceOf(address _owner) external view returns (uint256){
         require(_owner != 0x0);
-        return TradableEntityDBInterface(db).getBalanceOf(_owner);
+        return db.getBalanceOf(_owner);
     }
 
     function ownerOf(uint256 _entityId) external view returns (address){
-        address owner = TradableEntityDBInterface(db).getTradableEntityOwner(_entityId);
+        address owner = db.getTradableEntityOwner(_entityId);
         require(owner != 0x0);
         return owner;
     }
@@ -91,25 +90,25 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     }
 
     function approve(address _approved, uint256 _entityId) external payable {
-        TradableEntityContract.TradableEntity memory te = db.getTradableEntity(_entityId);
+        TradableEntityContract.TradableEntity memory te = TradableEntityDB(db).getTradableEntity(_entityId);
         require(te.owner == msg.sender || checkMatcher(te.escrow));
-        TradableEntityDBInterface(db).addApproval(_entityId, _approved);
+        db.addApproval(_entityId, _approved);
 
         emit Approval(msg.sender,_approved, _entityId);
     }
 
 
     function setApprovalForAll(address _escrow, bool _approved) external {
-        TradableEntityDBInterface(db).setOwnerToOperators(msg.sender, _escrow, _approved);
+        db.setOwnerToOperators(msg.sender, _escrow, _approved);
         emit ApprovalForAll(msg.sender, _escrow, _approved);
     }
 
     function getApproved(uint _tokenId) external view returns (address) {
-        return TradableEntityDBInterface(db).getApproved(_tokenId);
+        return db.getApproved(_tokenId);
     }
 
     function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
-        return TradableEntityDBInterface(db).getOwnerToOperators(_owner, _operator);
+        return db.getOwnerToOperators(_owner, _operator);
     }
 
      /**
@@ -119,23 +118,23 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     /// @notice Initialises the contract by binding it to a logic contract
     /// @param _database Sets the logic contract
     function init(address _database, address _admin) external onlyOwner {
-        require(db == EnergyInterface(0x0));
-        db = EnergyInterface(_database);
+        require(db == TradableEntityDBInterface(0x0));
+        db = TradableEntityDBInterface(_database);
     }
 
     function setTradableEntityOwner(uint _entityId, address _owner) onlyEntityOwner(_entityId) userHasRole(Role.Trader, _owner) external {
-        TradableEntityDBInterface(db).setTradableEntityOwner(_entityId, _owner);
+        db.setTradableEntityOwner(_entityId, _owner);
     }
 
     function setTradableToken(uint _entityId, address _tokenContract) 
         onlyEntityOwner(_entityId) 
         external 
     {
-        TradableEntityDBInterface(db).setTradableToken(_entityId, _tokenContract);
+        db.setTradableToken(_entityId, _tokenContract);
     }
 
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) onlyEntityOwner(_entityId) external {
-        TradableEntityDBInterface(db).setOnChainDirectPurchasePrice(_entityId, _price);
+        db.setOnChainDirectPurchasePrice(_entityId, _price);
     }
 
     /// @notice Updates the logic contract
@@ -148,11 +147,11 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     }
 
     function getTradableToken(uint _entityId) external view returns (address){
-        return TradableEntityDBInterface(db).getTradableToken(_entityId);
+        return db.getTradableToken(_entityId);
     }
 
     function getOnChainDirectPurchasePrice(uint _entityId) external view returns (uint) {
-        return TradableEntityDBInterface(db).getOnChainDirectPurchasePrice(_entityId);
+        return db.getOnChainDirectPurchasePrice(_entityId);
     }
    
     function getTradableEntity(uint _entityId)  
@@ -160,7 +159,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     returns (
        TradableEntityContract.TradableEntity)
     {
-        return db.getTradableEntity(_entityId);
+        return TradableEntityDB(db).getTradableEntity(_entityId);
     }
 
     function supportsInterface(bytes4 _interfaceID) external view returns (bool){
@@ -183,16 +182,16 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     }
 
     function simpleTransferInternal(address _from, address _to, uint256 _entityId) internal {
-        TradableEntityContract.TradableEntity memory te = db.getTradableEntity(_entityId);
+        TradableEntityContract.TradableEntity memory te = TradableEntityDB(db).getTradableEntity(_entityId);
         require(
             (te.owner == _from) &&(_to != 0x0) && (te.owner != 0x0) && (msg.value == 0) && 
             (te.owner == msg.sender
             || checkMatcher(te.escrow)
-            || TradableEntityDBInterface(db).getOwnerToOperators(te.owner, msg.sender)
+            || db.getOwnerToOperators(te.owner, msg.sender)
             || te.approvedAddress == msg.sender
         ));
         
-        TradableEntityDBInterface(db).setTradableEntityOwnerAndAddApproval(_entityId, _to,0x0);
+        db.setTradableEntityOwnerAndAddApproval(_entityId, _to,0x0);
         emit Transfer(_from,_to,_entityId);
       
     }

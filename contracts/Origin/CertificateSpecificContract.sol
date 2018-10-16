@@ -12,17 +12,22 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
+// @authors: Martin Kuechler, martin.kuechler@slock.it
 
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
-import "../../contracts/Origin/TradableEntityContract.sol";
 
+contract CertificateSpecificContract {
 
-/// @title this interface defines the functions that both consuming and producing assets are sharing
-interface EnergyInterface {
-
-    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public;
-    function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity _entity);
+    struct CertificateSpecific {
+        bool retired;
+        string dataLog;
+        uint coSaved;
+        uint creationTime; 
+        uint parentId;
+        uint[] children;
+        uint maxOwnerChanges;
+        uint ownerChangeCounter;
+    }
 
 }

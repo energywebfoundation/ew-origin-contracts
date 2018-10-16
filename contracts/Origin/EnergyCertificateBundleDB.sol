@@ -21,16 +21,16 @@ pragma experimental ABIEncoderV2;
 /// @notice This contract only provides getter and setter methods
 
 import "../../contracts/Origin/TradableEntityContract.sol";
-import "../../contracts/Interfaces/EnergyInterface.sol";
 import "../../contracts/Origin/EnergyDB.sol";
 import "../../contracts/Origin/CertificateDB.sol";
 import "../../contracts/Origin/TradableEntityDB.sol";
+import "../../contracts/Origin/CertificateSpecificContract.sol";
 
-contract EnergyCertificateBundleDB is TradableEntityDB, EnergyInterface, TradableEntityContract {
+contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, CertificateSpecificContract {
 
     struct EnergyCertificateBundle {
         TradableEntity tradableEntity;
-        CertificateDB.CertificateSpecific certificateSpecific;
+        CertificateSpecific certificateSpecific;
     }
 
     /// @notice An array containing all created bundles
@@ -42,12 +42,6 @@ contract EnergyCertificateBundleDB is TradableEntityDB, EnergyInterface, Tradabl
     /**
         external functions
     */
-
-    /// @notice Adds a new escrow address to an existing bundle
-    /// @param _escrow The new escrow-address
-    function addEscrowForCertificate(uint _entityId, address _escrow) external onlyOwner {
-        bundleList[_entityId].tradableEntity.escrow.push(_escrow);
-    }
 
     /// @notice sets the escrow-addresses of a bundle
     /// @param _bundleId the id of the bundle
@@ -146,14 +140,14 @@ contract EnergyCertificateBundleDB is TradableEntityDB, EnergyInterface, Tradabl
 
     }  
 
-
-    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public {
-        require(msg.sender == owner || msg.sender == address(this));
-        bundleList[_entityId].tradableEntity = _entity;
-    }
-
     function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
         require(msg.sender == owner || msg.sender == address(this));
         return bundleList[_entityId].tradableEntity;
      }
+
+    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public  {
+        require(msg.sender == owner || msg.sender == address(this));
+
+        bundleList[_entityId].tradableEntity = _entity;
+    }
 }

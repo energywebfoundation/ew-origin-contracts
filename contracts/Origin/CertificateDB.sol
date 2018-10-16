@@ -21,26 +21,16 @@ pragma experimental ABIEncoderV2;
 /// @notice This contract only provides getter and setter methods
 
 import "../../contracts/Origin/TradableEntityContract.sol";
-import "../../contracts/Interfaces/EnergyInterface.sol";
 import "../../contracts/Origin/EnergyDB.sol";
 import "../../contracts/Origin/TradableEntityDB.sol";
+import "../../contracts/Origin/CertificateSpecificContract.sol";
+import "../../contracts/Origin/CertificateSpecificDB.sol";
 
-contract CertificateDB is TradableEntityDB, TradableEntityContract {
+contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateSpecificContract, CertificateSpecificDB {
 
     struct Certificate {
         TradableEntity tradableEntity;
         CertificateSpecific certificateSpecific;
-    }
-
-    struct CertificateSpecific {
-        bool retired;
-        string dataLog;
-        uint coSaved;
-        uint creationTime; 
-        uint parentId;
-        uint[] children;
-        uint maxOwnerChanges;
-        uint ownerChangeCounter;
     }
 
     /// @notice An array containing all created certificates
@@ -53,66 +43,22 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract {
     /**
         external functions
     */
-   
-
-/// @notice Adds a new escrow address to an existing certificate
-    /// @param _escrow The new escrow-address
-    function addEscrowForCertificate(uint _entityId, address _escrow) external onlyOwner {
-        certificateList[_entityId].tradableEntity.escrow.push(_escrow);
-    }
-    
-    /// @notice Removes an escrow-address of an existing certificate
-    /// @param _certificateId The array position in which the parent certificate is stored
-    /// @param _escrow the escrow-address to be removed
-    function removeEscrow(uint _certificateId, address _escrow) external onlyOwner  returns (bool) {
-
-        address[] storage escrows = certificateList[_certificateId].tradableEntity.escrow;
-        for (uint i = 0; i < escrows.length; i++){
-            if(escrows[i] == _escrow){
-                escrows[i] = escrows[escrows.length-1];
-                escrows.length--;
-                return true;
-            }
-        }
-    }
-
-    function setOwnerChangeCounterResetEscrow(uint _certificateId, uint _newCounter) external onlyOwner {
-        setOwnerChangeCounter(_certificateId, _newCounter);
+    function setOwnerChangeCounterResetEscrow(uint _certificateId, uint _newCounter) external  {
+        require(msg.sender == owner || msg.sender == address(this));
+        this.setOwnerChangeCounter(_certificateId, _newCounter);
         setTradableEntityEscrow(_certificateId, new address[](0));
-    }
-
-    /// @notice Sets a certificate to retired
-    /// @param _certificateId The array position in which the certificate is stored
-    function retireCertificate(uint _certificateId) external onlyOwner{
-     
-        Certificate storage certificate = certificateList[_certificateId];
-        certificate.certificateSpecific.retired = true;
-        certificate.tradableEntity.escrow = new address[](0);
     }
 
     /// @notice Returns the certificate that corresponds to the given array id
     /// @param _certificateId The array position in which the certificate is stored
     /// @return Certificate as struct
     function getCertificate(uint _certificateId) 
-        external 
+        public 
         onlyOwner
         view 
         returns (Certificate) 
     {
         return certificateList[_certificateId];
-    }
-
-    function getCertificateChildrenLength(uint _certificateId)
-        external
-        onlyOwner
-        view 
-        returns (uint)
-    {
-        return certificateList[_certificateId].certificateSpecific.children.length;
-    }
-
-    function getCertificateRetired(uint _certificateId) external onlyOwner view returns (bool){
-        return certificateList[_certificateId].certificateSpecific.retired;
     }
 
     /**
@@ -125,7 +71,7 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract {
     /// @return The id of the certificate
     function createCertificate(
         TradableEntity _tradableEntity,
-        CertificateDB.CertificateSpecific _certificateSpecific 
+        CertificateSpecific _certificateSpecific 
     ) 
         public 
         onlyOwner 
@@ -141,14 +87,6 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract {
         tokenAmountMapping[_tradableEntity.owner]++;
     }    
 
-    /// @notice Adds a certificate-Id as child to an existing certificate
-    /// @param _certificateId The array position in which the parent certificate is stored
-    /// @param _childId The array position in which the child certificate is stored
-    function addChildren(uint _certificateId, uint _childId) public onlyOwner {
-        Certificate storage parent = certificateList[_certificateId];
-        parent.certificateSpecific.children.push(_childId);
-    }
-
     function createCertificateRaw(
         uint _assetId, 
         uint _powerInW, 
@@ -162,7 +100,7 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract {
         onlyOwner
         returns (uint _certId)
     {
-        TradableEntityContract.TradableEntity memory tradableEntity = TradableEntityContract.TradableEntity({
+        TradableEntity memory tradableEntity = TradableEntity({
             assetId: _assetId,
             owner: _assetOwner,
             powerInW: _powerInW,
@@ -206,7 +144,7 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract {
     {
         Certificate memory parent = certificateList[_parentId];
 
-        TradableEntityContract.TradableEntity memory childOneEntity = TradableEntityContract.TradableEntity({
+        TradableEntity memory childOneEntity = TradableEntity({
             assetId: parent.tradableEntity.assetId,
             owner: parent.tradableEntity.owner,
             powerInW: _power,
@@ -236,7 +174,7 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract {
 
 
 
-        TradableEntityContract.TradableEntity memory childTwoEntity = TradableEntityContract.TradableEntity({
+        TradableEntity memory childTwoEntity = TradableEntity({
             assetId: parent.tradableEntity.assetId,
             owner: parent.tradableEntity.owner,
             powerInW: parent.tradableEntity.powerInW - _power,
@@ -249,7 +187,7 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract {
 
         });
 
-        CertificateDB.CertificateSpecific memory certificateSpecificTwo = CertificateDB.CertificateSpecific({
+        CertificateSpecific memory certificateSpecificTwo = CertificateSpecific({
             retired: false,
             dataLog: parent.certificateSpecific.dataLog,
             coSaved: (parent.certificateSpecific.coSaved*((parent.tradableEntity.powerInW - _power)*1000000/parent.tradableEntity.powerInW)/1000000),
@@ -275,28 +213,37 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract {
         return certificateList.length;
     }  
 
-    /// @notice Changes the OwnerChangeCounter of an existing certificate
-    /// @param _certificateId The array position in which the parent certificate is stored
-    function setOwnerChangeCounter(uint _certificateId, uint _newCounter) public onlyOwner {
-        Certificate storage certificate = certificateList[_certificateId];
-        certificate.certificateSpecific.ownerChangeCounter = _newCounter;
-    }
-
-    function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity){
+    function getTradableEntity(uint _entityId) public view returns (TradableEntity){
         require(msg.sender == owner || msg.sender == address(this));
         return certificateList[_entityId].tradableEntity;
     }
 
-    function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
+    function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntity storage _entity) {
         require(msg.sender == owner || msg.sender == address(this));
         return certificateList[_entityId].tradableEntity;
-     }
+    }
 
-    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public  {
+    function setTradableEntity(uint _entityId, TradableEntity _entity) public  {
         require(msg.sender == owner || msg.sender == address(this));
 
         certificateList[_entityId].tradableEntity = _entity;
     }
 
+    function getCertificateSpecific(uint _certificateId) 
+        external 
+        view 
+        returns (CertificateSpecificContract.CertificateSpecific _certificate)
+    {
+        require(msg.sender == owner || msg.sender == address(this));
+        return certificateList[_certificateId].certificateSpecific;
+    }
+
+    function getCertificateInternally(uint _certificateId) internal view returns (CertificateSpecificContract.CertificateSpecific  storage _certificate){
+        return certificateList[_certificateId].certificateSpecific;
+    }
+    function setCertificateSpecific(uint _certificateId, CertificateSpecificContract.CertificateSpecific  _certificate) public {
+        require(msg.sender == owner || msg.sender == address(this));
+        certificateList[_certificateId].certificateSpecific = _certificate;
+    }
 
 }

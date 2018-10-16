@@ -24,7 +24,7 @@ interface TradableEntityDBInterface {
     function setTradableToken(uint _entityId, address _token) external;
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external;
     function removeTokenAndPrice(uint _entityId) external;
-    function removeEscrow(uint _certificateId, address _escrow) external returns (bool);
+    function removeEscrow(uint _entityId, address _escrow) external returns (bool);    
     function setOwnerToOperators(address _company, address _escrow, bool _allowed) external;
     function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external;
     function setTradableEntityEscrow(uint _entityId, address[] _escrow) public;

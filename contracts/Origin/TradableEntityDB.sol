@@ -19,8 +19,7 @@ pragma experimental ABIEncoderV2;
 
 import "ew-utils-general-contracts/Msc/Owned.sol";
 import "../../contracts/Interfaces/TradableEntityDBInterface.sol";
-import "../../contracts/Interfaces/EnergyInterface.sol";
-
+import "../../contracts/Origin/TradableEntityContract.sol";
 
 contract TradableEntityDB is Owned,TradableEntityDBInterface {
 
@@ -30,11 +29,11 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
   /// @notice Constructor
     constructor(address _certificateLogic) Owned(_certificateLogic) public { }
     
-    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public;
     function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity _entity);
 
     function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity);
-
+    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public;
+    
     function changeCertOwner(address _old, address _new) internal {
         require(tokenAmountMapping[_old] > 0);
         tokenAmountMapping[_old]--;
@@ -57,6 +56,11 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     function addApproval(uint _entityId, address _approve) public onlyOwner {
         TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         te.approvedAddress = _approve;
+    }
+
+    function addEscrowForCertificate(uint _entityId, address _escrow) external onlyOwner {
+        TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
+        te.escrow.push(_escrow);
     }
 
     /// @notice Sets the owner of a certificate
@@ -96,24 +100,39 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
         te.acceptedToken = 0;
     }
 
+    /// @notice Removes an escrow-address of an existing bundle
+    /// @param _entityId The array position
+    /// @param _escrow the escrow-address to be removed
+    function removeEscrow(uint _entityId, address _escrow) external onlyOwner  returns (bool) {
+
+        address[] storage escrows = getTradableEntityInternally(_entityId).escrow;
+        for (uint i = 0; i < escrows.length; i++){
+            if(escrows[i] == _escrow){
+                escrows[i] = escrows[escrows.length-1];
+                escrows.length--;
+                return true;
+            }
+        }
+    }
+
     function getApproved(uint256 _entityId) onlyOwner external view returns (address){
-        return EnergyInterface(this).getTradableEntity(_entityId).approvedAddress;
+        return getTradableEntity(_entityId).approvedAddress;
     }
 
     function getOnChainDirectPurchasePrice(uint _entityId) external onlyOwner view returns (uint){
-        return EnergyInterface(this).getTradableEntity(_entityId).onChainDirectPurchasePrice;
+        return getTradableEntity(_entityId).onChainDirectPurchasePrice;
     }
 
     function getTradableToken(uint _entityId) external onlyOwner view returns (address) {
-        return EnergyInterface(this).getTradableEntity(_entityId).acceptedToken;
+        return getTradableEntity(_entityId).acceptedToken;
     }
 
     function getTradableEntityOwner(uint _entityId) external onlyOwner view returns (address){
-        return EnergyInterface(this).getTradableEntity(_entityId).owner;
+        return getTradableEntity(_entityId).owner;
     }
     
     function getTradableEntityEscrowLength(uint _entityId) external onlyOwner view returns (uint){
-        return EnergyInterface(this).getTradableEntity(_entityId).escrow.length;
+        return getTradableEntity(_entityId).escrow.length;
     }
 
     function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external onlyOwner {

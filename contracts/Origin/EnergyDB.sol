@@ -22,9 +22,9 @@ pragma experimental ABIEncoderV2;
 
 import "../../contracts/Origin/TradableEntityContract.sol";
 import "ew-utils-general-contracts/Msc/Owned.sol";
-import "../../contracts/Interfaces/EnergyInterface.sol";
+import "../../contracts/Origin/TradableEntityDB.sol";
 
-contract EnergyDB is EnergyInterface, Owned, TradableEntityContract {
+contract EnergyDB is TradableEntityDB, TradableEntityContract {
 
     struct Energy {
         TradableEntity tradableEntity;
@@ -37,7 +37,7 @@ contract EnergyDB is EnergyInterface, Owned, TradableEntityContract {
     
     /// @notice Constructor
     /// @param _energyLogic The address of the corresbonding logic contract
-    constructor(address _energyLogic) Owned(_energyLogic) public { }
+    constructor(address _energyLogic) TradableEntityDB(_energyLogic) public { }
 
     /**
         external functions

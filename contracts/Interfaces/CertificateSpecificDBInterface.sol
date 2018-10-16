@@ -17,16 +17,18 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-import "../../contracts/Origin/CertificateDB.sol";
+interface CertificateSpecificDBInterface {
+    function getRetired(uint _certificateID) external returns (bool);
+    function setRetired(uint _certificateID, bool _retired) external; 
+    
+    function getDataLog(uint _certificateID) external returns (string);
+    function setDataLog(uint _certificateID, string _newDataLog) external;
 
-interface CertificateInterface {
+    function getMaxOwnerChanges(uint _certificateID) external returns (uint);
+    function setMaxOwnerChanges(uint _certificateID, uint _newMaxOwnerChanges) external;
 
-    function buyCertificate(uint _certificateId) external;
-  //  function retireCertificate(uint _certificateId) external;
-    function splitCertificate(uint _certificateId, uint _power) external;
-    function getCertificate(uint _certificateId) external view returns (CertificateDB.Certificate certificate);
-    function getCertificateListLength() external view returns (uint);
-    function getCertificateOwner(uint _certificateId) external view returns (address);
-    function isRetired(uint _certificateId) external view returns (bool);
-    function createCertificate(uint _assetId, uint _powerInW, uint _cO2Saved, address[] _escrow) public returns (uint);
+    function getOwnerChangeCounter(uint _certificateID) external returns (uint);
+    function setOwnerChangeCounter(uint _certificateID, uint _newOwnerChangeCounter) external;
+
+    function getCertificateChildrenLength(uint _certificateID) external view returns (uint);
 }

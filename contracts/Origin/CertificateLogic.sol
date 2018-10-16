@@ -33,6 +33,7 @@ import "../../contracts/Interfaces/CertificateInterface.sol";
 import "../../contracts/Interfaces/ERC20Interface.sol";
 import "../../contracts/Interfaces/TradableEntityDBInterface.sol";
 
+import "../../contracts/Origin/CertificateSpecificDB.sol";
 
 contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntityLogic, TradableEntityContract {
 
@@ -220,7 +221,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     /// @param _certificateId The id of the requested certificate
     function retireCertificateAuto(uint _certificateId) internal{
      //   CertificateDB(db).setCertificateEscrow(_certificateId, empty);
-        CertificateDB(db).retireCertificate(_certificateId);
+        CertificateSpecificDB(db).setRetired(_certificateId, true);
         emit LogCertificateRetired(_certificateId, true);
     }
 
@@ -251,7 +252,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
 
         if(_certificate.certificateSpecific.maxOwnerChanges <= ownerChangeCounter){
            // CertificateDB(db).setCertificateEscrow(_certificateId, new address[](0));
-            CertificateDB(db).retireCertificate(_certificateId);
+            CertificateSpecificDB(db).setRetired(_certificateId, true);
             emit LogCertificateRetired(_certificateId, true);
         }
     }
