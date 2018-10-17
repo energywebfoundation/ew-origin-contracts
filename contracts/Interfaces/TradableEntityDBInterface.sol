@@ -19,7 +19,7 @@ pragma experimental ABIEncoderV2;
 
 interface TradableEntityDBInterface {
     function addApproval(uint _entityId, address _approve) public;
-    function addEscrowForCertificate(uint _entityId, address _escrow) external;
+    function addEscrowForEntity(uint _entityId, address _escrow) external;
     function setTradableEntityOwner(uint _entityId, address _owner) public;
     function setTradableToken(uint _entityId, address _token) external;
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external;

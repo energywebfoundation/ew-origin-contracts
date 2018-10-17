@@ -31,4 +31,5 @@ interface CertificateSpecificDBInterface {
     function setOwnerChangeCounter(uint _certificateID, uint _newOwnerChangeCounter) external;
 
     function getCertificateChildrenLength(uint _certificateID) external view returns (uint);
+    function addChildren(uint _certificateId, uint _childId) public;
 }

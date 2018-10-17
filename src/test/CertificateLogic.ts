@@ -389,7 +389,6 @@ describe('CertificateLogic', () => {
                 assert.equal(certificateSpecificParent.dataLog, 'lastSmartMeterReadFileHash');
                 assert.equal(certificateSpecificParent.coSaved, 100);
                 assert.equal(certificateSpecificParent.parentId, 0);
-                // TODO: why is: AssertionError: expected [ '1', '2' ] to equal [ '1', '2' ]
                 assert.equal(certificateSpecificParent.children.length, 2);
                 assert.equal(certificateSpecificParent.maxOwnerChanges, 2);
                 assert.equal(certificateSpecificParent.ownerChangeCounter, 0);
@@ -410,7 +409,6 @@ describe('CertificateLogic', () => {
                 assert.equal(certificateSpecificChildOne.dataLog, 'lastSmartMeterReadFileHash');
                 assert.equal(certificateSpecificChildOne.coSaved, 40);
                 assert.equal(certificateSpecificChildOne.parentId, 0);
-                // TODO: why is: AssertionError: expected [ '1', '2' ] to equal [ '1', '2' ]
                 assert.equal(certificateSpecificChildOne.children.length, 0);
                 assert.equal(certificateSpecificChildOne.maxOwnerChanges, 2);
                 assert.equal(certificateSpecificChildOne.ownerChangeCounter, 0);
@@ -431,7 +429,6 @@ describe('CertificateLogic', () => {
                 assert.equal(certificateSpecificChildTwo.dataLog, 'lastSmartMeterReadFileHash');
                 assert.equal(certificateSpecificChildTwo.coSaved, 60);
                 assert.equal(certificateSpecificChildTwo.parentId, 0);
-                // TODO: why is: AssertionError: expected [ '1', '2' ] to equal [ '1', '2' ]
                 assert.equal(certificateSpecificChildTwo.children.length, 0);
                 assert.equal(certificateSpecificChildTwo.maxOwnerChanges, 2);
                 assert.equal(certificateSpecificChildTwo.ownerChangeCounter, 0);
@@ -2984,7 +2981,7 @@ describe('CertificateLogic', () => {
 
                 let failed = false;
                 try {
-                    await certificateLogic.addEscrowForCertificate(16, '0x1000000000000000000000000000000000000000', { privateKey: traderPK });
+                    await certificateLogic.addEscrowForEntity(16, '0x1000000000000000000000000000000000000000', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
                 }
@@ -2996,7 +2993,7 @@ describe('CertificateLogic', () => {
 
                 let failed = false;
                 try {
-                    await certificateLogic.addEscrowForCertificate(16, '0x1000000000000000000000000000000000000000', { privateKey: privateKeyDeployment });
+                    await certificateLogic.addEscrowForEntity(16, '0x1000000000000000000000000000000000000000', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
                 }
@@ -3006,14 +3003,14 @@ describe('CertificateLogic', () => {
 
             it('should add escrow as owner of cert', async () => {
 
-                await certificateLogic.addEscrowForCertificate(16, '0x1000000000000000000000000000000000000000', { privateKey: assetOwnerPK });
+                await certificateLogic.addEscrowForEntity(16, '0x1000000000000000000000000000000000000000', { privateKey: assetOwnerPK });
 
             });
 
             it('should add more escrows as owner of cert', async () => {
 
                 for (let i = 1; i < 10; i++) {
-                    await certificateLogic.addEscrowForCertificate(16, '0x100000000000000000000000000000000000000' + i, { privateKey: assetOwnerPK });
+                    await certificateLogic.addEscrowForEntity(16, '0x100000000000000000000000000000000000000' + i, { privateKey: assetOwnerPK });
                 }
             });
 
@@ -3078,7 +3075,7 @@ describe('CertificateLogic', () => {
 
                 let failed = false;
                 try {
-                    await certificateLogic.addEscrowForCertificate(16, '0x1000000000000000000000000000000000000010', { privateKey: assetOwnerPK });
+                    await certificateLogic.addEscrowForEntity(16, '0x1000000000000000000000000000000000000010', { privateKey: assetOwnerPK });
                 } catch (ex) {
                     failed = true;
                 }

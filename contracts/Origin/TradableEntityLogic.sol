@@ -125,9 +125,11 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         db = TradableEntityDBInterface(_database);
     }
 
+    /*
     function setTradableEntityOwner(uint _entityId, address _owner) onlyEntityOwner(_entityId) userHasRole(Role.Trader, _owner) external {
         db.setTradableEntityOwner(_entityId, _owner);
     }
+    */
 
     function setTradableToken(uint _entityId, address _tokenContract) 
         onlyEntityOwner(_entityId) 
@@ -219,11 +221,11 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     /// @notice adds a new escrow address to a certificate
     /// @param _certificateId The id of the certificate
     /// @param _escrow The additional escrow address
-    function addEscrowForCertificate(uint _certificateId, address _escrow) external {
+    function addEscrowForEntity(uint _certificateId, address _escrow) external {
         require(
             (db.getTradableEntityOwner(_certificateId) == msg.sender)
             && (db.getTradableEntityEscrowLength(_certificateId) < OriginContractLookupInterface(owner).maxMatcherPerCertificate()));
-        db.addEscrowForCertificate(_certificateId, _escrow);
+        db.addEscrowForEntity(_certificateId, _escrow);
         emit LogEscrowAdded(_certificateId, _escrow);
     }
 }

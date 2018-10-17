@@ -19,7 +19,6 @@ pragma experimental ABIEncoderV2;
 
 interface TradableEntityInterface {
 
-    function setTradableEntityOwner(uint _entityId, address _owner) external;
     function setTradableToken(uint _entityId, address _tokenContract) external;
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external;
     function getTradableToken(uint _entityId) external view returns (address);

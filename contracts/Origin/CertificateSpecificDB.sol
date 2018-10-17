@@ -78,7 +78,7 @@ contract CertificateSpecificDB is CertificateSpecificDBInterface, Owned {
         view 
         returns (uint)
     {
-        return  getCertificateInternally(_certificateId).children.length;
+        return getCertificateInternally(_certificateId).children.length;
     }
 
 }

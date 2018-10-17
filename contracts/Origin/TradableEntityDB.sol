@@ -58,7 +58,7 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
         te.approvedAddress = _approve;
     }
 
-    function addEscrowForCertificate(uint _entityId, address _escrow) external onlyOwner {
+    function addEscrowForEntity(uint _entityId, address _escrow) external onlyOwner {
         TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         te.escrow.push(_escrow);
     }
