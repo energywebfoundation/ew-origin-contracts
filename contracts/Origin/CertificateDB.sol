@@ -238,7 +238,7 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
         return certificateList[_certificateId].certificateSpecific;
     }
 
-    function getCertificateInternally(uint _certificateId) internal view returns (CertificateSpecificContract.CertificateSpecific  storage _certificate){
+    function getCertificateInternally(uint _certificateId) internal view returns (CertificateSpecificContract.CertificateSpecific storage _certificate){
         return certificateList[_certificateId].certificateSpecific;
     }
     function setCertificateSpecific(uint _certificateId, CertificateSpecificContract.CertificateSpecific  _certificate) public {

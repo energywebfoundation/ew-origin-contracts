@@ -25,6 +25,7 @@ import { OriginContractLookup } from '../wrappedContracts/OriginContractLookup';
 import { CertificateDB } from '../wrappedContracts/CertificateDB';
 import { CertificateLogic } from '../wrappedContracts/CertificateLogic';
 import { getClientVersion } from 'sloffle';
+
 describe('OriginContractLookup', () => {
 
     const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
@@ -50,7 +51,7 @@ describe('OriginContractLookup', () => {
         const userContracts = await migrateUserRegistryContracts(web3);
 
         const userLogic = new UserLogic((web3 as any),
-                                        userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+            userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
 
         await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
@@ -115,7 +116,7 @@ describe('OriginContractLookup', () => {
         let failed = false;
         try {
             await originRegistryContract.update('0x1000000000000000000000000000000000000005',
-                                                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         }
         catch (ex) {
             failed = true;
@@ -126,7 +127,7 @@ describe('OriginContractLookup', () => {
     it('should be able to update as owner', async () => {
 
         await originRegistryContract.update('0x1000000000000000000000000000000000000005',
-                                            { privateKey: privateKeyDeployment });
+            { privateKey: privateKeyDeployment });
 
         assert.equal(await originRegistryContract.originLogicRegistry(), '0x1000000000000000000000000000000000000005');
         assert.equal(await certificateDB.owner(), '0x1000000000000000000000000000000000000005');
@@ -139,7 +140,7 @@ describe('OriginContractLookup', () => {
 
         try {
             await originRegistryContract.changeOwner('0x1000000000000000000000000000000000000005',
-                                                     { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
+                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
         }
         catch (ex) {
             failed = true;
@@ -153,7 +154,7 @@ describe('OriginContractLookup', () => {
     it('should be able to change owner ', async () => {
 
         await originRegistryContract.changeOwner('0x1000000000000000000000000000000000000005',
-                                                 { privateKey: privateKeyDeployment });
+            { privateKey: privateKeyDeployment });
 
         assert.equal(await originRegistryContract.owner(), '0x1000000000000000000000000000000000000005');
     });

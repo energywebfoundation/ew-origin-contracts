@@ -249,9 +249,9 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
     /// @notice Retires a bundle
     /// @param _bundleId The id of the requested bundle
     function retireBundleAuto(uint _bundleId) internal{
-        address[] memory empty; 
-        EnergyCertificateBundleDB(db).setBundleEscrow(_bundleId, empty);
-        EnergyCertificateBundleDB(db).retireBundle(_bundleId);
+        
+        db.setTradableEntityEscrow(_bundleId, new address[](0));       
+        EnergyCertificateBundleDB(db).setRetired(_bundleId, true);
         emit LogBundleRetired(_bundleId, true);
     }
 
@@ -278,14 +278,13 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
         require(!_bundle.certificateSpecific.retired);
         require(_bundle.certificateSpecific.ownerChangeCounter < _bundle.certificateSpecific.maxOwnerChanges);
         uint ownerChangeCounter = _bundle.certificateSpecific.ownerChangeCounter + 1;
-        address[] memory empty; 
 
         EnergyCertificateBundleDB(db).setOwnerChangeCounter(_bundleId, ownerChangeCounter);
-        EnergyCertificateBundleDB(db).setBundleEscrow(_bundleId, empty);
+        db.setTradableEntityEscrow(_bundleId, new address[](0));       
 
         if(_bundle.certificateSpecific.maxOwnerChanges <= ownerChangeCounter){
-            EnergyCertificateBundleDB(db).setBundleEscrow(_bundleId, empty);
-            EnergyCertificateBundleDB(db).retireBundle(_bundleId);
+         //   EnergyCertificateBundleDB(db).setBundleEscrow(_bundleId, empty);
+            EnergyCertificateBundleDB(db).setRetired(_bundleId, true);
             emit LogBundleRetired(_bundleId, true);
         }
     }
