@@ -68,7 +68,7 @@ describe('EnergyCertificateBundleLogic', () => {
     const approvedPK = '0x7da67da863672d4cc2984e93ce28d98b0d782d8caa43cd1c977b919c0209541b';
     const approvedAccount = web3.eth.accounts.privateKeyToAccount(approvedPK).address;
 
-    describe.skip('init checks', () => {
+    describe('init checks', () => {
 
         it('should deploy the contracts', async () => {
 
@@ -289,25 +289,15 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*
+
                 assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '0',
                     2: '100',
-                    3: false,
-                    4: '0',
-                    5: '0',
-                    6: '100',
-                    7: false,
                     _assetId: '0',
                     _oldMeterRead: '0',
-                    _newMeterRead: '100',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '0',
-                    _oldCO2OffsetReading: '0',
-                    _newCO2OffsetReading: '100',
-                    _serviceDown: false,
-                });*/
+                    _newMeterRead: '100'
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -601,25 +591,15 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*
+
                 assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '100',
                     2: '200',
-                    3: false,
-                    4: '100',
-                    5: '100',
-                    6: '200',
-                    7: false,
                     _assetId: '0',
                     _oldMeterRead: '100',
-                    _newMeterRead: '200',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '100',
-                    _oldCO2OffsetReading: '100',
-                    _newCO2OffsetReading: '200',
-                    _serviceDown: false,
-                });*/
+                    _newMeterRead: '200'
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -790,25 +770,15 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*
-            assert.deepEqual(event.returnValues, {
-                0: '0',
-                1: '200',
-                2: '300',
-                3: false,
-                4: '100',
-                5: '200',
-                6: '300',
-                7: false,
-                _assetId: '0',
-                _oldMeterRead: '200',
-                _newMeterRead: '300',
-                _smartMeterDown: false,
-                _certificatesCreatedForWh: '100',
-                _oldCO2OffsetReading: '200',
-                _newCO2OffsetReading: '300',
-                _serviceDown: false,
-            });*/
+
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '200',
+                    2: '300',
+                    _assetId: '0',
+                    _oldMeterRead: '200',
+                    _newMeterRead: '300'
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -840,7 +810,6 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 assert.isFalse(certificateSpecific.retired);
                 assert.equal(certificateSpecific.dataLog, 'lastSmartMeterReadFileHash');
-                assert.equal(certificateSpecific.coSaved, 100);
                 assert.equal(certificateSpecific.parentId, 2);
                 assert.equal(certificateSpecific.children.length, 0);
                 assert.equal(certificateSpecific.maxOwnerChanges, 2);
@@ -1057,24 +1026,15 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 assert.equal(event.event, 'LogNewMeterRead');
 
-                /*assert.deepEqual(event.returnValues, {
+                assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '300',
                     2: '400',
-                    3: false,
-                    4: '100',
-                    5: '300',
-                    6: '400',
-                    7: false,
+
                     _assetId: '0',
                     _oldMeterRead: '300',
                     _newMeterRead: '400',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '100',
-                    _oldCO2OffsetReading: '300',
-                    _newCO2OffsetReading: '400',
-                    _serviceDown: false,
-                });*/
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -1201,24 +1161,14 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*assert.deepEqual(event.returnValues, {
+                assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '400',
                     2: '500',
-                    3: false,
-                    4: '100',
-                    5: '400',
-                    6: '500',
-                    7: false,
                     _assetId: '0',
                     _oldMeterRead: '400',
                     _newMeterRead: '500',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '100',
-                    _oldCO2OffsetReading: '400',
-                    _newCO2OffsetReading: '500',
-                    _serviceDown: false,
-                });*/
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -1250,7 +1200,6 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 assert.isFalse(certificateSpecific.retired);
                 assert.equal(certificateSpecific.dataLog, 'lastSmartMeterReadFileHash');
-                assert.equal(certificateSpecific.coSaved, 100);
                 assert.equal(certificateSpecific.parentId, 4);
                 assert.equal(certificateSpecific.children.length, 0);
                 assert.equal(certificateSpecific.maxOwnerChanges, 2);
@@ -1313,25 +1262,15 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*
-            assert.deepEqual(event.returnValues, {
-                0: '0',
-                1: '500',
-                2: '600',
-                3: false,
-                4: '100',
-                5: '500',
-                6: '600',
-                7: false,
-                _assetId: '0',
-                _oldMeterRead: '500',
-                _newMeterRead: '600',
-                _smartMeterDown: false,
-                _certificatesCreatedForWh: '100',
-                _oldCO2OffsetReading: '500',
-                _newCO2OffsetReading: '600',
-                _serviceDown: false,
-            });*/
+
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '500',
+                    2: '600',
+                    _assetId: '0',
+                    _oldMeterRead: '500',
+                    _newMeterRead: '600',
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -1526,25 +1465,15 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*
+
                 assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '600',
                     2: '700',
-                    3: false,
-                    4: '100',
-                    5: '600',
-                    6: '700',
-                    7: false,
                     _assetId: '0',
                     _oldMeterRead: '600',
                     _newMeterRead: '700',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '100',
-                    _oldCO2OffsetReading: '600',
-                    _newCO2OffsetReading: '700',
-                    _serviceDown: false,
-                });*/
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -1736,25 +1665,15 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*
-            assert.deepEqual(event.returnValues, {
-                0: '0',
-                1: '700',
-                2: '800',
-                3: false,
-                4: '100',
-                5: '700',
-                6: '800',
-                7: false,
-                _assetId: '0',
-                _oldMeterRead: '700',
-                _newMeterRead: '800',
-                _smartMeterDown: false,
-                _certificatesCreatedForWh: '100',
-                _oldCO2OffsetReading: '700',
-                _newCO2OffsetReading: '800',
-                _serviceDown: false,
-            });*/
+
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '700',
+                    2: '800',
+                    _assetId: '0',
+                    _oldMeterRead: '700',
+                    _newMeterRead: '800',
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -1884,24 +1803,14 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*assert.deepEqual(event.returnValues, {
+                assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '800',
                     2: '900',
-                    3: false,
-                    4: '100',
-                    5: '800',
-                    6: '900',
-                    7: false,
                     _assetId: '0',
                     _oldMeterRead: '800',
                     _newMeterRead: '900',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '100',
-                    _oldCO2OffsetReading: '800',
-                    _newCO2OffsetReading: '900',
-                    _serviceDown: false,
-                });*/
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -2065,24 +1974,14 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /* assert.deepEqual(event.returnValues, {
-                     0: '0',
-                     1: '900',
-                     2: '1000',
-                     3: false,
-                     4: '100',
-                     5: '900',
-                     6: '1000',
-                     7: false,
-                     _assetId: '0',
-                     _oldMeterRead: '900',
-                     _newMeterRead: '1000',
-                     _smartMeterDown: false,
-                     _certificatesCreatedForWh: '100',
-                     _oldCO2OffsetReading: '900',
-                     _newCO2OffsetReading: '1000',
-                     _serviceDown: false,
-                 });*/
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '900',
+                    2: '1000',
+                    _assetId: '0',
+                    _oldMeterRead: '900',
+                    _newMeterRead: '1000',
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -2112,7 +2011,6 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 assert.isFalse(certificateSpecific.retired);
                 assert.equal(certificateSpecific.dataLog, 'lastSmartMeterReadFileHash');
-                assert.equal(certificateSpecific.coSaved, 100);
                 assert.equal(certificateSpecific.parentId, 9);
                 assert.equal(certificateSpecific.children.length, 0);
                 assert.equal(certificateSpecific.maxOwnerChanges, 2);
@@ -2247,24 +2145,14 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*assert.deepEqual(event.returnValues, {
+                assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '1000',
                     2: '1100',
-                    3: false,
-                    4: '100',
-                    5: '1000',
-                    6: '1100',
-                    7: false,
                     _assetId: '0',
                     _oldMeterRead: '1000',
                     _newMeterRead: '1100',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '100',
-                    _oldCO2OffsetReading: '1000',
-                    _newCO2OffsetReading: '1100',
-                    _serviceDown: false,
-                });*/
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -2411,25 +2299,15 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*
-            assert.deepEqual(event.returnValues, {
-                0: '0',
-                1: '1100',
-                2: '1200',
-                3: false,
-                4: '100',
-                5: '1100',
-                6: '1200',
-                7: false,
-                _assetId: '0',
-                _oldMeterRead: '1100',
-                _newMeterRead: '1200',
-                _smartMeterDown: false,
-                _certificatesCreatedForWh: '100',
-                _oldCO2OffsetReading: '1100',
-                _newCO2OffsetReading: '1200',
-                _serviceDown: false,
-            });*/
+
+                assert.deepEqual(event.returnValues, {
+                    0: '0',
+                    1: '1100',
+                    2: '1200',
+                    _assetId: '0',
+                    _oldMeterRead: '1100',
+                    _newMeterRead: '1200',
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -2586,25 +2464,15 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*
+
                 assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '1200',
                     2: '1300',
-                    3: false,
-                    4: '100',
-                    5: '1200',
-                    6: '1300',
-                    7: false,
                     _assetId: '0',
                     _oldMeterRead: '1200',
                     _newMeterRead: '1300',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '100',
-                    _oldCO2OffsetReading: '1200',
-                    _newCO2OffsetReading: '1300',
-                    _serviceDown: false,
-                }); */
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -2761,25 +2629,15 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*
+
                 assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '1300',
                     2: '1400',
-                    3: false,
-                    4: '100',
-                    5: '1300',
-                    6: '1400',
-                    7: false,
                     _assetId: '0',
                     _oldMeterRead: '1300',
                     _newMeterRead: '1400',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '100',
-                    _oldCO2OffsetReading: '1300',
-                    _newCO2OffsetReading: '1400',
-                    _serviceDown: false,
-                });*/
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -3045,24 +2903,14 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*assert.deepEqual(event.returnValues, {
+                assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '1400',
                     2: '1500',
-                    3: false,
-                    4: '100',
-                    5: '1400',
-                    6: '1500',
-                    7: false,
                     _assetId: '0',
                     _oldMeterRead: '1400',
                     _newMeterRead: '1500',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '100',
-                    _oldCO2OffsetReading: '1400',
-                    _newCO2OffsetReading: '1500',
-                    _serviceDown: false,
-                });*/
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -3255,25 +3103,15 @@ describe('EnergyCertificateBundleLogic', () => {
                 const event = (await assetRegistry.getAllLogNewMeterReadEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber }))[0];
 
                 assert.equal(event.event, 'LogNewMeterRead');
-                /*
+
                 assert.deepEqual(event.returnValues, {
                     0: '0',
                     1: '1500',
                     2: '1600',
-                    3: false,
-                    4: '100',
-                    5: '1500',
-                    6: '1600',
-                    7: false,
                     _assetId: '0',
                     _oldMeterRead: '1500',
                     _newMeterRead: '1600',
-                    _smartMeterDown: false,
-                    _certificatesCreatedForWh: '100',
-                    _oldCO2OffsetReading: '1500',
-                    _newCO2OffsetReading: '1600',
-                    _serviceDown: false,
-                });*/
+                });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });

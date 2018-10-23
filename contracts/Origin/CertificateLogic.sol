@@ -174,7 +174,6 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
         returns (uint) 
     {
-       // AssetProducingRegistryDB.Asset memory asset = AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getFullAsset(_assetId);
         AssetProducingDB.Asset memory asset =  AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getAssetById(_assetId);
 
         uint certId = CertificateDB(db).createCertificateRaw(_assetId, _powerInW, asset.assetGeneral.matcher, asset.assetGeneral.owner, asset.assetGeneral.lastSmartMeterReadFileHash, asset.maxOwnerChanges); 

@@ -163,7 +163,6 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
     /// @notice Creates a bundle. Checks in the AssetRegistry if requested wh are available.
     /// @param _assetId The id of the asset that generated the energy for the bundle 
     /// @param _powerInW The amount of Watts the bundle holds
-    /// @param _escrow The escrow-addresses
     function createBundle(uint _assetId, uint _powerInW) 
         external  
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
