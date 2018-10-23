@@ -61,7 +61,6 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
     function getBundleListLength() external onlyOwner view returns (uint) {
         return bundleList.length;
     }  
-
     
     function getTradableEntity(uint _entityId) 
         public 

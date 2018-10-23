@@ -31,5 +31,5 @@ interface EnergyCertificateBundleInterface {
     function getBundleListLength() external view returns (uint);
     function getBundleOwner(uint _bundleId) external view returns (address);
     function isRetired(uint _bundleId) external view returns (bool);
-    function createBundle(uint _assetId, uint _powerInW, uint _cO2Saved, address[] _escrow) external returns (uint);
+    function createBundle(uint _assetId, uint _powerInW, address[] _escrow) external returns (uint);
 }

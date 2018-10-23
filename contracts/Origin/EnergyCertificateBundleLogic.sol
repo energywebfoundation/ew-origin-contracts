@@ -24,7 +24,6 @@ pragma experimental ABIEncoderV2;
 import "ew-user-registry-contracts/Users/RoleManagement.sol";
 import "../../contracts/Origin/CertificateDB.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetProducingInterface.sol";
-import "ew-asset-registry-contracts/Asset/AssetProducingRegistryDB.sol";
 import "../../contracts/Origin/TradableEntityContract.sol";
 import "../../contracts/Interfaces/ERC20Interface.sol";
 import "../../contracts/Origin/TradableEntityLogic.sol";
@@ -137,41 +136,6 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
         return EnergyCertificateBundleDB(db).getBundle(_bundleId);
     }
     
-    /*
-    /// @notice Getter for a specific Bundle
-    /// @param _bundleId The id of the requested bundle
-    /// @return the bundle as single values
-    function getBundle(uint _bundleId) external view 
-        returns (  
-            uint _assetId, 
-            address _owner,
-            uint _powerInW,
-            bool _retired,
-            string _dataLog,
-            uint _coSaved,
-            address[] _escrow,
-            uint _creationTime, 
-            uint _parentId,
-            uint[] _children,
-            uint _maxOwnerChanges,
-            uint _ownerChangeCounter)
-        {
-        EnergyCertificateBundleDB.EnergyCertificateBundle memory bundle = EnergyCertificateBundleDB(db).getBundle(_bundleId);
-        _assetId = bundle.tradableEntity.assetId;
-        _owner = bundle.tradableEntity.owner;
-        _powerInW = bundle.tradableEntity.powerInW;
-        _retired = bundle.certificateSpecific.retired;
-        _dataLog = bundle.certificateSpecific.dataLog;
-        _coSaved = bundle.certificateSpecific.coSaved;
-        _escrow = bundle.tradableEntity.escrow;
-        _creationTime = bundle.certificateSpecific.creationTime;
-        _parentId = bundle.certificateSpecific.parentId;
-        _children = bundle.certificateSpecific.children;
-        _maxOwnerChanges = bundle.certificateSpecific.maxOwnerChanges;
-        _ownerChangeCounter = bundle.certificateSpecific.ownerChangeCounter;
-    }
-    */
-
     /// @notice Getter for the length of the list of bundles
     /// @return the length of the array
     function getBundleListLength() external view returns (uint) {
@@ -199,30 +163,30 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
     /// @notice Creates a bundle. Checks in the AssetRegistry if requested wh are available.
     /// @param _assetId The id of the asset that generated the energy for the bundle 
     /// @param _powerInW The amount of Watts the bundle holds
-    /// @param _cO2Saved The amount of CO2 saved
     /// @param _escrow The escrow-addresses
-    function createBundle(uint _assetId, uint _powerInW, uint _cO2Saved, address[] _escrow) 
+    function createBundle(uint _assetId, uint _powerInW) 
         external  
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
         returns (uint) 
     {
-        AssetProducingRegistryDB.Asset memory asset = AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getFullAsset(_assetId);
+      //  AssetProducingRegistryDB.Asset memory asset = AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getFullAsset(_assetId);
+        AssetProducingDB.Asset memory asset =  AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getAssetById(_assetId);
+
 
         TradableEntityContract.TradableEntity memory tradableEntity = TradableEntityContract.TradableEntity({
             assetId: _assetId,
-            owner: asset.owner,
+            owner: asset.assetGeneral.owner,
             powerInW: _powerInW,
             acceptedToken: 0x0,
             onChainDirectPurchasePrice: 0,
-            escrow: _escrow,
+            escrow: asset.assetGeneral.matcher,
             approvedAddress: 0x0
 
         });
 
         CertificateSpecific memory certificateSpecific = CertificateSpecific({
             retired: false,
-            dataLog: asset.lastSmartMeterReadFileHash,
-            coSaved: _cO2Saved,
+            dataLog: asset.assetGeneral.lastSmartMeterReadFileHash,
             creationTime: block.timestamp,
             parentId: EnergyCertificateBundleDB(db).getBundleListLength(),
             children: new uint256[](0),
@@ -235,9 +199,9 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
             certificateSpecific
         );
 
-        emit Transfer(0,  asset.owner, bundleId);
+        emit Transfer(0,  asset.assetGeneral.owner, bundleId);
 
-        emit LogCreatedBundle(bundleId, _powerInW, asset.owner);
+        emit LogCreatedBundle(bundleId, _powerInW, asset.assetGeneral.owner);
         return bundleId;
      
     }

@@ -90,7 +90,6 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
     function createCertificateRaw(
         uint _assetId, 
         uint _powerInW, 
-        uint _cO2Saved, 
         address[] _escrow,
         address _assetOwner,
         string _lastSmartMeterReadFileHash,
@@ -116,7 +115,6 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
         CertificateDB.CertificateSpecific memory certificateSpecific= CertificateSpecific({
             retired: false,
             dataLog: _lastSmartMeterReadFileHash,
-            coSaved: _cO2Saved,
             creationTime: block.timestamp,
             parentId: getCertificateListLength(),
             children: new uint256[](0),
@@ -159,7 +157,6 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
         CertificateDB.CertificateSpecific memory certificateSpecificOne = CertificateSpecific({
             retired: false,
             dataLog: parent.certificateSpecific.dataLog,
-            coSaved: (parent.certificateSpecific.coSaved*(_power*100000000000/parent.tradableEntity.powerInW)/100000000000),
             creationTime: parent.certificateSpecific.creationTime,
             parentId: _parentId,
             children: new uint256[](0),
@@ -172,8 +169,6 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
             certificateSpecificOne
         );
 
-
-
         TradableEntity memory childTwoEntity = TradableEntity({
             assetId: parent.tradableEntity.assetId,
             owner: parent.tradableEntity.owner,
@@ -182,15 +177,11 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
             onChainDirectPurchasePrice: 0,
             escrow: parent.tradableEntity.escrow,
             approvedAddress: parent.tradableEntity.approvedAddress
-          //  acceptedToken: parent.tradableEntity.acceptedToken,
-          //  onChainDirectPurchasePrice: (parent.tradableEntity.onChainDirectPurchasePrice*(parent.tradableEntity.powerInW-_power*100000000000/parent.tradableEntity.powerInW)/100000000000)
-
         });
 
         CertificateSpecific memory certificateSpecificTwo = CertificateSpecific({
             retired: false,
             dataLog: parent.certificateSpecific.dataLog,
-            coSaved: (parent.certificateSpecific.coSaved*((parent.tradableEntity.powerInW - _power)*1000000/parent.tradableEntity.powerInW)/1000000),
             creationTime: parent.certificateSpecific.creationTime,
             parentId: _parentId,
             children: new uint256[](0),

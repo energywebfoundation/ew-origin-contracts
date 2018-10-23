@@ -24,7 +24,6 @@ pragma experimental ABIEncoderV2;
 import "ew-user-registry-contracts/Users/RoleManagement.sol";
 import "../../contracts/Origin/CertificateDB.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetProducingInterface.sol";
-import "ew-asset-registry-contracts/Asset/AssetProducingRegistryDB.sol";
 import "../../contracts/Origin/TradableEntityContract.sol";
 import "../../contracts/Origin/TradableEntityLogic.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol";
@@ -32,6 +31,8 @@ import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
 import "../../contracts/Interfaces/CertificateInterface.sol";
 import "../../contracts/Interfaces/ERC20Interface.sol";
 import "../../contracts/Interfaces/TradableEntityDBInterface.sol";
+import "ew-asset-registry-contracts/Interfaces/AssetGeneralInterface.sol";
+import "ew-asset-registry-contracts/Asset/AssetProducingDB.sol";
 
 import "../../contracts/Origin/CertificateSpecificDB.sol";
 
@@ -168,19 +169,18 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     /// @notice Creates a certificate of origin. Checks in the AssetRegistry if requested wh are available.
     /// @param _assetId The id of the asset that generated the energy for the certificate 
     /// @param _powerInW The amount of Watts the Certificate holds
-    /// @param _cO2Saved The amount of CO2 saved
-    /// @param _escrow The escrow-addresses
-    function createCertificate(uint _assetId, uint _powerInW, uint _cO2Saved, address[] _escrow) 
+    function createCertificate(uint _assetId, uint _powerInW) 
         public 
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
         returns (uint) 
     {
-        AssetProducingRegistryDB.Asset memory asset = AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getFullAsset(_assetId);
+       // AssetProducingRegistryDB.Asset memory asset = AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getFullAsset(_assetId);
+        AssetProducingDB.Asset memory asset =  AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getAssetById(_assetId);
 
-        uint certId = CertificateDB(db).createCertificateRaw(_assetId,  _powerInW,  _cO2Saved,  _escrow, asset.owner, asset.lastSmartMeterReadFileHash, asset.maxOwnerChanges); 
-        emit Transfer(0,  asset.owner, certId);
+        uint certId = CertificateDB(db).createCertificateRaw(_assetId, _powerInW, asset.assetGeneral.matcher, asset.assetGeneral.owner, asset.assetGeneral.lastSmartMeterReadFileHash, asset.maxOwnerChanges); 
+        emit Transfer(0,  asset.assetGeneral.owner, certId);
 
-        emit LogCreatedCertificate(certId, _powerInW, asset.owner);
+        emit LogCreatedCertificate(certId, _powerInW, asset.assetGeneral.owner);
         return certId;
     
     }

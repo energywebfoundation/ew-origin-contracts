@@ -22,7 +22,6 @@ contract CertificateSpecificContract {
     struct CertificateSpecific {
         bool retired;
         string dataLog;
-        uint coSaved;
         uint creationTime; 
         uint parentId;
         uint[] children;

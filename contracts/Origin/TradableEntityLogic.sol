@@ -24,7 +24,6 @@ import "../../contracts/Interfaces/ERC721.sol";
 import "../../contracts/Interfaces/ERC721TokenReceiver.sol";
 import "../../contracts/Interfaces/ERC165.sol";
 import "ew-asset-registry-contracts/Interfaces/AssetProducingInterface.sol";
-import "ew-asset-registry-contracts/Asset/AssetProducingRegistryDB.sol";
 import "../../contracts/Origin/EnergyDB.sol";
 import "../../contracts/Interfaces/TradableEntityDBInterface.sol";
 import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
@@ -60,12 +59,10 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         assetContractLookup = _assetContractLookup;
     }
 
-
     /**
         ERC721 functions
         TODO: token creation: function + transfer-event
      */
-
     function balanceOf(address _owner) external view returns (uint256){
         require(_owner != 0x0);
         return db.getBalanceOf(_owner);
