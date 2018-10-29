@@ -18,6 +18,9 @@ const main = async () => {
     console.log('KB: ' + (certBytecode.length) / 2);
     console.log('');
 
+    console.log("deployedbytecode: certLogic")
+    console.log("KB: " + (certFile.deployedBytecode.length) / 2)
+
     const certDBFile = JSON.parse(fs.readFileSync(process.cwd() + '/dist/contracts/CertificateDB.json', 'utf8'));
     const certDBBytecode = certDBFile.bytecode;
 

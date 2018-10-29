@@ -107,6 +107,7 @@ describe('OriginContractLookup', () => {
         }
         catch (ex) {
             failed = true;
+            assert.include(ex.message, "already initialized")
         }
         assert.isTrue(failed);
     });
@@ -120,6 +121,8 @@ describe('OriginContractLookup', () => {
         }
         catch (ex) {
             failed = true;
+            assert.include(ex.message, "msg.sender is not owner")
+
         }
         assert.isTrue(failed);
     });
@@ -144,6 +147,7 @@ describe('OriginContractLookup', () => {
         }
         catch (ex) {
             failed = true;
+            assert.include(ex.message, "msg.sender is not owner")
 
         }
 

@@ -379,6 +379,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.transferFrom(accountAssetOwner, accountTrader, 0, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
                 }
 
                 assert.isTrue(failed);
@@ -390,6 +391,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.transferFrom(accountAssetOwner, accountTrader, 0, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
 
                 assert.isTrue(failed);
@@ -649,6 +652,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 1, null, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
+
                 }
 
                 assert.isTrue(failed);
@@ -660,6 +665,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 1, null, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
 
                 assert.isTrue(failed);
@@ -671,6 +678,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 1, null, { privateKey: assetOwnerPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "_to is not a contract")
+
                 }
 
                 assert.isTrue(failed);
@@ -682,6 +691,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 1, null, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
+
                 }
 
                 assert.isTrue(failed);
@@ -693,6 +704,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 1, null, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
 
                 assert.isTrue(failed);
@@ -715,6 +728,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 1, null, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
                 }
 
                 assert.isTrue(failed);
@@ -726,6 +740,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 1, null, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
                 }
 
                 assert.isTrue(failed);
@@ -833,6 +848,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 2, '0x01', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
                 }
 
                 assert.isTrue(failed);
@@ -844,6 +860,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 2, '0x01', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
 
                 assert.isTrue(failed);
@@ -855,6 +873,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 2, '0x01', { privateKey: assetOwnerPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "_to is not a contract")
+
                 }
 
                 assert.isTrue(failed);
@@ -866,6 +886,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 2, '0x01', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
+
                 }
 
                 assert.isTrue(failed);
@@ -877,6 +899,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 2, '0x01', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
 
                 assert.isTrue(failed);
@@ -899,6 +923,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 2, '0x01', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
                 }
 
                 assert.isTrue(failed);
@@ -910,6 +935,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 2, '0x01', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
 
                 assert.isTrue(failed);
@@ -1117,6 +1144,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.approve('0x1000000000000000000000000000000000000005', 3, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "approve: not owner / matcher")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1128,6 +1157,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.approve('0x1000000000000000000000000000000000000005', 3, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "approve: not owner / matcher")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1146,6 +1177,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1327,6 +1360,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1339,6 +1374,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1351,6 +1388,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1363,6 +1402,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1375,6 +1416,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1393,6 +1436,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1528,6 +1573,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1540,6 +1587,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1552,6 +1601,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1564,6 +1615,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the owner of the entity")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1594,6 +1647,8 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1727,6 +1782,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.transferFrom(accountAssetOwner, accountTrader, 7, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1864,6 +1921,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 8, null, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1875,6 +1934,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 8, null, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1886,6 +1947,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 8, null, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
                 assert.isTrue(failed);
             });
@@ -1898,6 +1961,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 8, null, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "_to is not a contract")
+
                 }
                 assert.isTrue(failed);
             });
@@ -2035,6 +2100,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 9, "0x01", { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+
                 }
                 assert.isTrue(failed);
             });
@@ -2386,6 +2453,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 11, null, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "_to is not a contract")
+
                 }
                 assert.isTrue(failed);
             });
@@ -2551,6 +2620,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 12, "0x01", { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "_to is not a contract")
                 }
                 assert.isTrue(failed);
             });
@@ -2691,6 +2761,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.setTradableToken(13, "0x1000000000000000000000000000000000000006", { privateKey: privateKeyDeployment })
                 } catch (ex) {
                     failed = true
+                    assert.include(ex.message, "not the enitity-owner")
                 }
 
                 assert.isTrue(failed)
@@ -2703,6 +2774,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.setTradableToken(13, "0x1000000000000000000000000000000000000006", { privateKey: traderPK })
                 } catch (ex) {
                     failed = true
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed)
@@ -2742,6 +2815,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(13, 1000, { privateKey: privateKeyDeployment })
                 } catch (ex) {
                     failed = true
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed)
@@ -2754,6 +2829,8 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(13, 1000, { privateKey: traderPK })
                 } catch (ex) {
                     failed = true
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed)

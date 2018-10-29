@@ -45,7 +45,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     event LogEscrowAdded(uint indexed _certificateId, address _escrow);
 
     modifier onlyEntityOwner(uint _entityId) {
-        require(db.getTradableEntityOwner(_entityId) == msg.sender);
+        require(db.getTradableEntityOwner(_entityId) == msg.sender,"not the enitity-owner");
         _;
     }
 
@@ -64,13 +64,13 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         TODO: token creation: function + transfer-event
      */
     function balanceOf(address _owner) external view returns (uint256){
-        require(_owner != 0x0);
+        require(_owner != 0x0,"address 0x0 not allowed");
         return db.getBalanceOf(_owner);
     }
 
     function ownerOf(uint256 _entityId) external view returns (address){
         address owner = db.getTradableEntityOwner(_entityId);
-        require(owner != 0x0);
+        require(owner != 0x0,"address 0x0 not allowed");
         return owner;
     }
 
@@ -91,7 +91,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
 
     function approve(address _approved, uint256 _entityId) external payable {
         TradableEntityContract.TradableEntity memory te = TradableEntityDB(db).getTradableEntity(_entityId);
-        require(te.owner == msg.sender || checkMatcher(te.escrow));
+        require(te.owner == msg.sender || checkMatcher(te.escrow),"approve: not owner / matcher");
         db.addApproval(_entityId, _approved);
 
         emit Approval(msg.sender,_approved, _entityId);
@@ -185,16 +185,15 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
 
     function simpleTransferInternal(address _from, address _to, uint256 _entityId) internal {
         TradableEntityContract.TradableEntity memory te = TradableEntityDB(db).getTradableEntity(_entityId);
-        require(
-            (te.owner == _from) 
-           // &&(_to != 0x0) 
-            && (te.owner != 0x0) && (msg.value == 0) && 
-            (te.owner == msg.sender
+
+        require(te.owner == _from,"not the owner of the entity");
+        require(te.owner != 0x0, "0x0 as owner is not allowed");
+        require(msg.value == 0, "sending value is not allowed");
+      //  require((te.owner == _from) && (te.owner != 0x0) && (msg.value == 0),"owner not matching or send value");
+        require(te.owner == msg.sender
             || checkMatcher(te.escrow)
             || db.getOwnerToOperators(te.owner, msg.sender)
-            || te.approvedAddress == msg.sender
-        ));
-        
+            || te.approvedAddress == msg.sender,"simpleTransfer, missing rights");
         db.setTradableEntityOwnerAndAddApproval(_entityId, _to,0x0);
         db.removeTokenAndPrice(_entityId);
         emit Transfer(_from,_to,_entityId);
@@ -202,26 +201,27 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     }
 
     function safeTransferChecks(address _from, address _to, uint256 _entityId, bytes _data) internal {
-        require(isContract(_to));
-        require(ERC721TokenReceiver(_to).onERC721Received(this,_from,_entityId,_data) == 0x150b7a02);
+        require(isContract(_to),"_to is not a contract");
+        require(ERC721TokenReceiver(_to).onERC721Received(this,_from,_entityId,_data) == 0x150b7a02,"_to did not respond correctly");
     }
 
     /// @notice Removes an escrow-address of a certifiacte
     /// @param _certificateId The id of the certificate
     /// @param _escrow The address to be removed
-    function removeEscrow(uint _certificateId, address _escrow) external {
-        require(db.getTradableEntityOwner(_certificateId) == msg.sender);
-        require(db.removeEscrow(_certificateId, _escrow));
+    function removeEscrow(uint _certificateId, address _escrow) external onlyEntityOwner(_certificateId){
+  //      require(db.getTradableEntityOwner(_certificateId) == msg.sender);
+        require(db.removeEscrow(_certificateId, _escrow),"escrow address not in array");
         emit LogEscrowRemoved(_certificateId, _escrow);
     }
 
     /// @notice adds a new escrow address to a certificate
     /// @param _certificateId The id of the certificate
     /// @param _escrow The additional escrow address
-    function addEscrowForEntity(uint _certificateId, address _escrow) external {
-        require(
-            (db.getTradableEntityOwner(_certificateId) == msg.sender)
-            && (db.getTradableEntityEscrowLength(_certificateId) < OriginContractLookupInterface(owner).maxMatcherPerCertificate()));
+    function addEscrowForEntity(uint _certificateId, address _escrow) 
+        external
+        onlyEntityOwner(_certificateId)
+    {
+        require(db.getTradableEntityEscrowLength(_certificateId) < OriginContractLookupInterface(owner).maxMatcherPerCertificate(),"maximum amount of escrows reached");
         db.addEscrowForEntity(_certificateId, _escrow);
         emit LogEscrowAdded(_certificateId, _escrow);
     }

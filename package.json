@@ -9,7 +9,7 @@
     "prepare-wrapping": "rm -rf src/wrappedContracts && rm -rf dist/contracts && mkdir -p src/wrappedContracts && npm run compile && node wrapping.js",
     "start-ganache": "ganache-cli -m 'chalk park staff buzz chair purchase wise oak receive avoid avoid home' -g 0 -l 80000000 -e 1000000 -a 20",
     "compile": "spm compile",
-    "parity-docker": "docker pull docker.slock.it/build-images/parity:v1.11.8-tobalaba-poa && docker run --name 'parityDocker' -p 8180:8180 -p 8545:8545 -p 8546:8546 -p 8090:8091 docker.slock.it/build-images/parity:v1.11.8-tobalaba-poa",
+    "parity-docker": "docker pull docker.slock.it/build-images/parity:v1.11.8-tobalaba && docker run --name 'parityDocker' -p 8180:8180 -p 8545:8545 -p 8546:8546 -p 8090:8091 docker.slock.it/build-images/parity:v1.11.8-tobalaba",
     "dockerstop": "docker kill 'parityDocker' && docker container rm 'parityDocker'"
   },
   "repository": {
@@ -19,9 +19,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ew-asset-registry-contracts": "0.1.4",
+    "ew-asset-registry-contracts": "0.1.5",
     "ew-user-registry-contracts": "0.0.3",
-    "sloffle": "^1.3.1",
+    "sloffle": "^1.3.2",
     "web3": "^1.0.0-beta.36",
     "winston": "^3.0.0"
   },

@@ -464,6 +464,7 @@ describe('CertificateLogic', () => {
                 try {
                     await certificateLogic.transferFrom(accountAssetOwner, accountTrader, 1, { privateKey: privateKeyDeployment });
                 } catch (ex) {
+                    assert.include(ex.message, "user does not have the required role")
                     failed = true;
                 }
 
@@ -475,6 +476,7 @@ describe('CertificateLogic', () => {
                 try {
                     await certificateLogic.transferFrom(accountAssetOwner, accountTrader, 1, { privateKey: traderPK });
                 } catch (ex) {
+                    assert.include(ex.message, "simpleTransfer, missing rights")
                     failed = true;
                 }
 
@@ -487,6 +489,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.transferFrom(accountDeployment, accountTrader, 1, { privateKey: assetOwnerPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the owner of the entity")
+
                 }
 
                 assert.isTrue(failed);
@@ -498,7 +502,9 @@ describe('CertificateLogic', () => {
                     await certificateLogic.transferFrom(accountAssetOwner, accountTrader, 0, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
                 }
+
 
                 assert.isTrue(failed);
             });
@@ -509,6 +515,7 @@ describe('CertificateLogic', () => {
                     await certificateLogic.transferFrom(accountAssetOwner, accountTrader, 0, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
                 }
 
                 assert.isTrue(failed);
@@ -660,6 +667,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.transferFrom(accountTrader, accountTrader, 0, { privateKey: assetOwnerPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the owner of the entity")
+
                 }
 
                 assert.isTrue(failed);
@@ -754,6 +763,7 @@ describe('CertificateLogic', () => {
                     await certificateLogic.safeTransferFrom(accountAssetOwner, accountTrader, 3, '', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
                 }
 
                 assert.isTrue(failed);
@@ -766,6 +776,7 @@ describe('CertificateLogic', () => {
                     await certificateLogic.safeTransferFrom(accountAssetOwner, accountTrader, 3, '', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
                 }
 
                 assert.isTrue(failed);
@@ -778,6 +789,7 @@ describe('CertificateLogic', () => {
                     await certificateLogic.safeTransferFrom(accountAssetOwner, accountTrader, 3, '', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
                 }
 
                 assert.isTrue(failed);
@@ -790,6 +802,7 @@ describe('CertificateLogic', () => {
                     await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 3, '', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "user does not have the required role")
                 }
 
                 assert.isTrue(failed);
@@ -802,6 +815,35 @@ describe('CertificateLogic', () => {
                     await certificateLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 3, '', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should throw when trying to call safetransferFrom as owner and regular account', async () => {
+                let failed = false;
+                try {
+                    await certificateLogic.safeTransferFrom(accountAssetOwner, accountTrader, 3, '', { privateKey: assetOwnerPK });
+                } catch (ex) {
+                    failed = true;
+                    //   assert.include(ex.message, "simpleTransfer, missing rights")
+                    console.log(ex.message)
+                    assert.include(ex.message, "_to is not a contract")
+                }
+
+                assert.isTrue(failed);
+            });
+
+            it('should throw when trying to call safetransferFrom as owner random contract', async () => {
+                let failed = false;
+                try {
+                    await certificateLogic.safeTransferFrom(accountAssetOwner, certificateLogic.web3Contract._address, 3, '', { privateKey: assetOwnerPK });
+                } catch (ex) {
+                    failed = true;
+                    //   assert.include(ex.message, "simpleTransfer, missing rights")
+                    //   console.log(ex.message)
+                    //   assert.include(ex.message, "_to did not respond correctly")
                 }
 
                 assert.isTrue(failed);
@@ -1272,9 +1314,8 @@ describe('CertificateLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    if (isGanache) {
-                        assert.include(ex.message, 'revert user does not have the required role');
-                    }
+                    assert.include(ex.message, 'user does not have the required role');
+
                 }
                 assert.isTrue(failed);
             });
@@ -1354,9 +1395,8 @@ describe('CertificateLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    if (isGanache) {
-                        assert.include(ex.message, 'revert user does not have the required role');
-                    }
+                    assert.include(ex.message, 'user does not have the required role');
+
                 }
                 assert.isTrue(failed);
             });
@@ -1369,9 +1409,8 @@ describe('CertificateLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    if (isGanache) {
-                        assert.include(ex.message, 'revert user does not have the required role');
-                    }
+                    assert.include(ex.message, 'user does not have the required role');
+
                 }
                 assert.isTrue(failed);
             });
@@ -1384,9 +1423,8 @@ describe('CertificateLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    if (isGanache) {
-                        assert.include(ex.message, 'revert user does not have the required role');
-                    }
+                    assert.include(ex.message, 'user does not have the required role');
+
                 }
                 assert.isTrue(failed);
             });
@@ -1438,6 +1476,7 @@ describe('CertificateLogic', () => {
 
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "simpleTransfer, missing rights")
                 }
                 assert.isTrue(failed);
             });
@@ -1637,9 +1676,8 @@ describe('CertificateLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    if (isGanache) {
-                        assert.include(ex.message, 'revert user does not have the required role');
-                    }
+                    assert.include(ex.message, 'user does not have the required role');
+
                 }
                 assert.isTrue(failed);
             });
@@ -1652,9 +1690,8 @@ describe('CertificateLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    if (isGanache) {
-                        assert.include(ex.message, 'revert user does not have the required role');
-                    }
+                    assert.include(ex.message, 'user does not have the required role');
+
                 }
                 assert.isTrue(failed);
             });
@@ -1667,9 +1704,8 @@ describe('CertificateLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    if (isGanache) {
-                        assert.include(ex.message, 'revert user does not have the required role');
-                    }
+                    assert.include(ex.message, 'user does not have the required role');
+
                 }
                 assert.isTrue(failed);
             });
@@ -1901,6 +1937,7 @@ describe('CertificateLogic', () => {
                     await certificateLogic.approve(approvedAccount, 11, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "approve: not owner / matcher")
                 }
 
                 assert.isTrue(failed);
@@ -1913,6 +1950,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.approve(approvedAccount, 11, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "approve: not owner / matcher")
+
                 }
 
                 assert.isTrue(failed);
@@ -2358,6 +2397,7 @@ describe('CertificateLogic', () => {
                         { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the enitity-owner")
                 }
 
                 assert.isTrue(failed);
@@ -2374,6 +2414,8 @@ describe('CertificateLogic', () => {
                         { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed);
@@ -2396,6 +2438,7 @@ describe('CertificateLogic', () => {
                     await certificateLogic.buyCertificate(15, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "erc20 transfer failed")
                 }
 
                 assert.isTrue(failed);
@@ -2411,6 +2454,8 @@ describe('CertificateLogic', () => {
                         { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed);
@@ -2426,6 +2471,8 @@ describe('CertificateLogic', () => {
                         { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed);
@@ -2484,6 +2531,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.buyCertificate(15, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "erc20 transfer failed")
+
                 }
 
                 assert.isTrue(failed);
@@ -2497,6 +2546,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.buyCertificate(15, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "erc20 transfer failed")
+
                 }
 
                 assert.isTrue(failed);
@@ -2632,6 +2683,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000004', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed);
@@ -2644,6 +2697,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000004', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed);
@@ -2656,6 +2711,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000004', { privateKey: assetOwnerPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "escrow address not in array")
+
                 }
 
                 assert.isTrue(failed);
@@ -2668,6 +2725,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000005', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed);
@@ -2680,6 +2739,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.removeEscrow(16, '0x1000000000000000000000000000000000000005', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed);
@@ -2780,6 +2841,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.addEscrowForEntity(16, '0x1000000000000000000000000000000000000000', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed);
@@ -2792,6 +2855,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.addEscrowForEntity(16, '0x1000000000000000000000000000000000000000', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "not the enitity-owner")
+
                 }
 
                 assert.isTrue(failed);
@@ -2873,6 +2938,8 @@ describe('CertificateLogic', () => {
                     await certificateLogic.addEscrowForEntity(16, '0x1000000000000000000000000000000000000010', { privateKey: assetOwnerPK });
                 } catch (ex) {
                     failed = true;
+                    assert.include(ex.message, "maximum amount of escrows reached")
+
                 }
 
                 assert.isTrue(failed);

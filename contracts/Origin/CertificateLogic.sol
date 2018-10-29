@@ -98,9 +98,9 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         onlyRole(RoleManagement.Role.Trader)
      {
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
-        require(cert.tradableEntity.acceptedToken != address(0x0));
+        require(cert.tradableEntity.acceptedToken != address(0x0),"0x0 not allowed");
 
-        require(ERC20Interface(cert.tradableEntity.acceptedToken).transferFrom(msg.sender, cert.tradableEntity.owner, cert.tradableEntity.onChainDirectPurchasePrice));
+        require(ERC20Interface(cert.tradableEntity.acceptedToken).transferFrom(msg.sender, cert.tradableEntity.owner, cert.tradableEntity.onChainDirectPurchasePrice),"erc20 transfer failed");
         TradableEntityDBInterface(db).addApproval(_certificateId, msg.sender);
 
         simpleTransferInternal(cert.tradableEntity.owner, msg.sender, _certificateId);
@@ -110,7 +110,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
      
     /// @notice Request a certificate to retire. Only Certificate owner can retire
     /// @param _certificateId The id of the certificate
-    function retireCertificate(uint _certificateId) external {
+    function retireCertificate(uint _certificateId) external  { 
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
         require(cert.tradableEntity.owner == msg.sender);
         require(cert.certificateSpecific.children.length == 0);
