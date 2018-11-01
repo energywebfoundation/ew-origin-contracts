@@ -20,13 +20,13 @@ pragma experimental ABIEncoderV2;
 import "../../contracts/Interfaces/CertificateSpecificDBInterface.sol";
 import "../../contracts/Origin/CertificateSpecificContract.sol";
 
-import "ew-utils-general-contracts/Msc/Owned.sol";
+import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
 
 contract CertificateSpecificDB is CertificateSpecificDBInterface, Owned {
 
-    /// @notice Adds a certificate-Id as child to an existing certificate
-    /// @param _certificateId The array position in which the parent certificate is stored
-    /// @param _childId The array position in which the child certificate is stored
+	/// @notice Adds a certificate-Id as child to an existing certificate
+	/// @param _certificateId The array position in which the parent certificate is stored
+	/// @param _childId The array position in which the child certificate is stored
     function addChildren(uint _certificateId, uint _childId) public onlyOwner {
         getCertificateInternally(_certificateId).children.push(_childId);
     }

@@ -21,7 +21,7 @@ pragma experimental ABIEncoderV2;
 /// @notice This contract only provides getter and setter methods
 
 import "../../contracts/Origin/TradableEntityContract.sol";
-import "ew-utils-general-contracts/Msc/Owned.sol";
+import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
 import "../../contracts/Origin/TradableEntityDB.sol";
 
 contract EnergyDB is TradableEntityDB, TradableEntityContract {

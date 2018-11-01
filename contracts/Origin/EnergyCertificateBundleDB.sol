@@ -109,6 +109,9 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
         bundleList[_entityId].tradableEntity = _entity;
     }
 
+	/// @notice get Certificate Specific
+	/// @param _certificateId the certificate Id
+	/// @return the
     function getCertificateSpecific(uint _certificateId) 
         external 
         view 

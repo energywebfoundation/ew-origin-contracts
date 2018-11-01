@@ -16,11 +16,11 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-import "ew-user-registry-contracts/Users/RoleManagement.sol";
+import "ew-user-registry-contracts/contracts/Users/RoleManagement.sol";
 import "../../contracts/Origin/TradableEntityContract.sol";
 import "../../contracts/Origin/TradableEntityLogic.sol";
 import "../../contracts/Interfaces/OriginContractLookupInterface.sol";
-import "ew-asset-registry-contracts/Interfaces/AssetContractLookupInterface.sol";
+import "ew-asset-registry-contracts/contracts/Interfaces/AssetContractLookupInterface.sol";
 /// @title The logic contract for the AgreementDB of Origin list
 contract EnergyLogic is RoleManagement, TradableEntityLogic, TradableEntityContract {
 

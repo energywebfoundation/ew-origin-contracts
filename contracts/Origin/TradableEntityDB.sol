@@ -17,7 +17,7 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
-import "ew-utils-general-contracts/Msc/Owned.sol";
+import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
 import "../../contracts/Interfaces/TradableEntityDBInterface.sol";
 import "../../contracts/Origin/TradableEntityContract.sol";
 

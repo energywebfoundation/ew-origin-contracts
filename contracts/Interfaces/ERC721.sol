@@ -91,10 +91,10 @@ interface ERC721 /* is ERC165 */ {
     /// @return The approved address for this NFT, or the zero address if there is none
     function getApproved(uint256 _tokenId) external view returns (address);
 
-    /// @notice Query if an address is an authorized operator for another address
-    /// @param _owner The address that owns the NFTs
-    /// @param _operator The address that acts on behalf of the owner
-    /// @return True if `_operator` is an approved operator for `_owner`, false otherwise
+	/// @notice Query if an address is an authorized operator for another address
+	/// @param _owner The address that owns the NFTs
+	/// @param _operator The address that acts on behalf of the owner
+	/// @return True if `_operator` is an approved operator for `_owner`, false otherwise
     function isApprovedForAll(address _owner, address _operator) external view returns (bool);
 }
 
