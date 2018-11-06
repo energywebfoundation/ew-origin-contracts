@@ -35,28 +35,33 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface {
         maxMatcherPerCertificate = 10;
     } 
 
-    /// @notice function to initialize the contracts, setting the needed contract-addresses
+	/// @notice function to initialize the contracts, setting the needed contract-addresses
+	/// @param _assetRegistry the asset Registry
+	/// @param _originLogicRegistry the origin Logic Registry
+	/// @param _originDB the origin DB
     function init(
         AssetContractLookupInterface _assetRegistry, 
-        Updatable _origintLogicRegistry, 
+        Updatable _originLogicRegistry, 
         address _originDB 
     ) 
         external
         onlyOwner
     {
         require(    
-            _assetRegistry != address(0) && _origintLogicRegistry != address(0)
+            _assetRegistry != address(0) && _originLogicRegistry != address(0)
             && originLogicRegistry == address(0) && assetContractLookup == address(0) && assetContractLookup == address(0),
             "already initialized"
         );
         require(_originDB != 0, "originDB cannot be 0");
 
-        originLogicRegistry = _origintLogicRegistry;
+        originLogicRegistry = _originLogicRegistry;
         assetContractLookup = _assetRegistry;
 
         originLogicRegistry.init(_originDB, msg.sender);
     }
 
+	/// @notice set the amount of maximal matcher per certificate
+	/// @param _new the new amount
     function setMaxMatcherPerCertificate(uint _new)
         external 
         onlyOwner 
@@ -65,8 +70,8 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface {
     }
 
    
-    /// @notice function to update one or more logic-contracts
-    /// @param _originRegistry address of the new user-registry-logic-contract
+	/// @notice function to update one or more logic-contracts
+	/// @param _originRegistry address of the new user-registry-logic-contract
     function update(
         Updatable _originRegistry
     )
@@ -78,16 +83,20 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface {
         originLogicRegistry = _originRegistry;
     }
 
+	/// @notice gets the origin logic registry
+	/// @return the origin logic registry
     function originLogicRegistry() external view returns (address){
         return originLogicRegistry;
     }
 
+	/// @notice gets the asset contract lookup
+	/// @return the asset contract lookup
     function assetContractLookup() external view returns (address){
         return assetContractLookup;
     }
 
-	/// @notice max Matcher Per Certificate
-	/// @return the
+	/// @notice gets the maximal amount of matcher per certificate
+	/// @return the maximal amount of matcher per certificate
     function maxMatcherPerCertificate() external view returns (uint){
         return maxMatcherPerCertificate;
     }

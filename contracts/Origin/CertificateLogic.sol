@@ -53,6 +53,11 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         ERC721 functions to overwrite
      */
 
+	/// @notice transfers a certificate secureley
+	/// @param _from the current owner of the certificate
+	/// @param _to the new owner of the certificate
+	/// @param _entityId the certificate id
+	/// @param _data the data
     function safeTransferFrom(
         address _from, 
         address _to, 
@@ -65,6 +70,10 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         internalSafeTransfer(_from, _to, _entityId, _data);
     }
 
+	/// @notice transfers a certificate securely
+	/// @param _from the current owner of the certificate
+	/// @param _to the new owner of the certificate
+	/// @param _entityId the certificate id
     function safeTransferFrom(
         address _from, 
         address _to, 
@@ -77,6 +86,10 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         internalSafeTransfer(_from, _to, _entityId, data);
     }
 
+	/// @notice transfers a certificate
+	/// @param _from the current owner
+	/// @param _to the new owner
+	/// @param _entityId the certificate id
     function transferFrom(address _from, address _to, uint256 _entityId) 
         onlyRole(RoleManagement.Role.Trader) 
         external 
@@ -93,6 +106,8 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         external functions
     */    
 
+	/// @notice buys a certificate
+	/// @param _certificateId the certificate Id
     function buyCertificate(uint _certificateId) 
         external
         onlyRole(RoleManagement.Role.Trader)
@@ -108,27 +123,27 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
 
     }
      
-    /// @notice Request a certificate to retire. Only Certificate owner can retire
-    /// @param _certificateId The id of the certificate
+	/// @notice Request a certificate to retire. Only Certificate owner can retire
+	/// @param _certificateId The id of the certificate
     function retireCertificate(uint _certificateId) external  { 
         CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
-        require(cert.tradableEntity.owner == msg.sender);
-        require(cert.certificateSpecific.children.length == 0);
+        require(cert.tradableEntity.owner == msg.sender,"retire: not the Certificate-Owner");
+        require(cert.certificateSpecific.children.length == 0,"retire: certificate has been splitted");
         if (!cert.certificateSpecific.retired) {
             retireCertificateAuto( _certificateId);
         }
     }
 
-    /// @notice Splits a certificate into two smaller ones, where (total - _power = 2ndCertificate)
-    /// @param _certificateId The id of the certificate
-    /// @param _certificateId The amount of power in W for the 1st certificate
+	/// @notice Splits a certificate into two smaller ones, where (total - _power = 2ndCertificate)
+	/// @param _certificateId The id of the certificate
+	/// @param _power the power the power of the 1st child
     function splitCertificate(uint _certificateId, uint _power) external
     {
         CertificateDB.Certificate memory parent = CertificateDB(db).getCertificate(_certificateId);
-        require (msg.sender == parent.tradableEntity.owner || checkMatcher(parent.tradableEntity.escrow));
-        require(parent.tradableEntity.powerInW > _power);
-        require(!parent.certificateSpecific.retired); 
-        require(parent.certificateSpecific.children.length == 0);
+        require (msg.sender == parent.tradableEntity.owner || checkMatcher(parent.tradableEntity.escrow),"split: not the owner or escrow");
+        require(parent.tradableEntity.powerInW > _power,"split: power too high");
+        require(!parent.certificateSpecific.retired,"split: parent is already retired"); 
+        require(parent.certificateSpecific.children.length == 0,"split: parent has already been splitted");
 
         (uint childIdOne,uint childIdTwo) = CertificateDB(db).createChildCertificate(_certificateId, _power);
         emit Transfer(0, parent.tradableEntity.owner, childIdOne);
@@ -137,27 +152,30 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         
     }
 
+	/// @notice get a certificate as struct
+	/// @param _certificateId the certificate Id
+	/// @return the Certificate-struct
     function getCertificate(uint _certificateId) external view returns (CertificateDB.Certificate memory certificate)
     {
         return CertificateDB(db).getCertificate(_certificateId);
     }
 
-    /// @notice Getter for the length of the list of certificates
-    /// @return the length of the array
+	/// @notice Getter for the length of the list of certificates
+	/// @return the length of the array
     function getCertificateListLength() external view returns (uint) {
         return CertificateDB(db).getCertificateListLength();
     }
 
-    /// @notice Getter for a specific Certificate
-    /// @param _certificateId The id of the requested certificate
-    /// @return the certificate as single values
+	/// @notice Getter for a specific Certificate
+	/// @param _certificateId The id of the requested certificate
+	/// @return the certificate as single values
     function getCertificateOwner(uint _certificateId) external view returns (address) {
         return CertificateDB(db).getCertificate(_certificateId).tradableEntity.owner;
     }
 
-    /// @notice Getter for a specific Certificate
-    /// @param _certificateId The id of the requested certificate
-    /// @return the certificate as single values
+	/// @notice Getter for a specific Certificate
+	/// @param _certificateId The id of the requested certificate
+	/// @return the certificate as single values
     function isRetired(uint _certificateId) external view returns (bool) {
         return CertificateDB(db).getCertificate(_certificateId).certificateSpecific.retired;
     }
@@ -166,9 +184,10 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         public functions
     */
 
-    /// @notice Creates a certificate of origin. Checks in the AssetRegistry if requested wh are available.
-    /// @param _assetId The id of the asset that generated the energy for the certificate 
-    /// @param _powerInW The amount of Watts the Certificate holds
+	/// @notice Creates a certificate of origin. Checks in the AssetRegistry if requested wh are available.
+	/// @param _assetId The id of the asset that generated the energy for the certificate
+	/// @param _powerInW The amount of Watts the Certificate holds
+	/// @return the newly created certificate id
     function createCertificate(uint _assetId, uint _powerInW) 
         public 
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
@@ -196,6 +215,12 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         emit LogCertificateRetired(_certificateId, true);
     }
 
+	/// @notice internal function for safeTransfer
+    /// @dev function checks all the requirements for a safeTransfer
+	/// @param _from the from
+	/// @param _to the to
+	/// @param _entityId the entity Id
+	/// @param _data the data
     function internalSafeTransfer(
         address _from, 
         address _to, 
@@ -211,13 +236,13 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         checktransferOwnerInternally(_entityId, cert);
     }
 
-    /// @notice Transfers the ownership, checks if the requirements are met
-    /// @param _certificateId The id of the requested certificate
-    /// @param _certificate The certificate where the ownership should be transfered
+	/// @notice Transfers the ownership, checks if the requirements are met
+	/// @param _certificateId The id of the requested certificate
+	/// @param _certificate The certificate where the ownership should be transfered
     function checktransferOwnerInternally(uint _certificateId, CertificateDB.Certificate _certificate) internal {
-        require(_certificate.certificateSpecific.children.length == 0);
-        require(!_certificate.certificateSpecific.retired);
-        require(_certificate.certificateSpecific.ownerChangeCounter < _certificate.certificateSpecific.maxOwnerChanges);
+        require(_certificate.certificateSpecific.children.length == 0,"changeOwner: Certificate has been splitted");
+        require(!_certificate.certificateSpecific.retired,"changeOwner: certificate is retired");
+        require(_certificate.certificateSpecific.ownerChangeCounter < _certificate.certificateSpecific.maxOwnerChanges," changeOwner: max-Owner change reached");
         uint ownerChangeCounter = _certificate.certificateSpecific.ownerChangeCounter + 1;
 
         CertificateDB(db).setOwnerChangeCounterResetEscrow(_certificateId,ownerChangeCounter);

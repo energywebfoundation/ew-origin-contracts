@@ -44,9 +44,9 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
         external functions
     */
 
-    /// @notice Returns the certificate that corresponds to the given array id
-    /// @param _bundleID The array position in which the certificate is stored
-    /// @return Certificate as struct
+	/// @notice Returns the certificate that corresponds to the given array id
+	/// @param _bundleID The array position in which the certificate is stored
+	/// @return Certificate as struct
     function getBundle(uint _bundleID) 
         external 
         view 
@@ -56,12 +56,15 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
         return bundleList[_bundleID];
     }
 
-    /// @notice function to get the amount of all bundle
-    /// @return the amount of all certificates
+	/// @notice function to get the amount of all bundle
+	/// @return the amount of all certificates
     function getBundleListLength() external onlyOwner view returns (uint) {
         return bundleList.length;
     }  
     
+	/// @notice gets the tradable-entity-struct
+	/// @param _entityId the entity Id (= certificate-id)
+	/// @return the tradable-entity-struct
     function getTradableEntity(uint _entityId) 
         public 
         view 
@@ -75,10 +78,10 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
         public functions
     */
 
-    /// @notice Creates a new certificate
-    /// @param _tradableEntity The tradeable entity specific properties
-    /// @param _certificateSpecific The certificate specific properties
-    /// @return The id of the certificate
+	/// @notice Creates a new certificate
+	/// @param _tradableEntity The tradeable entity specific properties
+	/// @param _certificateSpecific The certificate specific properties
+	/// @return The id of the certificate
     function createEnergyCertificateBundle(
         TradableEntity _tradableEntity,
         CertificateDB.CertificateSpecific _certificateSpecific 
@@ -99,19 +102,26 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
 
     }  
 
+	/// @notice gets the tradable-entity-struct internally
+    /// @dev implements abstract function
+	/// @param _entityId the entity Id (=certificate-id)
+	/// @return the tradable-entity-struct as storage-pointer
     function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
         require(msg.sender == owner || msg.sender == address(this));
         return bundleList[_entityId].tradableEntity;
     }
 
+	/// @notice sets the tradable-entity-struct
+	/// @param _entityId the entity Id (=certificate-id)
+	/// @param _entity the new tradable-entity-struct
     function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public  {
         require(msg.sender == owner || msg.sender == address(this));
         bundleList[_entityId].tradableEntity = _entity;
     }
 
-	/// @notice get Certificate Specific
+	/// @notice gets the CertificateSpecific-struct
 	/// @param _certificateId the certificate Id
-	/// @return the
+	/// @return the CertificateSpecific-struct
     function getCertificateSpecific(uint _certificateId) 
         external 
         view 
@@ -121,9 +131,16 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
         return bundleList[_certificateId].certificateSpecific;
     }
 
+	/// @notice get the CertificateSpecificStruct internally
+	/// @param _certificateId the certificate Id 
+	/// @return the CertificateSpecificstruct as storage pointer
     function getCertificateInternally(uint _certificateId) internal view returns (CertificateSpecificContract.CertificateSpecific  storage _certificate){
         return bundleList[_certificateId].certificateSpecific;
     }
+
+	/// @notice set the CertificateSpecific-struct
+	/// @param _certificateId the certificate Id
+	/// @param _certificate the new CertificateSpecific-struct
     function setCertificateSpecific(uint _certificateId, CertificateSpecificContract.CertificateSpecific  _certificate) public {
         require(msg.sender == owner || msg.sender == address(this));
         bundleList[_certificateId].certificateSpecific = _certificate;

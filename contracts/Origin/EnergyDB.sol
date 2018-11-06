@@ -43,20 +43,34 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
         external functions
     */
 
-    /// @notice Adds a new escrow address to an existing certificate
-    /// @param _escrow The new escrow-address
+	/// @notice Adds a new escrow address to an existing certificate
+	/// @param _entityId the entity Id
+	/// @param _escrow The new escrow-address
     function addEscrowForAsset(uint _entityId, address _escrow) external onlyOwner {
         energyList[_entityId].tradableEntity.escrow.push(_escrow);
     }
 
+	/// @notice sets a new escrow-array for a tradableEnttity
+	/// @param _entityId the entity Id
+	/// @param _escrow the escrow
     function setEscrow(uint _entityId, address[] _escrow) external onlyOwner {
         energyList[_entityId].tradableEntity.escrow = _escrow;
     }
 
+	/// @notice sets  the ownerToTperators flag
+	/// @param _company the company 
+	/// @param _escrow the escrow
+	/// @param _allowed the allowed-flag
     function setOwnerToOperators(address _company, address _escrow, bool _allowed) external onlyOwner {
         ownerToOperators[_company][_escrow] = _allowed;
     }
 
+	/// @notice creates a TradableEntity entry
+	/// @param _assetId the asset Id
+	/// @param _owner the owner of the TradableEntity
+	/// @param _powerInW the power In W
+	/// @param _acceptedToken the accepted token
+	/// @param _onChainDirectPurchasePrice the onchain direct purchase price
     function createTradableEntityEntry(  
         uint _assetId, 
         address _owner, 
@@ -80,41 +94,67 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
         tokenAmountMapping[_owner]++;
     } 
 
-   
-
+	/// @notice set a TradableEntity owner and adds an approval-flag
+	/// @param _entityId the entity Id
+	/// @param _owner the new owner
+	/// @param _approve the approve-flag
     function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external onlyOwner{
         setTradableEntityOwner(_entityId, _owner);
         addApproval(_entityId, _approve);
     }
 
+	/// @notice sets the tradable token for an entity
+	/// @param _entityId the entity Id
+	/// @param _token the token-contract-address
     function setTradableToken(uint _entityId, address _token) external onlyOwner {
         energyList[_entityId].tradableEntity.acceptedToken = _token;
     }
 
+	/// @notice sets the onchain direct purchase price
+	/// @param _entityId the entity Id
+	/// @param _price the price
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external onlyOwner {
         energyList[_entityId].tradableEntity.onChainDirectPurchasePrice = _price;
     }
 
+	/// @notice gets the approved address
+	/// @param _entityId the entity Id
+	/// @return the approved address
     function getApproved(uint256 _entityId) onlyOwner external view returns (address){
         return energyList[_entityId].tradableEntity.approvedAddress;
     }
 
+	/// @notice gets the balance of an account
+	/// @param _owner account
+	/// @return the balance
     function getBalanceOf(address _owner) external onlyOwner view returns (uint){
         return tokenAmountMapping[_owner];
     }
 
+	/// @notice gets the tradable-token address
+	/// @param _entityId the entity Id
+	/// @return the tradable-token
     function getTradableToken(uint _entityId) external onlyOwner view returns (address){
         return energyList[_entityId].tradableEntity.acceptedToken;
     }
 
+	/// @notice gets the onchain direct purchase price
+	/// @param _entityId the entity Id
+	/// @return the onhcain direct purchase price
     function getOnChainDirectPurchasePrice(uint _entityId) onlyOwner external view returns (uint){
         return energyList[_entityId].tradableEntity.onChainDirectPurchasePrice;
     }
 
+	/// @notice get the TradableEntity-struct
+	/// @param _entityId the entity Id
+	/// @return the TradableEntity-struct
     function getTradableEntity(uint _entityId) onlyOwner public view returns (TradableEntityContract.TradableEntity _entity){
         return energyList[_entityId].tradableEntity;
     }
 
+	/// @notice gets the TradableEntity owner
+	/// @param _entityId the entity Id
+	/// @return the owner
     function getTradableEntityOwner(uint _entityId) 
         external
         onlyOwner
@@ -124,6 +164,10 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
         return energyList[_entityId].tradableEntity.owner;
     }
 
+	/// @notice get whether there is a flag for in ownerToOperators for that escrow account
+	/// @param _company the company
+	/// @param _escrow the escrow
+	/// @return whether there is a flag
     function getOwnerToOperators(address _company, address _escrow) onlyOwner external view returns (bool){
         return ownerToOperators[_company][_escrow];
     }
@@ -132,6 +176,9 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     public functions
      */
 
+	/// @notice sets the TradableEntity owner
+	/// @param _entityId the entity Id
+	/// @param _owner the new owner
     function setTradableEntityOwner(uint _entityId, address _owner) public onlyOwner {
 
         assert(tokenAmountMapping[energyList[_entityId].tradableEntity.owner]>0);
@@ -141,6 +188,9 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
 
     }
 
+	/// @notice approves an address
+	/// @param _entityId the entity Id
+	/// @param _approve the approved address
     function addApproval(uint _entityId, address _approve) public onlyOwner {
         energyList[_entityId].tradableEntity.approvedAddress = _approve;
     }

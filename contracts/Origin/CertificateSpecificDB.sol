@@ -31,47 +31,91 @@ contract CertificateSpecificDB is CertificateSpecificDBInterface, Owned {
         getCertificateInternally(_certificateId).children.push(_childId);
     }
 
+    /**
+        abstract functions
+     */
+	/// @notice gets the CertificateSpecific-struct
+	/// @param _certificateId the certificate Id
+	/// @return the CertificateSpecific-Struct
     function getCertificateSpecific(uint _certificateId) external view returns (CertificateSpecificContract.CertificateSpecific _certificate);
+	
+	/// @notice gets the certificate internally as storage pointer
+	/// @param _certificateId the certificate Id
+	/// @return the CertificateStruct internally
     function getCertificateInternally(uint _certificateId) internal view returns (CertificateSpecificContract.CertificateSpecific  storage _certificate);
+	
+    /// @notice sets the CertificateSpecific-struct
+	/// @param _certificateId the certificate Id
+	/// @param _certificate the new CertificateSpecific-struct
     function setCertificateSpecific(uint _certificateId, CertificateSpecificContract.CertificateSpecific  _certificate) public;
     
+    /**
+        external funcitons
+     */
+	/// @notice gets the retired-flag
+	/// @param _certificateId the certificate Id
+	/// @return the retired flag
     function getRetired(uint _certificateId) external onlyOwner returns (bool){
         return getCertificateInternally(_certificateId).retired;
     }
 
+	/// @notice sets the retired-flag
+	/// @param _certificateId the certificate Id
+	/// @param _retired the retired-flag
     function setRetired(uint _certificateId, bool _retired) external onlyOwner {
         CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
         certificate.retired = _retired;
     }
 
+	/// @notice get the data-log
+	/// @param _certificateId the certificate Id
+	/// @return the data-log
     function getDataLog(uint _certificateId) external onlyOwner returns (string){
         return getCertificateInternally(_certificateId).dataLog;
     }
 
+	/// @notice set the data-log
+	/// @param _certificateId the certificate Id
+	/// @param _newDataLog the new data-log
     function setDataLog(uint _certificateId, string _newDataLog) external onlyOwner {
         CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
         certificate.dataLog = _newDataLog;
     }
 
+	/// @notice gets the maximal amounf of owner changes
+	/// @param _certificateId the certificate Id
+	/// @return the maximal amount of owner changes
     function getMaxOwnerChanges(uint _certificateId) external onlyOwner returns (uint){
         return getCertificateInternally(_certificateId).maxOwnerChanges;
     }
 
+	/// @notice sets the maxmimum of owner changes
+	/// @param _certificateId the certificate Id
+	/// @param _newMaxOwnerChanges the new maximal amounf of owner changes
     function setMaxOwnerChanges(uint _certificateId, uint _newMaxOwnerChanges) external onlyOwner {
         CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
         certificate.maxOwnerChanges = _newMaxOwnerChanges;
     }
 
+	/// @notice gets the owner-change counter
+	/// @param _certificateId the certificate Id
+	/// @return the owner-change counter
     function getOwnerChangeCounter(uint _certificateId) external onlyOwner returns (uint){
         return getCertificateInternally(_certificateId).ownerChangeCounter;
     }
 
+	/// @notice set the owner-change counter
+	/// @param _certificateId the certificate Id
+	/// @param _newOwnerChangeCounter the new owner-change counter
     function setOwnerChangeCounter(uint _certificateId, uint _newOwnerChangeCounter) external {
         require(msg.sender == owner || msg.sender == address(this));
         CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
         certificate.ownerChangeCounter = _newOwnerChangeCounter;
     }
 
+	/// @notice gets the amount of children for a certificate
+	/// @param _certificateId the certificate Id
+	/// @return the amounf of children for a certificate
     function getCertificateChildrenLength(uint _certificateId)
         external
         onlyOwner
