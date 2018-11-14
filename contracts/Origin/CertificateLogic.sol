@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Jonas Bentke, jonas.bentke@slock.it, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
 /// @title The logic contract for the Certificate of Origin list
@@ -53,16 +53,11 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         ERC721 functions to overwrite
      */
 
-	/// @notice transfers a certificate secureley
-	/// @param _from the current owner of the certificate
-	/// @param _to the new owner of the certificate
-	/// @param _entityId the certificate id
-	/// @param _data the data
     function safeTransferFrom(
         address _from, 
         address _to, 
         uint256 _entityId, 
-        bytes _data
+        bytes calldata _data
     ) 
         onlyRole(RoleManagement.Role.Trader) 
         external payable 
@@ -70,10 +65,6 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         internalSafeTransfer(_from, _to, _entityId, _data);
     }
 
-	/// @notice transfers a certificate securely
-	/// @param _from the current owner of the certificate
-	/// @param _to the new owner of the certificate
-	/// @param _entityId the certificate id
     function safeTransferFrom(
         address _from, 
         address _to, 
@@ -86,16 +77,12 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         internalSafeTransfer(_from, _to, _entityId, data);
     }
 
-	/// @notice transfers a certificate
-	/// @param _from the current owner
-	/// @param _to the new owner
-	/// @param _entityId the certificate id
     function transferFrom(address _from, address _to, uint256 _entityId) 
         onlyRole(RoleManagement.Role.Trader) 
         external 
         payable 
     {
-        CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_entityId);
+        CertificateDB.Certificate memory cert = CertificateDB(address(db)).getCertificate(_entityId);
         simpleTransferInternal(_from, _to, _entityId);
      //   emit LogCertificateOwnerChanged(_entityId, cert.tradableEntity.owner, _to, 0x0);
         checktransferOwnerInternally(_entityId, cert);
@@ -106,88 +93,82 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
         external functions
     */    
 
-	/// @notice buys a certificate
-	/// @param _certificateId the certificate Id
     function buyCertificate(uint _certificateId) 
         external
         onlyRole(RoleManagement.Role.Trader)
      {
-        CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
+        CertificateDB.Certificate memory cert = CertificateDB(address(db)).getCertificate(_certificateId);
         require(cert.tradableEntity.acceptedToken != address(0x0),"0x0 not allowed");
 
         require(ERC20Interface(cert.tradableEntity.acceptedToken).transferFrom(msg.sender, cert.tradableEntity.owner, cert.tradableEntity.onChainDirectPurchasePrice),"erc20 transfer failed");
-        TradableEntityDBInterface(db).addApproval(_certificateId, msg.sender);
+        TradableEntityDBInterface(address(db)).addApprovalExternal(_certificateId, msg.sender);
 
         simpleTransferInternal(cert.tradableEntity.owner, msg.sender, _certificateId);
         checktransferOwnerInternally(_certificateId, cert);    
 
     }
      
-	/// @notice Request a certificate to retire. Only Certificate owner can retire
-	/// @param _certificateId The id of the certificate
+    /// @notice Request a certificate to retire. Only Certificate owner can retire
+    /// @param _certificateId The id of the certificate
     function retireCertificate(uint _certificateId) external  { 
-        CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_certificateId);
-        require(cert.tradableEntity.owner == msg.sender,"retire: not the Certificate-Owner");
-        require(cert.certificateSpecific.children.length == 0,"retire: certificate has been splitted");
+        CertificateDB.Certificate memory cert = CertificateDB(address(db)).getCertificate(_certificateId);
+        require(cert.tradableEntity.owner == msg.sender);
+        require(cert.certificateSpecific.children.length == 0);
         if (!cert.certificateSpecific.retired) {
             retireCertificateAuto( _certificateId);
         }
     }
 
-	/// @notice Splits a certificate into two smaller ones, where (total - _power = 2ndCertificate)
-	/// @param _certificateId The id of the certificate
-	/// @param _power the power the power of the 1st child
+    /// @notice Splits a certificate into two smaller ones, where (total - _power = 2ndCertificate)
+    /// @param _certificateId The id of the certificate
+    /// @param _certificateId The amount of power in W for the 1st certificate
     function splitCertificate(uint _certificateId, uint _power) external
     {
-        CertificateDB.Certificate memory parent = CertificateDB(db).getCertificate(_certificateId);
-        require (msg.sender == parent.tradableEntity.owner || checkMatcher(parent.tradableEntity.escrow),"split: not the owner or escrow");
-        require(parent.tradableEntity.powerInW > _power,"split: power too high");
-        require(!parent.certificateSpecific.retired,"split: parent is already retired"); 
-        require(parent.certificateSpecific.children.length == 0,"split: parent has already been splitted");
+        CertificateDB.Certificate memory parent = CertificateDB(address(db)).getCertificate(_certificateId);
+        require (msg.sender == parent.tradableEntity.owner || checkMatcher(parent.tradableEntity.escrow));
+        require(parent.tradableEntity.powerInW > _power);
+        require(!parent.certificateSpecific.retired); 
+        require(parent.certificateSpecific.children.length == 0);
 
-        (uint childIdOne,uint childIdTwo) = CertificateDB(db).createChildCertificate(_certificateId, _power);
-        emit Transfer(0, parent.tradableEntity.owner, childIdOne);
-        emit Transfer(0, parent.tradableEntity.owner, childIdTwo);
+        (uint childIdOne,uint childIdTwo) = CertificateDB(address(db)).createChildCertificate(_certificateId, _power);
+        emit Transfer(address(0), parent.tradableEntity.owner, childIdOne);
+        emit Transfer(address(0), parent.tradableEntity.owner, childIdTwo);
         emit LogCertificateSplit(_certificateId, childIdOne,childIdTwo);
         
     }
 
-	/// @notice get a certificate as struct
-	/// @param _certificateId the certificate Id
-	/// @return the Certificate-struct
     function getCertificate(uint _certificateId) external view returns (CertificateDB.Certificate memory certificate)
     {
-        return CertificateDB(db).getCertificate(_certificateId);
+        return CertificateDB(address(db)).getCertificate(_certificateId);
     }
 
-	/// @notice Getter for the length of the list of certificates
-	/// @return the length of the array
+    /// @notice Getter for the length of the list of certificates
+    /// @return the length of the array
     function getCertificateListLength() external view returns (uint) {
-        return CertificateDB(db).getCertificateListLength();
+        return CertificateDB(address(db)).getCertificateListLength();
     }
 
-	/// @notice Getter for a specific Certificate
-	/// @param _certificateId The id of the requested certificate
-	/// @return the certificate as single values
+    /// @notice Getter for a specific Certificate
+    /// @param _certificateId The id of the requested certificate
+    /// @return the certificate as single values
     function getCertificateOwner(uint _certificateId) external view returns (address) {
-        return CertificateDB(db).getCertificate(_certificateId).tradableEntity.owner;
+        return CertificateDB(address(db)).getCertificate(_certificateId).tradableEntity.owner;
     }
 
-	/// @notice Getter for a specific Certificate
-	/// @param _certificateId The id of the requested certificate
-	/// @return the certificate as single values
+    /// @notice Getter for a specific Certificate
+    /// @param _certificateId The id of the requested certificate
+    /// @return the certificate as single values
     function isRetired(uint _certificateId) external view returns (bool) {
-        return CertificateDB(db).getCertificate(_certificateId).certificateSpecific.retired;
+        return CertificateDB(address(db)).getCertificate(_certificateId).certificateSpecific.retired;
     }
 
     /**
         public functions
     */
 
-	/// @notice Creates a certificate of origin. Checks in the AssetRegistry if requested wh are available.
-	/// @param _assetId The id of the asset that generated the energy for the certificate
-	/// @param _powerInW The amount of Watts the Certificate holds
-	/// @return the newly created certificate id
+    /// @notice Creates a certificate of origin. Checks in the AssetRegistry if requested wh are available.
+    /// @param _assetId The id of the asset that generated the energy for the certificate 
+    /// @param _powerInW The amount of Watts the Certificate holds
     function createCertificate(uint _assetId, uint _powerInW) 
         public 
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
@@ -195,12 +176,20 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     {
         AssetProducingDB.Asset memory asset =  AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getAssetById(_assetId);
 
-        uint certId = CertificateDB(db).createCertificateRaw(_assetId, _powerInW, asset.assetGeneral.matcher, asset.assetGeneral.owner, asset.assetGeneral.lastSmartMeterReadFileHash, asset.maxOwnerChanges); 
-        emit Transfer(0,  asset.assetGeneral.owner, certId);
+        uint certId = CertificateDB(address(db)).createCertificateRaw(_assetId, _powerInW, asset.assetGeneral.matcher, asset.assetGeneral.owner, asset.assetGeneral.lastSmartMeterReadFileHash, asset.maxOwnerChanges); 
+        emit Transfer(address(0),  asset.assetGeneral.owner, certId);
 
         emit LogCreatedCertificate(certId, _powerInW, asset.assetGeneral.owner);
         return certId;
     
+    }
+
+    function createCertificateExternal(uint _assetId, uint _powerInW) 
+        external 
+        onlyAccount(address(assetContractLookup.assetProducingRegistry()))
+        returns (uint) 
+    {
+        return createCertificate(_assetId, _powerInW);
     }
 
     /**
@@ -210,46 +199,40 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
 	/// @notice Retires a certificate
 	/// @param _certificateId The id of the requested certificate
     function retireCertificateAuto(uint _certificateId) internal{
-        db.setTradableEntityEscrow(_certificateId, new address[](0));
-        CertificateSpecificDB(db).setRetired(_certificateId, true);
+        db.setTradableEntityEscrowExternal(_certificateId, new address[](0));
+        CertificateSpecificDB(address(db)).setRetired(_certificateId, true);
         emit LogCertificateRetired(_certificateId, true);
     }
 
-	/// @notice internal function for safeTransfer
-    /// @dev function checks all the requirements for a safeTransfer
-	/// @param _from the from
-	/// @param _to the to
-	/// @param _entityId the entity Id
-	/// @param _data the data
     function internalSafeTransfer(
         address _from, 
         address _to, 
         uint256 _entityId, 
-        bytes _data
+        bytes memory _data
     )
         internal
     {
-        CertificateDB.Certificate memory cert = CertificateDB(db).getCertificate(_entityId);
+        CertificateDB.Certificate memory cert = CertificateDB(address(db)).getCertificate(_entityId);
         simpleTransferInternal(_from, _to, _entityId);
         safeTransferChecks(_from, _to, _entityId, _data);
      //   emit LogCertificateOwnerChanged(_entityId, cert.tradableEntity.owner, _to, 0x0);
         checktransferOwnerInternally(_entityId, cert);
     }
 
-	/// @notice Transfers the ownership, checks if the requirements are met
-	/// @param _certificateId The id of the requested certificate
-	/// @param _certificate The certificate where the ownership should be transfered
-    function checktransferOwnerInternally(uint _certificateId, CertificateDB.Certificate _certificate) internal {
-        require(_certificate.certificateSpecific.children.length == 0,"changeOwner: Certificate has been splitted");
-        require(!_certificate.certificateSpecific.retired,"changeOwner: certificate is retired");
-        require(_certificate.certificateSpecific.ownerChangeCounter < _certificate.certificateSpecific.maxOwnerChanges," changeOwner: max-Owner change reached");
+    /// @notice Transfers the ownership, checks if the requirements are met
+    /// @param _certificateId The id of the requested certificate
+    /// @param _certificate The certificate where the ownership should be transfered
+    function checktransferOwnerInternally(uint _certificateId, CertificateDB.Certificate memory _certificate) internal {
+        require(_certificate.certificateSpecific.children.length == 0);
+        require(!_certificate.certificateSpecific.retired);
+        require(_certificate.certificateSpecific.ownerChangeCounter < _certificate.certificateSpecific.maxOwnerChanges);
         uint ownerChangeCounter = _certificate.certificateSpecific.ownerChangeCounter + 1;
 
-        CertificateDB(db).setOwnerChangeCounterResetEscrow(_certificateId,ownerChangeCounter);
+        CertificateDB(address(db)).setOwnerChangeCounterResetEscrow(_certificateId,ownerChangeCounter);
 
         if(_certificate.certificateSpecific.maxOwnerChanges <= ownerChangeCounter){
            // CertificateDB(db).setCertificateEscrow(_certificateId, new address[](0));
-            CertificateSpecificDB(db).setRetired(_certificateId, true);
+            CertificateSpecificDB(address(db)).setRetired(_certificateId, true);
             emit LogCertificateRetired(_certificateId, true);
         }
     }

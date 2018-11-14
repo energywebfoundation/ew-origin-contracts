@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Origin/CertificateDB.sol";
@@ -24,9 +24,9 @@ interface CertificateInterface {
     function buyCertificate(uint _certificateId) external;
   //  function retireCertificate(uint _certificateId) external;
     function splitCertificate(uint _certificateId, uint _power) external;
-    function getCertificate(uint _certificateId) external view returns (CertificateDB.Certificate certificate);
+    function getCertificate(uint _certificateId) external view returns (CertificateDB.Certificate memory certificate);
     function getCertificateListLength() external view returns (uint);
     function getCertificateOwner(uint _certificateId) external view returns (address);
     function isRetired(uint _certificateId) external view returns (bool);
-    function createCertificate(uint _assetId, uint _powerInW) public returns (uint);
+    function createCertificateExternal(uint _assetId, uint _powerInW) external returns (uint);
 }

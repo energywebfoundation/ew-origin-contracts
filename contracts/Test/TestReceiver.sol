@@ -14,7 +14,7 @@
 //
 // @authors: Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity 0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Interfaces/ERC721TokenReceiver.sol";
@@ -40,7 +40,7 @@ contract TestReceiver is ERC721TokenReceiver {
     /// @param _data Additional data with no specified format
     /// @return `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     ///  unless throwing
-    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4){
+    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes calldata _data) external returns(bytes4){
         return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
     }
 
@@ -49,7 +49,7 @@ contract TestReceiver is ERC721TokenReceiver {
         entityContract.safeTransferFrom(_from, _to, _entityId);
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _entityId, bytes _data) external payable {
+    function safeTransferFrom(address _from, address _to, uint256 _entityId, bytes calldata _data) external payable {
     
         entityContract.safeTransferFrom(_from, _to, _entityId, _data);
     }

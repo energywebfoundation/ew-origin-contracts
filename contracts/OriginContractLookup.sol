@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity 0.5.0;
 
 import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
 import "ew-utils-general-contracts/contracts/Interfaces/Updatable.sol";
@@ -25,14 +25,14 @@ import "ew-asset-registry-contracts/contracts/Interfaces/AssetContractLookupInte
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
 contract OriginContractLookup is Owned, OriginContractLookupInterface {
     
-    Updatable public originLogicRegistry;
-    AssetContractLookupInterface public assetContractLookup;
+    Updatable private originLogicRegistryContract;
+    AssetContractLookupInterface private assetContractLookupContract;
 
-    uint public maxMatcherPerCertificate;
+    uint private maxMatcherPerCertificateNumber;
 
     /// @notice The constructor 
     constructor() Owned(msg.sender) public{ 
-        maxMatcherPerCertificate = 10;
+        maxMatcherPerCertificateNumber = 10;
     } 
 
 	/// @notice function to initialize the contracts, setting the needed contract-addresses
@@ -48,16 +48,16 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface {
         onlyOwner
     {
         require(    
-            _assetRegistry != address(0) && _originLogicRegistry != address(0)
-            && originLogicRegistry == address(0) && assetContractLookup == address(0) && assetContractLookup == address(0),
+            address(_assetRegistry) != address(0) && address(_originLogicRegistry) != address(0)
+            && address(originLogicRegistryContract) == address(0) && address(assetContractLookupContract) == address(0),
             "already initialized"
         );
-        require(_originDB != 0, "originDB cannot be 0");
+        require(_originDB != address(0), "originDB cannot be 0");
 
-        originLogicRegistry = _originLogicRegistry;
-        assetContractLookup = _assetRegistry;
+        originLogicRegistryContract = _originLogicRegistry;
+        assetContractLookupContract = _assetRegistry;
 
-        originLogicRegistry.init(_originDB, msg.sender);
+        originLogicRegistryContract.init(_originDB, msg.sender);
     }
 
 	/// @notice set the amount of maximal matcher per certificate
@@ -66,7 +66,7 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface {
         external 
         onlyOwner 
     {
-        maxMatcherPerCertificate = _new;
+        maxMatcherPerCertificateNumber = _new;
     }
 
    
@@ -78,27 +78,27 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface {
         external
         onlyOwner 
     {
-        require(address(_originRegistry)!= 0, "update: cannot set to 0");
-        originLogicRegistry.update(_originRegistry);
-        originLogicRegistry = _originRegistry;
+        require(address(_originRegistry)!= address(0), "update: cannot set to 0");
+        originLogicRegistryContract.update(address(_originRegistry));
+        originLogicRegistryContract = _originRegistry;
     }
 
 	/// @notice gets the origin logic registry
 	/// @return the origin logic registry
     function originLogicRegistry() external view returns (address){
-        return originLogicRegistry;
+        return address(originLogicRegistryContract);
     }
 
 	/// @notice gets the asset contract lookup
 	/// @return the asset contract lookup
     function assetContractLookup() external view returns (address){
-        return assetContractLookup;
+        return address(assetContractLookupContract);
     }
 
 	/// @notice gets the maximal amount of matcher per certificate
 	/// @return the maximal amount of matcher per certificate
     function maxMatcherPerCertificate() external view returns (uint){
-        return maxMatcherPerCertificate;
+        return maxMatcherPerCertificateNumber;
     }
 
 

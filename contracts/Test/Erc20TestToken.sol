@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechker, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity 0.5.0;
 
 import "../../contracts/Interfaces/ERC20Interface.sol";
 
@@ -23,7 +23,7 @@ contract Erc20TestToken is ERC20Interface {
     string public symbol = "TTK";
     string public name = "TestTokens";
     uint8 public decimas = 18;
-    uint public totalSupply = 100000000000000000000; 
+    uint public totalSupplyNumber = 100000000000000000000; 
     address public owner;
 
     mapping(address => uint) public balances;
@@ -39,12 +39,12 @@ contract Erc20TestToken is ERC20Interface {
 
     constructor(address _testaccount) public {
         owner = msg.sender;
-        balances[owner] = totalSupply-1000000;
+        balances[owner] = totalSupplyNumber-1000000;
         balances[_testaccount] = 1000000;
     }
 
     function totalSupply() public view returns (uint) {
-        return totalSupply;
+        return totalSupplyNumber;
     }
 
     function balanceOf(address _tokenOwner) public view returns (uint) {

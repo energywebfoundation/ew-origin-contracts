@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Jonas Bentke, jonas.bentke@slock.it, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 /// @title The Database contract for the Certificate of Origin list
@@ -44,31 +44,28 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
         external functions
     */
 
-	/// @notice Returns the certificate that corresponds to the given array id
-	/// @param _bundleID The array position in which the certificate is stored
-	/// @return Certificate as struct
+    /// @notice Returns the certificate that corresponds to the given array id
+    /// @param _bundleID The array position in which the certificate is stored
+    /// @return Certificate as struct
     function getBundle(uint _bundleID) 
         external 
         view 
-        returns (EnergyCertificateBundle) 
+        returns (EnergyCertificateBundle memory) 
     {
         require(msg.sender == owner || msg.sender == address(this));
         return bundleList[_bundleID];
     }
 
-	/// @notice function to get the amount of all bundle
-	/// @return the amount of all certificates
+    /// @notice function to get the amount of all bundle
+    /// @return the amount of all certificates
     function getBundleListLength() external onlyOwner view returns (uint) {
         return bundleList.length;
     }  
     
-	/// @notice gets the tradable-entity-struct
-	/// @param _entityId the entity Id (= certificate-id)
-	/// @return the tradable-entity-struct
     function getTradableEntity(uint _entityId) 
         public 
         view 
-        returns (TradableEntityContract.TradableEntity _entity)
+        returns (TradableEntityContract.TradableEntity memory _entity)
     {
         require(msg.sender == owner || msg.sender == address(this));
         return bundleList[_entityId].tradableEntity;
@@ -78,13 +75,13 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
         public functions
     */
 
-	/// @notice Creates a new certificate
-	/// @param _tradableEntity The tradeable entity specific properties
-	/// @param _certificateSpecific The certificate specific properties
-	/// @return The id of the certificate
+    /// @notice Creates a new certificate
+    /// @param _tradableEntity The tradeable entity specific properties
+    /// @param _certificateSpecific The certificate specific properties
+    /// @return The id of the certificate
     function createEnergyCertificateBundle(
-        TradableEntity _tradableEntity,
-        CertificateDB.CertificateSpecific _certificateSpecific 
+        TradableEntity memory _tradableEntity,
+        CertificateDB.CertificateSpecific memory _certificateSpecific 
     ) 
         public 
         onlyOwner 
@@ -102,46 +99,33 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
 
     }  
 
-	/// @notice gets the tradable-entity-struct internally
-    /// @dev implements abstract function
-	/// @param _entityId the entity Id (=certificate-id)
-	/// @return the tradable-entity-struct as storage-pointer
     function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
         require(msg.sender == owner || msg.sender == address(this));
         return bundleList[_entityId].tradableEntity;
     }
 
-	/// @notice sets the tradable-entity-struct
-	/// @param _entityId the entity Id (=certificate-id)
-	/// @param _entity the new tradable-entity-struct
-    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity _entity) public  {
+    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity memory _entity) public  {
         require(msg.sender == owner || msg.sender == address(this));
         bundleList[_entityId].tradableEntity = _entity;
     }
 
-	/// @notice gets the CertificateSpecific-struct
+	/// @notice get Certificate Specific
 	/// @param _certificateId the certificate Id
-	/// @return the CertificateSpecific-struct
+	/// @return the
     function getCertificateSpecific(uint _certificateId) 
         external 
         view 
-        returns (CertificateSpecificContract.CertificateSpecific _certificate)
+        returns (CertificateSpecificContract.CertificateSpecific memory _certificate)
     {
         require(msg.sender == owner || msg.sender == address(this));
         return bundleList[_certificateId].certificateSpecific;
     }
 
-	/// @notice get the CertificateSpecificStruct internally
-	/// @param _certificateId the certificate Id 
-	/// @return the CertificateSpecificstruct as storage pointer
     function getCertificateInternally(uint _certificateId) internal view returns (CertificateSpecificContract.CertificateSpecific  storage _certificate){
         return bundleList[_certificateId].certificateSpecific;
     }
 
-	/// @notice set the CertificateSpecific-struct
-	/// @param _certificateId the certificate Id
-	/// @param _certificate the new CertificateSpecific-struct
-    function setCertificateSpecific(uint _certificateId, CertificateSpecificContract.CertificateSpecific  _certificate) public {
+    function setCertificateSpecific(uint _certificateId, CertificateSpecificContract.CertificateSpecific memory _certificate) public {
         require(msg.sender == owner || msg.sender == address(this));
         bundleList[_certificateId].certificateSpecific = _certificate;
     }

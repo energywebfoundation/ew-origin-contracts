@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Origin/EnergyCertificateBundleDB.sol";
@@ -27,7 +27,7 @@ interface EnergyCertificateBundleInterface {
    // function transferOwnershipByEscrow(uint _bundleId, address _newOwner) external;
   //  function getBundle(uint _bundleId) external view returns (uint _assetId, address _owner,uint _powerInW,bool _retired,string _dataLog,uint _coSaved,address[] _escrow,uint _creationTime, uint _parentId,uint[] _children,uint _maxOwnerChanges,uint _ownerChangeCounter);
     
-    function getBundle(uint _bundleId) external view returns (EnergyCertificateBundleDB.EnergyCertificateBundle);
+    function getBundle(uint _bundleId) external view returns (EnergyCertificateBundleDB.EnergyCertificateBundle memory);
     function getBundleListLength() external view returns (uint);
     function getBundleOwner(uint _bundleId) external view returns (address);
     function isRetired(uint _bundleId) external view returns (bool);

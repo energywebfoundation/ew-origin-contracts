@@ -14,15 +14,15 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 interface CertificateSpecificDBInterface {
     function getRetired(uint _certificateID) external returns (bool);
     function setRetired(uint _certificateID, bool _retired) external; 
     
-    function getDataLog(uint _certificateID) external returns (string);
-    function setDataLog(uint _certificateID, string _newDataLog) external;
+    function getDataLog(uint _certificateID) external returns (string memory);
+    function setDataLog(uint _certificateID, string calldata _newDataLog) external;
 
     function getMaxOwnerChanges(uint _certificateID) external returns (uint);
     function setMaxOwnerChanges(uint _certificateID, uint _newMaxOwnerChanges) external;
@@ -34,5 +34,5 @@ interface CertificateSpecificDBInterface {
 	/// @notice add Children
 	/// @param _certificateId the certificate Id
 	/// @param _childId the child Id
-    function addChildren(uint _certificateId, uint _childId) public;
+    function addChildrenExternal(uint _certificateId, uint _childId) external;
 }

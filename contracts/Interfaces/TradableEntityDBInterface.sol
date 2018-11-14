@@ -14,20 +14,20 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 interface TradableEntityDBInterface {
-    function addApproval(uint _entityId, address _approve) public;
+    function addApprovalExternal(uint _entityId, address _approve) external;
     function addEscrowForEntity(uint _entityId, address _escrow) external;
-    function setTradableEntityOwner(uint _entityId, address _owner) public;
+    function setTradableEntityOwnerExternal(uint _entityId, address _owner) external;
     function setTradableToken(uint _entityId, address _token) external;
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external;
     function removeTokenAndPrice(uint _entityId) external;
     function removeEscrow(uint _entityId, address _escrow) external returns (bool);    
     function setOwnerToOperators(address _company, address _escrow, bool _allowed) external;
     function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external;
-    function setTradableEntityEscrow(uint _entityId, address[] _escrow) public;
+    function setTradableEntityEscrowExternal(uint _entityId, address[] calldata _escrow) external;
 
     function getApproved(uint256 _entityId) external view returns (address);
     function getBalanceOf(address _owner) external view returns (uint);
