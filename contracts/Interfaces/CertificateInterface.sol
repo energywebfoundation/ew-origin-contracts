@@ -28,5 +28,5 @@ interface CertificateInterface {
     function getCertificateListLength() external view returns (uint);
     function getCertificateOwner(uint _certificateId) external view returns (address);
     function isRetired(uint _certificateId) external view returns (bool);
-    function createCertificateExternal(uint _assetId, uint _powerInW) external returns (uint);
+  //  function createCertificateExternal(uint _assetId, uint _powerInW) external returns (uint);
 }

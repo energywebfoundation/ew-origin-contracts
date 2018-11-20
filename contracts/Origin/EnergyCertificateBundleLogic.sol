@@ -33,7 +33,10 @@ import "ew-asset-registry-contracts/contracts/Interfaces/AssetContractLookupInte
 import "../../contracts/Interfaces/EnergyCertificateBundleInterface.sol";
 import "../../contracts/Origin/CertificateSpecificContract.sol";
 
-contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleManagement, TradableEntityLogic, TradableEntityContract, CertificateSpecificContract {
+import "ew-asset-registry-contracts/contracts/Interfaces/TradableEntityCreationInterface.sol";
+
+
+contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleManagement, TradableEntityLogic, TradableEntityContract, CertificateSpecificContract, TradableEntityCreationInterface {
 
     /// @notice Logs the creation of an event
     event LogCreatedBundle(uint indexed _bundleId, uint powerInW, address owner);
@@ -160,12 +163,16 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
         public functions
     */
 
+    function createTradableEntity(uint _assetId, uint _powerInW) external  onlyAccount(address(assetContractLookup.assetProducingRegistry())) returns (uint) {
+        return createBundle(_assetId, _powerInW);
+    }
+
     /// @notice Creates a bundle. Checks in the AssetRegistry if requested wh are available.
     /// @param _assetId The id of the asset that generated the energy for the bundle 
     /// @param _powerInW The amount of Watts the bundle holds
     function createBundle(uint _assetId, uint _powerInW) 
-        external  
-        onlyAccount(address(assetContractLookup.assetProducingRegistry()))
+        internal  
+       
         returns (uint) 
     {
       //  AssetProducingRegistryDB.Asset memory asset = AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getFullAsset(_assetId);

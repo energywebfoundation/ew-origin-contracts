@@ -21,9 +21,10 @@ import "ew-utils-general-contracts/contracts/Interfaces/Updatable.sol";
 import "ew-user-registry-contracts/contracts/Interfaces/UserContractLookupInterface.sol";
 import "../contracts/Interfaces/OriginContractLookupInterface.sol";
 import "ew-asset-registry-contracts/contracts/Interfaces/AssetContractLookupInterface.sol";
+import "ew-asset-registry-contracts/contracts/Interfaces/OriginMarketContractLookupInterface.sol";
 
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
-contract OriginContractLookup is Owned, OriginContractLookupInterface {
+contract OriginContractLookup is Owned, OriginContractLookupInterface, OriginMarketContractLookupInterface {
     
     Updatable private originLogicRegistryContract;
     AssetContractLookupInterface private assetContractLookupContract;

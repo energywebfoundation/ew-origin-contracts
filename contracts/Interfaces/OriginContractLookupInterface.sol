@@ -21,7 +21,5 @@ pragma experimental ABIEncoderV2;
 interface OriginContractLookupInterface {
     function originLogicRegistry() external view returns (address);
     function assetContractLookup() external view returns (address);
-	/// @notice max Matcher Per Certificate
-	/// @return the
     function maxMatcherPerCertificate() external view returns (uint);
 }
