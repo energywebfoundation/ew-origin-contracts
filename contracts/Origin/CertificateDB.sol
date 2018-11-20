@@ -26,10 +26,10 @@ import "../../contracts/Origin/TradableEntityDB.sol";
 import "../../contracts/Origin/CertificateSpecificContract.sol";
 import "../../contracts/Origin/CertificateSpecificDB.sol";
 
-contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateSpecificContract, CertificateSpecificDB {
+contract CertificateDB is TradableEntityDB, CertificateSpecificContract, CertificateSpecificDB {
 
     struct Certificate {
-        TradableEntity tradableEntity;
+        TradableEntityContract.TradableEntity tradableEntity;
         CertificateSpecific certificateSpecific;
     }
 
@@ -70,7 +70,7 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
     /// @param _certificateSpecific The certificate specific properties
     /// @return The id of the certificate
     function createCertificate(
-        TradableEntity memory _tradableEntity,
+        TradableEntityContract.TradableEntity memory _tradableEntity,
         CertificateSpecific memory _certificateSpecific 
     ) 
         public 
@@ -99,7 +99,7 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
         onlyOwner
         returns (uint _certId)
     {
-        TradableEntity memory tradableEntity = TradableEntity({
+        TradableEntityContract.TradableEntity memory tradableEntity = TradableEntityContract.TradableEntity({
             assetId: _assetId,
             owner: _assetOwner,
             powerInW: _powerInW,
@@ -142,7 +142,7 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
     {
         Certificate memory parent = certificateList[_parentId];
 
-        TradableEntity memory childOneEntity = TradableEntity({
+        TradableEntityContract.TradableEntity memory childOneEntity = TradableEntityContract.TradableEntity({
             assetId: parent.tradableEntity.assetId,
             owner: parent.tradableEntity.owner,
             powerInW: _power,
@@ -169,7 +169,7 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
             certificateSpecificOne
         );
 
-        TradableEntity memory childTwoEntity = TradableEntity({
+        TradableEntityContract.TradableEntity memory childTwoEntity = TradableEntityContract.TradableEntity({
             assetId: parent.tradableEntity.assetId,
             owner: parent.tradableEntity.owner,
             powerInW: parent.tradableEntity.powerInW - _power,
@@ -204,17 +204,17 @@ contract CertificateDB is TradableEntityDB, TradableEntityContract, CertificateS
         return certificateList.length;
     }  
 
-    function getTradableEntity(uint _entityId) public view returns (TradableEntity memory){
+    function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity memory){
         require(msg.sender == owner || msg.sender == address(this));
         return certificateList[_entityId].tradableEntity;
     }
 
-    function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntity storage _entity) {
+    function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
         require(msg.sender == owner || msg.sender == address(this));
         return certificateList[_entityId].tradableEntity;
     }
 
-    function setTradableEntity(uint _entityId, TradableEntity memory _entity) public  {
+    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity memory _entity) public  {
         require(msg.sender == owner || msg.sender == address(this));
 
         certificateList[_entityId].tradableEntity = _entity;

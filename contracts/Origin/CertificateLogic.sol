@@ -36,7 +36,9 @@ import "ew-asset-registry-contracts/contracts/Asset/AssetProducingDB.sol";
 
 import "../../contracts/Origin/CertificateSpecificDB.sol";
 
-contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntityLogic, TradableEntityContract {
+import "ew-asset-registry-contracts/contracts/Interfaces/TradableEntityCreationInterface.sol";
+
+contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntityLogic, TradableEntityContract, TradableEntityCreationInterface {
 
     /// @notice Logs the creation of an event
     event LogCreatedCertificate(uint indexed _certificateId, uint powerInW, address owner);
@@ -170,8 +172,8 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     /// @param _assetId The id of the asset that generated the energy for the certificate 
     /// @param _powerInW The amount of Watts the Certificate holds
     function createCertificate(uint _assetId, uint _powerInW) 
-        public 
-        onlyAccount(address(assetContractLookup.assetProducingRegistry()))
+        internal 
+      //  onlyAccount(address(assetContractLookup.assetProducingRegistry()))
         returns (uint) 
     {
         AssetProducingDB.Asset memory asset =  AssetProducingInterface(address(assetContractLookup.assetProducingRegistry())).getAssetById(_assetId);
@@ -184,7 +186,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     
     }
 
-    function createCertificateExternal(uint _assetId, uint _powerInW) 
+    function createTradableEntity(uint _assetId, uint _powerInW) 
         external 
         onlyAccount(address(assetContractLookup.assetProducingRegistry()))
         returns (uint) 
