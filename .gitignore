@@ -3,4 +3,3 @@ node_modules
 src/wrappedContracts
 dist
 contract-build
-.DS_Store
