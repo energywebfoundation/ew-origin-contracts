@@ -17,7 +17,7 @@
 import { assert } from 'chai';
 import * as fs from 'fs';
 import 'mocha';
-import { Web3Type } from '../types/web3';
+import Web3 = require('web3');
 import { migrateUserRegistryContracts, UserLogic } from 'ew-user-registry-contracts';
 import { migrateAssetRegistryContracts, AssetContractLookup } from 'ew-asset-registry-contracts';
 import { migrateCertificateRegistryContracts } from '../utils/migrateContracts';
@@ -30,8 +30,7 @@ describe('OriginContractLookup', () => {
 
     const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
 
-    const Web3 = require('web3');
-    const web3: Web3Type = new Web3(configFile.develop.web3);
+    const web3: Web3 = new Web3(configFile.develop.web3);
 
     const privateKeyDeployment = configFile.develop.deployKey.startsWith('0x') ?
         configFile.develop.deployKey : '0x' + configFile.develop.deployKey;
@@ -48,7 +47,7 @@ describe('OriginContractLookup', () => {
 
         isGanache = (await getClientVersion(web3)).includes('EthereumJS');
 
-        const userContracts = await migrateUserRegistryContracts(web3);
+        const userContracts = await migrateUserRegistryContracts(web3, privateKeyDeployment);
 
         const userLogic = new UserLogic((web3 as any),
             userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
@@ -59,7 +58,7 @@ describe('OriginContractLookup', () => {
 
         const userContractLookupAddr = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
 
-        const assetContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr);
+        const assetContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr, privateKeyDeployment);
 
         const assetRegistryLookupAddr = assetContracts[process.cwd() + '/node_modules/ew-asset-registry-contracts/dist/contracts/AssetContractLookup.json'];
 

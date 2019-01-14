@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity 0.5.0;
+pragma solidity 0.5.2;
 pragma experimental ABIEncoderV2;
 
 interface TradableEntityInterface {
