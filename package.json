@@ -19,11 +19,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ew-deployment": "0.0.2-beta02",
     "ew-asset-registry-contracts": "v0.1.9",
+    "ew-deployment": "0.0.2-beta02",
     "ew-user-registry-contracts": "0.0.9",
     "web3": "^1.0.0-beta.37",
-    "winston": "^3.0.0"
+    "winston": "^3.0.0",
+    "yaeti": "^1.0.2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
