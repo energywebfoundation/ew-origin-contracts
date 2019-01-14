@@ -1,95 +1,104 @@
-import { Sloffle } from 'sloffle';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Web3Type } from '../types/web3';
 import { OriginContractLookup } from '../wrappedContracts/OriginContractLookup';
 import { AssetContractLookup } from 'ew-asset-registry-contracts';
+import Web3 = require('web3');
+import { deploy } from 'ew-deployment';
+import {
+    OriginContractLookupJSON,
+    CertificateLogicJSON,
+    CertificateDBJSON,
+    EnergyCertificateBundleLogicJSON,
+    EnergyCertificateBundleDBJSON,
+} from '..';
 
 export async function migrateCertificateRegistryContracts(
-    web3: Web3Type,
+    web3: Web3,
     assetContractLookupAddress: string,
+    deployKey: string,
 ): Promise<JSON> {
     return new Promise<any>(async (resolve, reject) => {
 
-        const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
-
-        const sloffle = new Sloffle((web3 as any));
-
-        const privateKeyDeployment = configFile.develop.deployKey.startsWith('0x') ?
-            configFile.develop.deployKey : '0x' + configFile.develop.deployKey;
+        const privateKeyDeployment = deployKey.startsWith('0x') ?
+            deployKey : '0x' + deployKey;
         const accountDeployment = web3.eth.accounts.privateKeyToAccount(privateKeyDeployment).address;
 
-        const originContractLookupWeb3 = await sloffle.deploy(
-            path.resolve(__dirname, '../../contracts/OriginContractLookup.json'),
-            [],
+        const originContractLookupAddress = (await deploy(
+            web3,
+            OriginContractLookupJSON.bytecode,
+            { privateKey: privateKeyDeployment })).contractAddress;
+
+        const certificateLogicAddress = (await deploy(
+            web3,
+            CertificateLogicJSON.bytecode +
+            web3.eth.abi.encodeParameters(['address', 'address'], [assetContractLookupAddress, originContractLookupAddress]).substr(2),
             { privateKey: privateKeyDeployment },
-        );
+        )).contractAddress;
 
-        const certificateLogicWeb3 = await sloffle.deploy(
-            path.resolve(__dirname, '../../contracts/CertificateLogic.json'),
-            [assetContractLookupAddress, originContractLookupWeb3._address],
+        const certificateDBAddress = (await deploy(
+            web3,
+            CertificateDBJSON.bytecode +
+            web3.eth.abi.encodeParameter('address', certificateLogicAddress).substr(2),
             { privateKey: privateKeyDeployment },
-        );
+        )).contractAddress;
 
-        const certificateDBWeb3 = await sloffle.deploy(
-            path.resolve(__dirname, '../../contracts/CertificateDB.json'),
-            [certificateLogicWeb3._address],
-            { privateKey: privateKeyDeployment },
-        );
+        const originContractLookup: OriginContractLookup =
+            new OriginContractLookup(web3, originContractLookupAddress);
 
-        const originContractLookup: OriginContractLookup
-            = new OriginContractLookup((web3 as any), originContractLookupWeb3._address);
+        await originContractLookup.init(assetContractLookupAddress, certificateLogicAddress, certificateDBAddress, { privateKey: privateKeyDeployment });
 
-        await originContractLookup.init(
-            assetContractLookupAddress,
-            certificateLogicWeb3._address,
-            certificateDBWeb3._address,
-            { privateKey: privateKeyDeployment });
+        const resultMapping = {} as any;
+        resultMapping.OriginContractLookup = originContractLookupAddress;
+        resultMapping.CertificateLogic = certificateLogicAddress;
+        resultMapping.CertificateDB = certificateDBAddress;
 
-        resolve(sloffle.deployedContracts);
+        resolve(resultMapping);
+
     });
 }
 
 export async function migrateEnergyBundleContracts(
-    web3: Web3Type,
+    web3: Web3,
     assetContractLookupAddress: string,
+    deployKey: string,
 ): Promise<JSON> {
     return new Promise<any>(async (resolve, reject) => {
 
-        const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
+        const privateKeyDeployment = deployKey.startsWith('0x') ?
+            deployKey : '0x' + deployKey;
+        const accountDeployment = web3.eth.accounts.privateKeyToAccount(privateKeyDeployment).address;
 
-        const sloffle = new Sloffle((web3 as any));
+        const originContractLookupAddress = (await deploy(
+            web3,
+            OriginContractLookupJSON.bytecode,
+            { privateKey: privateKeyDeployment })).contractAddress;
 
-        const privateKeyDeployment = configFile.develop.deployKey.startsWith('0x') ?
-            configFile.develop.deployKey : '0x' + configFile.develop.deployKey;
-
-        const originContractLookupWeb3 = await sloffle.deploy(
-            path.resolve(__dirname, '../../contracts/OriginContractLookup.json'),
-            [],
+        const energyCertificateBundleLogicAddress = (await deploy(
+            web3,
+            EnergyCertificateBundleLogicJSON.bytecode +
+            web3.eth.abi.encodeParameters(['address', 'address'], [assetContractLookupAddress, originContractLookupAddress]).substr(2),
             { privateKey: privateKeyDeployment },
-        );
+        )).contractAddress;
 
-        const energyCertificateBundleLogicWeb3 = await sloffle.deploy(
-            path.resolve(__dirname, '../../contracts/EnergyCertificateBundleLogic.json'),
-            [assetContractLookupAddress, originContractLookupWeb3._address],
+        const energyCertificateBundleDBAddress = (await deploy(
+            web3,
+            EnergyCertificateBundleDBJSON.bytecode +
+            web3.eth.abi.encodeParameter('address', energyCertificateBundleLogicAddress).substr(2),
             { privateKey: privateKeyDeployment },
-        );
+        )).contractAddress;
 
-        const energyCertificateBundleDBWeb3 = await sloffle.deploy(
-            path.resolve(__dirname, '../../contracts/EnergyCertificateBundleDB.json'),
-            [energyCertificateBundleLogicWeb3._address],
-            { privateKey: privateKeyDeployment },
-        );
+        const originContractLookup: OriginContractLookup =
+            new OriginContractLookup(web3, originContractLookupAddress);
 
-        const originContractLookup: OriginContractLookup
-            = new OriginContractLookup((web3 as any), originContractLookupWeb3._address);
+        await originContractLookup.init(assetContractLookupAddress, energyCertificateBundleLogicAddress, energyCertificateBundleDBAddress, { privateKey: privateKeyDeployment });
 
-        await originContractLookup.init(
-            assetContractLookupAddress,
-            energyCertificateBundleLogicWeb3._address,
-            energyCertificateBundleDBWeb3._address,
-            { privateKey: privateKeyDeployment });
+        const resultMapping = {} as any;
+        resultMapping.OriginContractLookup = originContractLookupAddress;
+        resultMapping.EnergyCertificateBundleLogic = energyCertificateBundleLogicAddress;
+        resultMapping.EnergyCertificateBundleDB = energyCertificateBundleDBAddress;
 
-        resolve(sloffle.deployedContracts);
+        resolve(resultMapping);
+
     });
 }
