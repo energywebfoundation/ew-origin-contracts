@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
 
-pragma solidity 0.5.0;
+pragma solidity 0.5.2;
 
 import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
 import "ew-utils-general-contracts/contracts/Interfaces/Updatable.sol";
