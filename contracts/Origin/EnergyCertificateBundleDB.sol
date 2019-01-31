@@ -21,7 +21,6 @@ pragma experimental ABIEncoderV2;
 /// @notice This contract only provides getter and setter methods
 
 import "../../contracts/Origin/TradableEntityContract.sol";
-import "../../contracts/Origin/EnergyDB.sol";
 import "../../contracts/Origin/CertificateDB.sol";
 import "../../contracts/Origin/TradableEntityDB.sol";
 import "../../contracts/Origin/CertificateSpecificContract.sol";
