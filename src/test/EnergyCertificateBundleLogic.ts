@@ -17,18 +17,22 @@
 import { assert } from 'chai';
 import * as fs from 'fs';
 import 'mocha';
-import { Web3Type } from '../types/web3';
 import { migrateUserRegistryContracts, UserLogic, UserContractLookup } from 'ew-user-registry-contracts';
 import { migrateAssetRegistryContracts, AssetContractLookup, AssetProducingRegistryLogic } from 'ew-asset-registry-contracts';
 import { migrateEnergyBundleContracts } from '../utils/migrateContracts';
 import { OriginContractLookup } from '../wrappedContracts/OriginContractLookup';
 import { CertificateDB } from '../wrappedContracts/CertificateDB';
 import { CertificateLogic } from '../wrappedContracts/CertificateLogic';
-import { getClientVersion, Sloffle } from 'sloffle';
 import { TestReceiver } from '../wrappedContracts/TestReceiver';
 import { EnergyCertificateBundleLogic } from '../wrappedContracts/EnergyCertificateBundleLogic';
 import { EnergyCertificateBundleDB } from '../wrappedContracts/EnergyCertificateBundleDB';
 import { Erc20TestToken } from '../wrappedContracts/Erc20TestToken';
+import Web3 = require('web3');
+import Erc20TestTokenJSON from '../../contract-build/Erc20TestToken.json';
+import Erc721TestReceiverJSON from '../../contract-build/TestReceiver.json';
+import { deploy } from 'ew-deployment';
+import { EnergyCertificateBundleLogicJSON, EnergyCertificateBundleDBJSON, OriginContractLookupJSON } from '..';
+
 
 describe('EnergyCertificateBundleLogic', () => {
 
@@ -42,11 +46,11 @@ describe('EnergyCertificateBundleLogic', () => {
     let userLogic: UserLogic;
     let testreceiver: TestReceiver;
     let erc20Test: Erc20TestToken;
+    let erc721testReceiverAddress;
 
     const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
 
-    const Web3 = require('web3');
-    const web3: Web3Type = new Web3(configFile.develop.web3);
+    const web3: Web3 = new Web3(configFile.develop.web3);
 
     const privateKeyDeployment = configFile.develop.deployKey.startsWith('0x') ?
         configFile.develop.deployKey : '0x' + configFile.develop.deployKey;
@@ -72,64 +76,77 @@ describe('EnergyCertificateBundleLogic', () => {
 
         it('should deploy the contracts', async () => {
 
-            isGanache = (await getClientVersion(web3)).includes('EthereumJS');
+            // isGanache = (await getClientVersion(web3)).includes('EthereumJS');
 
-            const userContracts = await migrateUserRegistryContracts(web3);
+            const userContracts = await migrateUserRegistryContracts(web3, privateKeyDeployment);
 
-            userLogic = new UserLogic((web3 as any),
-                userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserLogic.json']);
+            userLogic = new UserLogic((web3 as any), (userContracts as any).UserLogic);
 
             await userLogic.setUser(accountDeployment, 'admin', { privateKey: privateKeyDeployment });
 
             await userLogic.setRoles(accountDeployment, 3, { privateKey: privateKeyDeployment });
 
-
-            const userContractLookupAddr = userContracts[process.cwd() + '/node_modules/ew-user-registry-contracts/dist/contracts/UserContractLookup.json'];
+            const userContractLookupAddr = (userContracts as any).UserContractLookup;
 
             userRegistryContract = new UserContractLookup((web3 as any), userContractLookupAddr);
-            const assetContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr);
+            const assetContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr, privateKeyDeployment);
 
-            const assetRegistryLookupAddr = assetContracts[process.cwd() + '/node_modules/ew-asset-registry-contracts/dist/contracts/AssetContractLookup.json'];
+            const assetRegistryLookupAddr = (assetContracts as any).AssetContractLookup;
 
-            const assetProducingAddr = assetContracts[process.cwd() + '/node_modules/ew-asset-registry-contracts/dist/contracts/AssetProducingRegistryLogic.json'];
-            const originContracts = await migrateEnergyBundleContracts(web3, assetRegistryLookupAddr);
+            const assetProducingAddr = (assetContracts as any).AssetProducingRegistryLogic;
+            const originContracts = await migrateEnergyBundleContracts(web3, assetRegistryLookupAddr, privateKeyDeployment);
 
-            assetRegistryContract = new AssetContractLookup((web3 as any), assetRegistryLookupAddr);
-            originRegistryContract = new OriginContractLookup((web3 as any));
-            energyCertificateBundleLogic = new EnergyCertificateBundleLogic((web3 as any));
-            energyCertificateBundleDB = new EnergyCertificateBundleDB((web3 as any));
+            assetRegistryContract = new AssetContractLookup(web3, assetRegistryLookupAddr);
             assetRegistry = new AssetProducingRegistryLogic((web3 as any), assetProducingAddr);
+
+            // originRegistryContract = new OriginContractLookup((web3 as any));
+            // certificateLogic = new CertificateLogic((web3 as any));
+            // certificateDB = new CertificateDB((web3 as any));
+            // assetRegistry = new AssetProducingRegistryLogic((web3 as any), assetProducingAddr);
 
             Object.keys(originContracts).forEach(async (key) => {
 
+                let tempBytecode;
+
+                if (key.includes('OriginContractLookup')) {
+                    originRegistryContract = new OriginContractLookup(web3, originContracts[key]);
+                    tempBytecode = '0x' + OriginContractLookupJSON.deployedBytecode;
+                }
+
+                if (key.includes('EnergyCertificateBundleLogic')) {
+                    energyCertificateBundleLogic = new EnergyCertificateBundleLogic(web3, originContracts[key])
+                    tempBytecode = '0x' + EnergyCertificateBundleLogicJSON.deployedBytecode
+                }
+
+
+                if (key.includes('EnergyCertificateBundleDB')) {
+                    energyCertificateBundleDB = new EnergyCertificateBundleDB(web3, originContracts[key]);
+                    tempBytecode = '0x' + EnergyCertificateBundleDBJSON.deployedBytecode;
+                }
+
                 const deployedBytecode = await web3.eth.getCode(originContracts[key]);
                 assert.isTrue(deployedBytecode.length > 0);
-
-                const contractInfo = JSON.parse(fs.readFileSync(key, 'utf8'));
-
-                const tempBytecode = '0x' + contractInfo.deployedBytecode;
                 assert.equal(deployedBytecode, tempBytecode);
 
             });
         });
 
         it('should deploy a testtoken contracts', async () => {
-            const sloffle = new Sloffle(web3);
+            erc721testReceiverAddress = (await deploy(
+                web3,
+                Erc721TestReceiverJSON.bytecode + web3.eth.abi.encodeParameter('address', energyCertificateBundleLogic.web3Contract.options.address).substr(2), {
+                    privateKey: privateKeyDeployment,
+                })).contractAddress;
 
-            await sloffle.deploy(process.cwd() + '/dist/contracts/TestReceiver.json', [energyCertificateBundleLogic.web3Contract._address], {
-                privateKey: privateKeyDeployment,
-            });
+            const erc20testContractAddress = (await deploy(
+                web3,
+                Erc20TestTokenJSON.bytecode + web3.eth.abi.encodeParameter('address', accountTrader).substr(2), {
+                    privateKey: privateKeyDeployment,
+                })).contractAddress;
 
-            await sloffle.deploy(process.cwd() + '/dist/contracts/Erc20TestToken.json', [accountTrader], {
-                privateKey: privateKeyDeployment,
-            });
+            testreceiver = new TestReceiver(web3, erc721testReceiverAddress);
 
-            const addressTest = sloffle.deployedContracts;
-            testreceiver = new TestReceiver(web3, addressTest[0]);
-            erc20Test = new Erc20TestToken(web3, addressTest[1]);
-
-            await userLogic.setUser(testreceiver.web3Contract._address, 'testreceiver', { privateKey: privateKeyDeployment });
-            await userLogic.setRoles(testreceiver.web3Contract._address, 16, { privateKey: privateKeyDeployment });
+            erc20Test = new Erc20TestToken(web3, erc20testContractAddress);
 
         });
 
@@ -231,7 +248,7 @@ describe('EnergyCertificateBundleLogic', () => {
             await userLogic.setUser(accountAssetOwner, 'assetOwner', { privateKey: privateKeyDeployment });
             //   await userLogic.setUser(testreceiver.web3Contract._address, 'testreceiver', { privateKey: privateKeyDeployment });
 
-            //    await userLogic.setRoles(testreceiver.web3Contract._address, 16, { privateKey: privateKeyDeployment });
+            // await userLogic.setRoles(testreceiver.web3Contract._address, 16, { privateKey: privateKeyDeployment });
             await userLogic.setRoles(accountTrader, 16, { privateKey: privateKeyDeployment });
             await userLogic.setRoles(accountAssetOwner, 24, { privateKey: privateKeyDeployment });
         });
@@ -250,7 +267,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     privateKey: privateKeyDeployment,
                 }
             );
-        })
+        });
 
         it('should set MarketLogicAddress', async () => {
 
@@ -379,7 +396,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.transferFrom(accountAssetOwner, accountTrader, 0, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
                 }
 
                 assert.isTrue(failed);
@@ -391,7 +408,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.transferFrom(accountAssetOwner, accountTrader, 0, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
 
@@ -652,7 +669,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 1, null, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
 
                 }
 
@@ -665,7 +682,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 1, null, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
 
@@ -678,7 +695,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 1, null, { privateKey: assetOwnerPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "_to is not a contract")
+                    assert.include(ex.message, '_to is not a contract');
 
                 }
 
@@ -691,7 +708,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 1, null, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
 
                 }
 
@@ -704,7 +721,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 1, null, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
 
@@ -728,7 +745,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 1, null, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
                 }
 
                 assert.isTrue(failed);
@@ -740,7 +757,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 1, null, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
                 }
 
                 assert.isTrue(failed);
@@ -848,7 +865,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 2, '0x01', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
                 }
 
                 assert.isTrue(failed);
@@ -860,7 +877,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 2, '0x01', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
 
@@ -873,7 +890,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 2, '0x01', { privateKey: assetOwnerPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "_to is not a contract")
+                    assert.include(ex.message, '_to is not a contract');
 
                 }
 
@@ -886,7 +903,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 2, '0x01', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
 
                 }
 
@@ -899,7 +916,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 2, '0x01', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
 
@@ -923,7 +940,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 2, '0x01', { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
                 }
 
                 assert.isTrue(failed);
@@ -935,7 +952,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 2, '0x01', { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
 
@@ -1144,7 +1161,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.approve('0x1000000000000000000000000000000000000005', 3, { privateKey: privateKeyDeployment });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "approve: not owner / matcher")
+                    assert.include(ex.message, 'approve: not owner / matcher');
 
                 }
                 assert.isTrue(failed);
@@ -1157,7 +1174,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.approve('0x1000000000000000000000000000000000000005', 3, { privateKey: traderPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "approve: not owner / matcher")
+                    assert.include(ex.message, 'approve: not owner / matcher');
 
                 }
                 assert.isTrue(failed);
@@ -1177,7 +1194,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
                 assert.isTrue(failed);
@@ -1360,7 +1377,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
 
                 }
                 assert.isTrue(failed);
@@ -1374,7 +1391,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
 
                 }
                 assert.isTrue(failed);
@@ -1388,7 +1405,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
 
                 }
                 assert.isTrue(failed);
@@ -1402,7 +1419,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
 
                 }
                 assert.isTrue(failed);
@@ -1416,12 +1433,11 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
 
                 }
                 assert.isTrue(failed);
             });
-
 
             it('should reset matcherAccount roles to 0', async () => {
                 await userLogic.setUser(matcherAccount, 'matcherAccount', { privateKey: privateKeyDeployment });
@@ -1436,7 +1452,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
 
                 }
                 assert.isTrue(failed);
@@ -1446,7 +1462,6 @@ describe('EnergyCertificateBundleLogic', () => {
                 await userLogic.setUser(matcherAccount, 'matcherAccount', { privateKey: privateKeyDeployment });
                 await userLogic.setRoles(matcherAccount, 16, { privateKey: privateKeyDeployment });
             });
-
 
             it('should transfer certificate#5 with new matcher', async () => {
 
@@ -1573,7 +1588,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
                 assert.isTrue(failed);
@@ -1587,7 +1602,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
                 assert.isTrue(failed);
@@ -1601,7 +1616,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
                 assert.isTrue(failed);
@@ -1615,7 +1630,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "not the owner of the entity")
+                    assert.include(ex.message, 'not the owner of the entity');
 
                 }
                 assert.isTrue(failed);
@@ -1633,7 +1648,6 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.isTrue(failed);
             });
 
-
             it('should reset matcherAccount roles to 0', async () => {
                 await userLogic.setUser(matcherAccount, 'matcherAccount', { privateKey: privateKeyDeployment });
                 await userLogic.setRoles(matcherAccount, 0, { privateKey: privateKeyDeployment });
@@ -1647,7 +1661,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "user does not have the required role")
+                    assert.include(ex.message, 'user does not have the required role');
 
                 }
                 assert.isTrue(failed);
@@ -1657,7 +1671,6 @@ describe('EnergyCertificateBundleLogic', () => {
                 await userLogic.setUser(matcherAccount, 'matcherAccount', { privateKey: privateKeyDeployment });
                 await userLogic.setRoles(matcherAccount, 16, { privateKey: privateKeyDeployment });
             });
-
 
             it('should transfer certificate#6 with new matcher', async () => {
 
@@ -1782,7 +1795,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.transferFrom(accountAssetOwner, accountTrader, 7, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
                 assert.isTrue(failed);
@@ -1841,13 +1854,10 @@ describe('EnergyCertificateBundleLogic', () => {
 
             });
 
-
             it('should set role to approved account', async () => {
                 await userLogic.setUser(approvedAccount, 'approvedAccount', { privateKey: privateKeyDeployment });
                 await userLogic.setRoles(approvedAccount, 16, { privateKey: privateKeyDeployment });
             });
-
-
 
             it('should log energy (Bundle #8)', async () => {
 
@@ -1921,7 +1931,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 8, null, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
                 assert.isTrue(failed);
@@ -1934,7 +1944,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 8, null, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
                 assert.isTrue(failed);
@@ -1947,7 +1957,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 8, null, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
                 assert.isTrue(failed);
@@ -1961,7 +1971,7 @@ describe('EnergyCertificateBundleLogic', () => {
                     const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 8, null, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "_to is not a contract")
+                    assert.include(ex.message, '_to is not a contract');
 
                 }
                 assert.isTrue(failed);
@@ -2097,10 +2107,10 @@ describe('EnergyCertificateBundleLogic', () => {
                 await energyCertificateBundleLogic.setApprovalForAll(approvedAccount, false, { privateKey: assetOwnerPK });
                 let failed = false;
                 try {
-                    const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 9, "0x01", { privateKey: approvedPK });
+                    const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 9, '0x01', { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "simpleTransfer, missing rights")
+                    assert.include(ex.message, 'simpleTransfer, missing rights');
 
                 }
                 assert.isTrue(failed);
@@ -2110,7 +2120,7 @@ describe('EnergyCertificateBundleLogic', () => {
                 await energyCertificateBundleLogic.setApprovalForAll(approvedAccount, false, { privateKey: assetOwnerPK });
                 let failed = false;
                 try {
-                    const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 9, "0x01", { privateKey: approvedPK });
+                    const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 9, '0x01', { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
                 }
@@ -2121,7 +2131,7 @@ describe('EnergyCertificateBundleLogic', () => {
                 await energyCertificateBundleLogic.setApprovalForAll(approvedAccount, false, { privateKey: assetOwnerPK });
                 let failed = false;
                 try {
-                    const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 9, "0x01", { privateKey: approvedPK });
+                    const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 9, '0x01', { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
                 }
@@ -2133,7 +2143,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
                 let failed = false;
                 try {
-                    const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 9, "0x01", { privateKey: approvedPK });
+                    const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 9, '0x01', { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
                 }
@@ -2143,7 +2153,7 @@ describe('EnergyCertificateBundleLogic', () => {
             it('should throw when trying to call safeTransferFrom with no data to random contract address as approved account', async () => {
                 let failed = false;
                 try {
-                    const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 9, "0x01", { privateKey: approvedPK });
+                    const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 9, '0x01', { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
                 }
@@ -2152,7 +2162,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
             it('should call safeTransferFrom with no data to correct contract address as approved account', async () => {
 
-                const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 9, "0x01", { privateKey: approvedPK });
+                const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 9, '0x01', { privateKey: approvedPK });
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
 
@@ -2323,7 +2333,6 @@ describe('EnergyCertificateBundleLogic', () => {
                     });
                 }
 
-
                 assert.equal(await energyCertificateBundleLogic.getBundleListLength(), 11);
                 assert.equal(await energyCertificateBundleLogic.balanceOf(accountAssetOwner), 1);
                 assert.equal(await energyCertificateBundleLogic.balanceOf(accountTrader), 4);
@@ -2331,7 +2340,6 @@ describe('EnergyCertificateBundleLogic', () => {
             });
 
             it('should approve bundle #10', async () => {
-
 
                 const cert = await energyCertificateBundleLogic.getBundle(10);
 
@@ -2453,12 +2461,11 @@ describe('EnergyCertificateBundleLogic', () => {
                     await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 11, null, { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "_to is not a contract")
+                    assert.include(ex.message, '_to is not a contract');
 
                 }
                 assert.isTrue(failed);
             });
-
 
             it('should throw when trying to call safeTransferFrom with no data to a random contract address as approved account', async () => {
                 let failed = false;
@@ -2490,7 +2497,6 @@ describe('EnergyCertificateBundleLogic', () => {
                     });
                 }
 
-
                 assert.equal(await energyCertificateBundleLogic.getBundleListLength(), 12);
                 assert.equal(await energyCertificateBundleLogic.balanceOf(accountAssetOwner), 1);
                 assert.equal(await energyCertificateBundleLogic.balanceOf(accountTrader), 4);
@@ -2498,7 +2504,6 @@ describe('EnergyCertificateBundleLogic', () => {
             });
 
             it('should return bundle #11', async () => {
-
 
                 const cert = await energyCertificateBundleLogic.getBundle(11);
 
@@ -2617,19 +2622,18 @@ describe('EnergyCertificateBundleLogic', () => {
             it('should throw when trying to call safeTransferFrom with data to an address as approved account', async () => {
                 let failed = false;
                 try {
-                    await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 12, "0x01", { privateKey: approvedPK });
+                    await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, accountTrader, 12, '0x01', { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
-                    assert.include(ex.message, "_to is not a contract")
+                    assert.include(ex.message, '_to is not a contract');
                 }
                 assert.isTrue(failed);
             });
 
-
             it('should throw when trying to call safeTransferFrom with data to a random contract address as approved account', async () => {
                 let failed = false;
                 try {
-                    await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 12, "0x01", { privateKey: approvedPK });
+                    await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, energyCertificateBundleLogic.web3Contract._address, 12, '0x01', { privateKey: approvedPK });
                 } catch (ex) {
                     failed = true;
                 }
@@ -2638,7 +2642,7 @@ describe('EnergyCertificateBundleLogic', () => {
 
             it('should call safeTransferFrom with data to random contract address as approved account', async () => {
 
-                const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 12, "0x01", { privateKey: approvedPK });
+                const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 12, '0x01', { privateKey: approvedPK });
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
 
@@ -2656,7 +2660,6 @@ describe('EnergyCertificateBundleLogic', () => {
                     });
                 }
 
-
                 assert.equal(await energyCertificateBundleLogic.getBundleListLength(), 13);
                 assert.equal(await energyCertificateBundleLogic.balanceOf(accountAssetOwner), 1);
                 assert.equal(await energyCertificateBundleLogic.balanceOf(accountTrader), 4);
@@ -2664,7 +2667,6 @@ describe('EnergyCertificateBundleLogic', () => {
             });
 
             it('should get bundle #12 again', async () => {
-
 
                 const cert = await energyCertificateBundleLogic.getBundle(12);
 
@@ -2756,34 +2758,34 @@ describe('EnergyCertificateBundleLogic', () => {
 
             it('should throw when trying to call setTradableToken as admin', async () => {
 
-                let failed = false
+                let failed = false;
                 try {
-                    await energyCertificateBundleLogic.setTradableToken(13, "0x1000000000000000000000000000000000000006", { privateKey: privateKeyDeployment })
+                    await energyCertificateBundleLogic.setTradableToken(13, '0x1000000000000000000000000000000000000006', { privateKey: privateKeyDeployment });
                 } catch (ex) {
-                    failed = true
-                    assert.include(ex.message, "not the enitity-owner")
+                    failed = true;
+                    assert.include(ex.message, 'not the enitity-owner');
                 }
 
-                assert.isTrue(failed)
-            })
+                assert.isTrue(failed);
+            });
 
             it('should throw when trying to call setTradableToken as trader', async () => {
 
-                let failed = false
+                let failed = false;
                 try {
-                    await energyCertificateBundleLogic.setTradableToken(13, "0x1000000000000000000000000000000000000006", { privateKey: traderPK })
+                    await energyCertificateBundleLogic.setTradableToken(13, '0x1000000000000000000000000000000000000006', { privateKey: traderPK });
                 } catch (ex) {
-                    failed = true
-                    assert.include(ex.message, "not the enitity-owner")
+                    failed = true;
+                    assert.include(ex.message, 'not the enitity-owner');
 
                 }
 
-                assert.isTrue(failed)
-            })
+                assert.isTrue(failed);
+            });
 
             it('should call setTradableToken as owner', async () => {
 
-                await energyCertificateBundleLogic.setTradableToken(13, "0x1000000000000000000000000000000000000006", { privateKey: assetOwnerPK })
+                await energyCertificateBundleLogic.setTradableToken(13, '0x1000000000000000000000000000000000000006', { privateKey: assetOwnerPK });
 
                 const cert = await energyCertificateBundleLogic.getBundle(13);
 
@@ -2806,39 +2808,39 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005', matcherAccount]);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
-            })
+            });
 
             it('should throw when trying to call setOnChainDirectPurchasePrice as admin', async () => {
 
-                let failed = false
+                let failed = false;
                 try {
-                    await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(13, 1000, { privateKey: privateKeyDeployment })
+                    await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(13, 1000, { privateKey: privateKeyDeployment });
                 } catch (ex) {
-                    failed = true
-                    assert.include(ex.message, "not the enitity-owner")
+                    failed = true;
+                    assert.include(ex.message, 'not the enitity-owner');
 
                 }
 
-                assert.isTrue(failed)
-            })
+                assert.isTrue(failed);
+            });
 
             it('should throw when trying to call setOnChainDirectPurchasePrice as trader', async () => {
 
-                let failed = false
+                let failed = false;
                 try {
-                    await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(13, 1000, { privateKey: traderPK })
+                    await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(13, 1000, { privateKey: traderPK });
                 } catch (ex) {
-                    failed = true
-                    assert.include(ex.message, "not the enitity-owner")
+                    failed = true;
+                    assert.include(ex.message, 'not the enitity-owner');
 
                 }
 
-                assert.isTrue(failed)
-            })
+                assert.isTrue(failed);
+            });
 
             it('should call setOnChainDirectPurchasePrice as owner', async () => {
 
-                await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(13, 1000, { privateKey: assetOwnerPK })
+                await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(13, 1000, { privateKey: assetOwnerPK });
 
                 const cert = await energyCertificateBundleLogic.getBundle(13);
 
@@ -2861,7 +2863,7 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005', matcherAccount]);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
 
-            })
+            });
 
             it('should reset onChainPrice and token when transfering(transferFrom) a bundle', async () => {
 
@@ -2957,17 +2959,17 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.equal(await energyCertificateBundleLogic.balanceOf(accountTrader), 5);
                 assert.equal(await energyCertificateBundleLogic.balanceOf(testreceiver.web3Contract._address), 8);
 
-            })
+            });
             it('should when trying to call transferFrom on retired bundle', async () => {
-                let failed = false
+                let failed = false;
                 try {
                     await energyCertificateBundleLogic.transferFrom(accountTrader, accountTrader, 13, { privateKey: traderPK });
                 } catch (ex) {
-                    failed = true
+                    failed = true;
                 }
 
-                assert.isTrue(failed)
-            })
+                assert.isTrue(failed);
+            });
 
             it('should log energy (Bundle #14)', async () => {
 
@@ -3036,9 +3038,9 @@ describe('EnergyCertificateBundleLogic', () => {
 
             it('should set acceptedToken and onChainDirectPurchasePrice', async () => {
 
-                await energyCertificateBundleLogic.setTradableToken(14, "0x1000000000000000000000000000000000000006", { privateKey: assetOwnerPK })
+                await energyCertificateBundleLogic.setTradableToken(14, '0x1000000000000000000000000000000000000006', { privateKey: assetOwnerPK });
 
-                await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(14, 1000, { privateKey: assetOwnerPK })
+                await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(14, 1000, { privateKey: assetOwnerPK });
                 const cert = await energyCertificateBundleLogic.getBundle(14);
 
                 const certificateSpecific = cert.certificateSpecific;
@@ -3059,7 +3061,7 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 1000);
                 assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005', matcherAccount]);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
-            })
+            });
 
             it('should reset onChainPrice and token when transfering(safeTransferFrom without data) a bundle', async () => {
 
@@ -3109,10 +3111,12 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.equal(await energyCertificateBundleLogic.balanceOf(testreceiver.web3Contract._address), 9);
             });
 
-            it('should be able to transfer bundle again + auto retire', async () => {
+            it('should be able to transfer bundle again + auto retire #2', async () => {
 
+                await userLogic.setUser(testreceiver.web3Contract._address, 'TestReceiver', { privateKey: privateKeyDeployment });
 
-                const tx = await testreceiver.safeTransferFrom(testreceiver.web3Contract._address, testreceiver.web3Contract._address, 14, null, { privateKey: privateKeyDeployment })
+                await userLogic.setRoles(testreceiver.web3Contract._address, 16, { privateKey: privateKeyDeployment });
+                const tx = await testreceiver.safeTransferFrom(testreceiver.web3Contract._address, testreceiver.web3Contract._address, 14, null, { privateKey: privateKeyDeployment });
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
 
@@ -3156,18 +3160,18 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.equal(await energyCertificateBundleLogic.balanceOf(accountTrader), 5);
                 assert.equal(await energyCertificateBundleLogic.balanceOf(testreceiver.web3Contract._address), 9);
 
-            })
+            });
 
             it('should when trying to call safeTransferFrom on retired bundle', async () => {
-                let failed = false
+                let failed = false;
                 try {
-                    await testreceiver.safeTransferFrom(testreceiver.web3Contract._address, testreceiver.web3Contract._address, 14, null, { privateKey: privateKeyDeployment })
+                    await testreceiver.safeTransferFrom(testreceiver.web3Contract._address, testreceiver.web3Contract._address, 14, null, { privateKey: privateKeyDeployment });
                 } catch (ex) {
-                    failed = true
+                    failed = true;
                 }
 
-                assert.isTrue(failed)
-            })
+                assert.isTrue(failed);
+            });
 
             it('should log energy (Bundle #15)', async () => {
 
@@ -3237,9 +3241,9 @@ describe('EnergyCertificateBundleLogic', () => {
 
             it('should set acceptedToken and onChainDirectPurchasePrice', async () => {
 
-                await energyCertificateBundleLogic.setTradableToken(15, "0x1000000000000000000000000000000000000006", { privateKey: assetOwnerPK })
+                await energyCertificateBundleLogic.setTradableToken(15, '0x1000000000000000000000000000000000000006', { privateKey: assetOwnerPK });
 
-                await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(15, 1000, { privateKey: assetOwnerPK })
+                await energyCertificateBundleLogic.setOnChainDirectPurchasePrice(15, 1000, { privateKey: assetOwnerPK });
                 const cert = await energyCertificateBundleLogic.getBundle(15);
 
                 const certificateSpecific = cert.certificateSpecific;
@@ -3260,11 +3264,11 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.equal(tradableEntity.onChainDirectPurchasePrice, 1000);
                 assert.deepEqual(tradableEntity.escrow, ['0x1000000000000000000000000000000000000005', matcherAccount]);
                 assert.equal(tradableEntity.approvedAddress, '0x0000000000000000000000000000000000000000');
-            })
+            });
 
             it('should reset onChainPrice and token when transfering(safeTransferFrom with data) a bundle', async () => {
 
-                const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 15, "0x01", { privateKey: assetOwnerPK });
+                const tx = await energyCertificateBundleLogic.safeTransferFrom(accountAssetOwner, testreceiver.web3Contract._address, 15, '0x01', { privateKey: assetOwnerPK });
 
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
@@ -3310,10 +3314,9 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.equal(await energyCertificateBundleLogic.balanceOf(testreceiver.web3Contract._address), 10);
             });
 
-            it('should be able to transfer bundle again + auto retire', async () => {
+            it('should be able to transfer bundle again + auto retire #3', async () => {
 
-
-                const tx = await testreceiver.safeTransferFrom(testreceiver.web3Contract._address, testreceiver.web3Contract._address, 15, "0x01", { privateKey: privateKeyDeployment })
+                const tx = await testreceiver.safeTransferFrom(testreceiver.web3Contract._address, testreceiver.web3Contract._address, 15, '0x01', { privateKey: privateKeyDeployment });
                 if (isGanache) {
                     const allTransferEvents = await energyCertificateBundleLogic.getAllTransferEvents({ fromBlock: tx.blockNumber, toBlock: tx.blockNumber });
 
@@ -3357,18 +3360,18 @@ describe('EnergyCertificateBundleLogic', () => {
                 assert.equal(await energyCertificateBundleLogic.balanceOf(accountTrader), 5);
                 assert.equal(await energyCertificateBundleLogic.balanceOf(testreceiver.web3Contract._address), 10);
 
-            })
+            });
 
             it('should when trying to call safeTransferFrom on retired bundle', async () => {
-                let failed = false
+                let failed = false;
                 try {
-                    await testreceiver.safeTransferFrom(testreceiver.web3Contract._address, testreceiver.web3Contract._address, 15, "0x01", { privateKey: privateKeyDeployment })
+                    await testreceiver.safeTransferFrom(testreceiver.web3Contract._address, testreceiver.web3Contract._address, 15, '0x01', { privateKey: privateKeyDeployment });
                 } catch (ex) {
-                    failed = true
+                    failed = true;
                 }
 
-                assert.isTrue(failed)
-            })
+                assert.isTrue(failed);
+            });
 
         });
     });
