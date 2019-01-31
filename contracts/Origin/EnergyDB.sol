@@ -80,6 +80,11 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
         tokenAmountMapping[_owner]++;
     } 
 
+    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity memory _entity) public  {
+        require(msg.sender == owner || msg.sender == address(this));
+
+        energyList[_entityId].tradableEntity = _entity;
+    }
    
 
     function setTradableEntityOwnerAndAddApproval(uint _entityId, address _owner, address _approve) external onlyOwner{
@@ -101,6 +106,12 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
 
     function getBalanceOf(address _owner) external onlyOwner view returns (uint){
         return tokenAmountMapping[_owner];
+    }
+
+
+    function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
+        require(msg.sender == owner || msg.sender == address(this));
+        return energyList[_entityId].tradableEntity;
     }
 
     function getTradableToken(uint _entityId) external onlyOwner view returns (address){
@@ -132,7 +143,7 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     public functions
      */
 
-    function setTradableEntityOwner(uint _entityId, address _owner) public onlyOwner {
+    function setTradableEntityOwner(uint _entityId, address _owner) internal onlyOwner {
 
         assert(tokenAmountMapping[energyList[_entityId].tradableEntity.owner]>0);
         tokenAmountMapping[energyList[_entityId].tradableEntity.owner]--;
@@ -141,7 +152,7 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
 
     }
 
-    function addApproval(uint _entityId, address _approve) public onlyOwner {
+    function addApproval(uint _entityId, address _approve) internal onlyOwner {
         energyList[_entityId].tradableEntity.approvedAddress = _approve;
     }
 }

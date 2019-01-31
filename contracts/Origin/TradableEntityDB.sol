@@ -53,7 +53,7 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     }
 
 
-    function addApproval(uint _entityId, address _approve) public {
+    function addApproval(uint _entityId, address _approve) internal {
 
         require(msg.sender == owner || msg.sender == address(this),"not the owner or contract");
         TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
@@ -73,7 +73,7 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @notice Sets the owner of a certificate
     /// @param _entityId The array position in which the certificate is stored
     /// @param _owner The address of the new owner
-    function setTradableEntityOwner(uint _entityId, address _owner) public {
+    function setTradableEntityOwner(uint _entityId, address _owner) internal {
         require(msg.sender == owner || msg.sender == address(this),"not the owner or contract");
         TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         address oldOwner = te.owner;
@@ -98,7 +98,7 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @notice sets the escrow-addresses of a certificate
     /// @param _escrow new escrow-addresses
     function setTradableEntityEscrow(uint _entityId, address[] memory _escrow)
-        public
+        internal
     {
         require(msg.sender == owner || msg.sender == address(this),"not the owner or contract");
         TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
