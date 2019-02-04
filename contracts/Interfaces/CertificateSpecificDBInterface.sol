@@ -18,20 +18,57 @@ pragma solidity ^0.5.2;
 pragma experimental ABIEncoderV2;
 
 interface CertificateSpecificDBInterface {
+
+    /// @notice gets whether the certificate has the retired flag
+    /// @param _certificateID the certificate id
+    ///@return retired flag
     function getRetired(uint _certificateID) external returns (bool);
+    
+    /// @notice sets the retired flag for a certificate
+    /// @param _certificateID the certificate id
+    /// @param _retired the retired flag
     function setRetired(uint _certificateID, bool _retired) external; 
     
+    
+    /// @notice gets the dataLog for a certificate
+    /// @param _certificateID the certificate id
+    /// @return the dataLog
     function getDataLog(uint _certificateID) external returns (string memory);
+    
+    /// @notice sets the datalog for a certificate
+    /// @param _certificateID the certificate id
+    /// @param _newDataLog new datalog
     function setDataLog(uint _certificateID, string calldata _newDataLog) external;
 
+
+    /// @notice gets the max owner changes for a certificate
+    /// @param _certificateID the certificate id
+    /// @return the number of max owner changes
     function getMaxOwnerChanges(uint _certificateID) external returns (uint);
+    
+    /// @notice sets the max owner changes for a certificate
+    /// @param _certificateID the certificate id
+    /// @param _newMaxOwnerChanges the new max owner changes
     function setMaxOwnerChanges(uint _certificateID, uint _newMaxOwnerChanges) external;
 
+
+    /// @notice gets the counter for owner changes
+    /// @param _certificateID the certificate id
+    /// @return the counter for owner changes
     function getOwnerChangeCounter(uint _certificateID) external returns (uint);
+
+    /// @notice sets the counter for owner changes
+    /// @param _certificateID the certificate id
+    /// @param _newOwnerChangeCounter new counter for owner changes
     function setOwnerChangeCounter(uint _certificateID, uint _newOwnerChangeCounter) external;
 
+
+    /// @notice gets the amount of children for a certificate
+    /// @param _certificateID the certificate id
+    /// @return returns the amount of children of a certificate
     function getCertificateChildrenLength(uint _certificateID) external view returns (uint);
-	/// @notice add Children
+	
+    /// @notice add Children
 	/// @param _certificateId the certificate Id
 	/// @param _childId the child Id
     function addChildrenExternal(uint _certificateId, uint _childId) external;

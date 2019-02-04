@@ -21,15 +21,37 @@ import "../../contracts/Origin/EnergyCertificateBundleDB.sol";
 
 interface EnergyCertificateBundleInterface {
 
+    /// @notice adds an escrow for an asset
+    /// @param _bundleId the id of a bundle
+    /// @param _escrow the escrow addres
     function addEscrowForAsset(uint _bundleId, address _escrow) external;
+
+    /// @notice retires a bundle 
+    /// @param _bundleId the id of a bundle
     function retireBundle(uint _bundleId) external;
+
+    /// @notice removes an escrow address for a bundle
+    /// @param _bundleId the id of a bundle
+    /// @param _escrow the escrow for a bundle
     function removeEscrow(uint _bundleId, address _escrow) external;
-   // function transferOwnershipByEscrow(uint _bundleId, address _newOwner) external;
-  //  function getBundle(uint _bundleId) external view returns (uint _assetId, address _owner,uint _powerInW,bool _retired,string _dataLog,uint _coSaved,address[] _escrow,uint _creationTime, uint _parentId,uint[] _children,uint _maxOwnerChanges,uint _ownerChangeCounter);
     
+
+    /// @notice gets a bundle struct
+    /// @param _bundleId the id of a bundle
+    /// @return the EnergyCertificateBundle-struct
     function getBundle(uint _bundleId) external view returns (EnergyCertificateBundleDB.EnergyCertificateBundle memory);
+    
+    /// @notice gets the amount of bundles created
+    /// @return number of bundles created
     function getBundleListLength() external view returns (uint);
+
+    /// @notice gets the owner of a bundle
+    /// @param _bundleId the id of a bundle
+    /// @return the owner of a bundle
     function getBundleOwner(uint _bundleId) external view returns (address);
+
+    /// @notice gets whether a bundle is retired 
+    /// @param _bundleId the id of a bundle
+    /// @return whether the bundle is retired yet
     function isRetired(uint _bundleId) external view returns (bool);
-  //  function createBundle(uint _assetId, uint _powerInW) external returns (uint);
 }

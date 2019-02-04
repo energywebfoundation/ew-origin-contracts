@@ -17,9 +17,17 @@
 pragma solidity ^0.5.2;
 pragma experimental ABIEncoderV2;
 
-/// @title this interface defines the functions of the AssetContractLookup-Contract 
 interface OriginContractLookupInterface {
+
+    /// @notice gets the originLogic-contract (CertificateLogic/EnergyLogic/EnergyCertificatesBundle)
+    /// @return the address of the origin-logic contract
     function originLogicRegistry() external view returns (address);
+
+    /// @notice gets the assetContractLookupRegistry-contract address
+    /// @return the assetContractLookupRegistry-contract address
     function assetContractLookup() external view returns (address);
+
+    /// @notice gets the maximum amount of allowed matcher per certificate
+    /// @return the maximum amount of allowed matcher per certificate
     function maxMatcherPerCertificate() external view returns (uint);
 }
