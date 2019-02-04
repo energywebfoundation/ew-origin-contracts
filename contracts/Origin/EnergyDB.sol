@@ -104,7 +104,7 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     /// @notice sets the owner of a TradableEntity and adds an address for approval
     /// @param _entityId the id of the entity
     /// @param _owner the new owner
-    /// @param _approval the address that has the approval to move the token
+    /// @param _approve the address that has the approval to move the token
     function setTradableEntityOwnerAndAddApproval(
         uint _entityId, 
         address _owner, 
@@ -119,7 +119,7 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
 
     /// @notice sets the tradable ERC20-token
     /// @param _entityId the id of the entity
-    /// @param address of the erc20-token
+    /// @param _token address of the erc20-token
     function setTradableToken(
         uint _entityId, 
         address _token
