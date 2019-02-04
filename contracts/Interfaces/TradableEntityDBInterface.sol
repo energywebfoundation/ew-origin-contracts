@@ -18,7 +18,7 @@ pragma solidity ^0.5.2;
 pragma experimental ABIEncoderV2;
 
 interface TradableEntityDBInterface {
-    function addApprovalExternal(uint _entityId, address _approve) external;-
+    function addApprovalExternal(uint _entityId, address _approve) external;
     function addEscrowForEntity(uint _entityId, address _escrow) external;
     function setTradableEntityOwnerExternal(uint _entityId, address _owner) external;
     function setTradableToken(uint _entityId, address _token) external;
