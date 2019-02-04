@@ -119,11 +119,9 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
         checktransferOwnerInternally(_entityId, bundle);
     }
 
-
     /**
         external functions
     */
-
     /// @notice adds a new escrow address to a bundle
     /// @param _bundleId The id of the bundle
     /// @param _escrow The additional escrow address
