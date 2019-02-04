@@ -60,7 +60,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     /// @notice safeTransferFrom function (see ERC721 definition)
     /// @param _from sender/owner of the certificate
     /// @param _to receiver / new owner of the certificate
-    /// @param _enttiyId the certificate-id
+    /// @param _entityId the certificate-id
     /// @param _data calldata to be passed 
     function safeTransferFrom(
         address _from, 
@@ -77,7 +77,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     /// @notice safeTransferFrom function (see ERC721 definition)
     /// @param _from sender/owner of the certificate
     /// @param _to receiver / new owner of the certificate
-    /// @param _enttiyId the certificate-id
+    /// @param _entityId the certificate-id
     function safeTransferFrom(
         address _from, 
         address _to, 
@@ -93,7 +93,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     /// @notice simple transfer function
     /// @param _from sender/owner of the certificate
     /// @param _to receiver / new owner of the certificate
-    /// @param _enttiyId the certificate-id
+    /// @param _entityId the certificate-id
     function transferFrom(
         address _from, 
         address _to, 
@@ -231,7 +231,7 @@ contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntit
     /// @notice calls check-functions before transfering a certificate
     /// @param _from sender/owner of the certificate
     /// @param _to receiver / new owner of the certificate
-    /// @param _enttiyId the certificate-id
+    /// @param _entityId the certificate-id
     /// @param _data calldata to be passed 
     function internalSafeTransfer(
         address _from, 
