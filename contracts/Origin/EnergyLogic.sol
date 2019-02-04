@@ -26,7 +26,9 @@ contract EnergyLogic is RoleManagement, TradableEntityLogic, TradableEntityContr
 
     AssetContractLookupInterface public assetContractLookup;
 
-   /// @notice Constructor
+    /// @notice Constructor
+    /// @param _assetContractLookup the assetRegistryContractRegistry-contract-address
+    /// @param _originContractLookup the originContractLookup-contract-address
     constructor(
         AssetContractLookupInterface _assetContractLookup,
         OriginContractLookupInterface _originContractLookup
