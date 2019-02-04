@@ -108,7 +108,6 @@ contract CertificateSpecificDB is CertificateSpecificDBInterface, Owned {
         return getCertificateInternally(_certificateId).ownerChangeCounter;
     }
 
-
     /// @notice gets the flag whether the certificate is retired
     /// @param _certificateId the id of a certificate
     /// @return flag whether a certificate is retired
