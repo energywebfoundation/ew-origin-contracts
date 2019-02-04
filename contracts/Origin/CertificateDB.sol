@@ -32,6 +32,11 @@ contract CertificateDB is TradableEntityDB, CertificateSpecificContract, Certifi
         CertificateSpecific certificateSpecific;
     }
 
+    modifier onlyOwnerOrSelf {
+        require(msg.sender == owner || msg.sender == address(this),"not the contract itself or the owner");
+        _;
+    }
+
     /// @notice An array containing all created certificates
     Certificate[] private certificateList;
 
@@ -42,50 +47,44 @@ contract CertificateDB is TradableEntityDB, CertificateSpecificContract, Certifi
     /**
         external functions
     */
-    function setOwnerChangeCounterResetEscrow(uint _certificateId, uint _newCounter) external  {
+    /// @notice sets the counter of owner changes and resets all escrows
+    /// @dev should be called whenever a certificate gets transfered
+    /// @param _certificateId array-position of the certificate
+    /// @param _newCounter new counter of owner changes
+    function setOwnerChangeCounterResetEscrow(
+        uint _certificateId, 
+        uint _newCounter) 
+    external  
+    onlyOwnerOfSelf
+    {
         require(msg.sender == owner || msg.sender == address(this));
         this.setOwnerChangeCounter(_certificateId, _newCounter);
         setTradableEntityEscrow(_certificateId, new address[](0));
     }
 
-    /// @notice Returns the certificate that corresponds to the given array id
-    /// @param _certificateId The array position in which the certificate is stored
-    /// @return Certificate as struct
-    function getCertificate(uint _certificateId) 
-        public 
-        onlyOwner
+    /// @notice gets the certificate-specific struct of a certificate
+    /// @param _certificateId the id of the certificate
+    /// @return certificate-specific struct as memory
+    function getCertificateSpecific(uint _certificateId) 
+        external 
         view 
-        returns (Certificate memory) 
+        returns (CertificateSpecificContract.CertificateSpecific memory _certificate)
     {
-        return certificateList[_certificateId];
+        require(msg.sender == owner || msg.sender == address(this));
+        return certificateList[_certificateId].certificateSpecific;
     }
 
     /**
         public functions
     */
 
-    /// @notice Creates a new certificate
-    /// @param _tradableEntity The tradeable entity specific properties
-    /// @param _certificateSpecific The certificate specific properties
-    /// @return The id of the certificate
-    function createCertificate(
-        TradableEntityContract.TradableEntity memory _tradableEntity,
-        CertificateSpecific memory _certificateSpecific 
-    ) 
-        public 
-        onlyOwner 
-        returns 
-        (uint _certId) 
-    {
-        _certId = certificateList.push(
-            Certificate(
-                _tradableEntity,
-                _certificateSpecific
-            )
-        ) - 1;
-        tokenAmountMapping[_tradableEntity.owner]++;
-    }    
-
+    /// @notice creates a certificate with the provided parameters
+    /// @param _assetId the asset-id that produced energy thus created the certificate
+    /// @param _powerInW the power in wh 
+    /// @param _escrow array with escrow-addresses
+    /// @param _assetOwner the assetOwner -> owner of the new certificate
+    /// @param _lastSmartMeterReadFileHash the filehash of the last meterreading
+    /// @param _maxOwnerChanges the maximal amount of owner changes
     function createCertificateRaw(
         uint _assetId, 
         uint _powerInW, 
@@ -128,8 +127,10 @@ contract CertificateDB is TradableEntityDB, CertificateSpecificContract, Certifi
         );
     }
 
-    /// @notice Creates a new certificate
-    /// @return The id of the certificate
+    /// @notice Creates 2 new children certificates
+    /// @param _parentId the id of the parent certificate
+    /// @param _power the power that should be splitted
+    /// @return The ids of the certificate
     function createChildCertificate(
         uint _parentId,
         uint _power
@@ -149,8 +150,6 @@ contract CertificateDB is TradableEntityDB, CertificateSpecificContract, Certifi
             onChainDirectPurchasePrice: 0,
             escrow: parent.tradableEntity.escrow,
             approvedAddress: parent.tradableEntity.approvedAddress
-         //   acceptedToken: parent.tradableEntity.acceptedToken,
-         //   onChainDirectPurchasePrice: (parent.tradableEntity.onChainDirectPurchasePrice*(_power*100000000000/parent.tradableEntity.powerInW)/100000000000)
         });
 
         CertificateDB.CertificateSpecific memory certificateSpecificOne = CertificateSpecific({
@@ -197,43 +196,88 @@ contract CertificateDB is TradableEntityDB, CertificateSpecificContract, Certifi
 
     }    
 
+    /// @notice Returns the certificate that corresponds to the given array id
+    /// @param _certificateId The array position in which the certificate is stored
+    /// @return Certificate as struct
+    function getCertificate(uint _certificateId) 
+        public 
+        onlyOwner
+        view 
+        returns (Certificate memory) 
+    {
+        return certificateList[_certificateId];
+    }
+
     /// @notice function to get the amount of all certificates
     /// @return the amount of all certificates
     function getCertificateListLength() public onlyOwner view returns (uint) {
         return certificateList.length;
     }  
 
+    /// @notice gets the TradableEntity struct
+    /// @dev has to be implemented to create bytecode
+    /// @param _entityId the id of the entity/certificate
+    /// @return TradableEntity struct as memory
     function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity memory){
         require(msg.sender == owner || msg.sender == address(this));
         return certificateList[_entityId].tradableEntity;
     }
 
-    function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
-        require(msg.sender == owner || msg.sender == address(this));
-        return certificateList[_entityId].tradableEntity;
-    }
-
+    /// @notice sets the TradableEntity of an entity
+    /// @dev has to be implemented to create bytecode
+    /// @param _entityId the if of the entity/certificate
+    /// @param _entity the new entity
     function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity memory _entity) public  {
         require(msg.sender == owner || msg.sender == address(this));
 
         certificateList[_entityId].tradableEntity = _entity;
     }
 
-    function getCertificateSpecific(uint _certificateId) 
-        external 
-        view 
-        returns (CertificateSpecificContract.CertificateSpecific memory _certificate)
-    {
-        require(msg.sender == owner || msg.sender == address(this));
-        return certificateList[_certificateId].certificateSpecific;
-    }
-
-    function getCertificateInternally(uint _certificateId) internal view returns (CertificateSpecificContract.CertificateSpecific storage _certificate){
-        return certificateList[_certificateId].certificateSpecific;
-    }
+    /// @notice sets the certificate-specific struct of a certificate
+    /// @param _certificateId the id of the certificate
+    /// @param _certificate the new certificate-specific struct
     function setCertificateSpecific(uint _certificateId, CertificateSpecificContract.CertificateSpecific memory _certificate) public {
         require(msg.sender == owner || msg.sender == address(this));
         certificateList[_certificateId].certificateSpecific = _certificate;
     }
 
+    /**
+        internal functions
+     */
+    /// @notice Creates a new certificate
+    /// @param _tradableEntity The tradeable entity specific properties
+    /// @param _certificateSpecific The certificate specific properties
+    /// @return The id of the certificate
+    function createCertificate(
+        TradableEntityContract.TradableEntity memory _tradableEntity,
+        CertificateSpecific memory _certificateSpecific 
+    ) 
+        internal  
+        returns 
+        (uint _certId) 
+    {
+        _certId = certificateList.push(
+            Certificate(
+                _tradableEntity,
+                _certificateSpecific
+            )
+        ) - 1;
+        tokenAmountMapping[_tradableEntity.owner]++;
+    }    
+
+    /// @notice gets the certificate-speciic struct of an certificate as storage
+    /// @param _certificateId the id of the certificate
+    /// @return the certificate-specific struct as as storage
+    function getCertificateInternally(uint _certificateId) internal view returns (CertificateSpecificContract.CertificateSpecific storage _certificate){
+        return certificateList[_certificateId].certificateSpecific;
+    }
+
+    /// @notice get the TradableEntity struct
+    /// @dev has to be implemented to create bytecode
+    /// @param _entityId the id of the entity/certificate
+    /// @return TradableEntity struct as storage
+    function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
+        require(msg.sender == owner || msg.sender == address(this));
+        return certificateList[_entityId].tradableEntity;
+    }
 }
