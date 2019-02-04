@@ -110,7 +110,7 @@ contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleM
         uint256 _entityId
     ) 
         external 
-        onlyRole(RoleManagement.Role.Trader) 
+   //     onlyRole(RoleManagement.Role.Trader) 
         payable 
     {
         EnergyCertificateBundleDB.EnergyCertificateBundle memory bundle = EnergyCertificateBundleDB(address(db)).getBundle(_entityId);
