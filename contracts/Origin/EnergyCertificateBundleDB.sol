@@ -66,21 +66,19 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
     function getBundleListLength() external onlyOwner view returns (uint) {
         return bundleList.length;
     }  
-    
-    /// @notice gets the tradableEntity-struct
-    /// @dev function has to be implemented to create bytecode
-    /// @param _entityId the certificate/entity-id
-    /// @return the TradableEntity struct as memory
-    function getTradableEntity(uint _entityId) 
-        public 
+
+	/// @notice get Certificate Specific
+	/// @param _certificateId the certificate Id
+	/// @return the certificate-specific struct as memory
+    function getCertificateSpecific(uint _certificateId) 
+        external 
         onlyOwnerOrSelf
         view 
-        returns (TradableEntityContract.TradableEntity memory _entity)
+        returns (CertificateSpecificContract.CertificateSpecific memory _certificate)
     {
-
-        return bundleList[_entityId].tradableEntity;
+        return bundleList[_certificateId].certificateSpecific;
     }
-
+    
     /**
         public functions
     */
@@ -106,8 +104,51 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
         ) - 1;
 
         tokenAmountMapping[_tradableEntity.owner]++;
-
     }  
+
+    /// @notice sets the certificate-specific struct
+    /// @param _certificateId the certificate-id
+    /// @param _certificate the new certificate-specific struct
+    function setCertificateSpecific(
+        uint _certificateId, 
+        CertificateSpecificContract.CertificateSpecific memory _certificate
+    ) 
+        public 
+        onlyOwnerOrSelf
+    {
+        bundleList[_certificateId].certificateSpecific = _certificate;
+    }
+
+    /// @notice sets the tradableEntity-struct
+    /// @dev the funciton has to be implemented to create bytecode
+    /// @param _entityId the id of the certificate / entity
+    /// @param _entity the new tradableEntitys-struct
+    function setTradableEntity(
+        uint _entityId, 
+        TradableEntityContract.TradableEntity memory _entity) 
+        public  
+        onlyOwnerOrSelf
+    {
+        bundleList[_entityId].tradableEntity = _entity;
+    }
+
+    /// @notice gets the tradableEntity-struct
+    /// @dev function has to be implemented to create bytecode
+    /// @param _entityId the certificate/entity-id
+    /// @return the TradableEntity struct as memory
+    function getTradableEntity(uint _entityId) 
+        public 
+        onlyOwnerOrSelf
+        view 
+        returns (TradableEntityContract.TradableEntity memory _entity)
+    {
+
+        return bundleList[_entityId].tradableEntity;
+    }
+
+    /**
+        internal functions
+     */
 
     /// @notice gets the TradableEntity-struct internally
     /// @dev the function has to be implemented to create bytecode
@@ -115,27 +156,6 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
     /// @return TradableEntity-struct as storage
     function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity) {
         return bundleList[_entityId].tradableEntity;
-    }
-
-    /// @notice sets the tradableEntity-struct
-    /// @dev the funciton has to be implemented to create bytecode
-    /// @param _entityId the id of the certificate / entity
-    /// @param _entity the new tradableEntitys-struct
-    function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity memory _entity) public  {
-        require(msg.sender == owner || msg.sender == address(this));
-        bundleList[_entityId].tradableEntity = _entity;
-    }
-
-	/// @notice get Certificate Specific
-	/// @param _certificateId the certificate Id
-	/// @return the certificate-specific struct as memory
-    function getCertificateSpecific(uint _certificateId) 
-        external 
-        onlyOwnerOrSelf
-        view 
-        returns (CertificateSpecificContract.CertificateSpecific memory _certificate)
-    {
-        return bundleList[_certificateId].certificateSpecific;
     }
 
     /// @notice gets the certificate-specific struct internally
@@ -151,16 +171,5 @@ contract EnergyCertificateBundleDB is TradableEntityDB, TradableEntityContract, 
         return bundleList[_certificateId].certificateSpecific;
     }
 
-    /// @notice sets the certificate-specific struct
-    /// @param _certificateId the certificate-id
-    /// @param _certificate the new certificate-specific struct
-    function setCertificateSpecific(
-        uint _certificateId, 
-        CertificateSpecificContract.CertificateSpecific memory _certificate
-    ) 
-        public 
-        onlyOwnerOrSelf
-    {
-        bundleList[_certificateId].certificateSpecific = _certificate;
-    }
+
 }
