@@ -14,7 +14,7 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
 
-pragma solidity 0.5.0;
+pragma solidity ^0.5.0;
 
 import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
 import "ew-utils-general-contracts/contracts/Interfaces/Updatable.sol";
@@ -49,10 +49,13 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface, OriginMar
         onlyOwner
     {
         require(    
-            address(_assetRegistry) != address(0) && address(_originLogicRegistry) != address(0)
-            && address(originLogicRegistryContract) == address(0) && address(assetContractLookupContract) == address(0),
+            address(_assetRegistry) != address(0) 
+            && address(_originLogicRegistry) != address(0)
+            && address(originLogicRegistryContract) == address(0) 
+            && address(assetContractLookupContract) == address(0),
             "already initialized"
         );
+        
         require(_originDB != address(0), "originDB cannot be 0");
 
         originLogicRegistryContract = _originLogicRegistry;

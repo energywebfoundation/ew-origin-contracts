@@ -14,18 +14,33 @@
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity 0.5.0;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 interface TradableEntityInterface {
 
-	/// @notice set Tradable Token
-	/// @param _entityId the entity Id
-	/// @param _tokenContract the token Contract
+    /// @notice sets the tradable token (ERC20 contract) for an entity
+    /// @param _entityId the id of the entity
+    /// @param _tokenContract the ERC20 token contract
     function setTradableToken(uint _entityId, address _tokenContract) external;
+
+    /// @notice sets the onchain direct purchase price for an entity
+    /// @param _entityId the id of the entity
+    /// @param _price the price of the entity
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external;
+
+    /// @notice gets the tradable token (ERC20 contract) for an entity
+    /// @param _entityId the id of the entity
+    /// @return the address of the ERC20 token contract
     function getTradableToken(uint _entityId) external view returns (address);
+
+    /// @notice gets the onchain direct purchase price for an entity
+    /// @param _entityId the id of the entity
+    /// @return the onchain direct purchase price for an entity 
     function getOnChainDirectPurchasePrice(uint _entityId) external view returns (uint);
- //   function getTradableEntity(uint _entityId) external view returns (uint _assetId, address _owner, uint _powerInW, address _acceptedToken, uint _onChainDirectPurchasePrice);
+
+    /// @notice returns whether the contracts supports the provided interface-id
+    /// @param _interfaceID the interface id
+    /// @return true if interaceId == 0x80ac58cd
     function supportsInterface(bytes4 _interfaceID) external view returns (bool);
 }

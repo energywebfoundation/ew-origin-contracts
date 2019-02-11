@@ -13,7 +13,7 @@
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
 // @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
-pragma solidity 0.5.0;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "ew-user-registry-contracts/contracts/Users/RoleManagement.sol";
@@ -26,7 +26,9 @@ contract EnergyLogic is RoleManagement, TradableEntityLogic, TradableEntityContr
 
     AssetContractLookupInterface public assetContractLookup;
 
-   /// @notice Constructor
+    /// @notice Constructor
+    /// @param _assetContractLookup the assetRegistryContractRegistry-contract-address
+    /// @param _originContractLookup the originContractLookup-contract-address
     constructor(
         AssetContractLookupInterface _assetContractLookup,
         OriginContractLookupInterface _originContractLookup

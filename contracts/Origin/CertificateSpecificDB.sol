@@ -14,7 +14,7 @@
 //
 // @authors: Martin Kuechler, martin.kuechler@slock.it
 
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.2;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Interfaces/CertificateSpecificDBInterface.sol";
@@ -24,59 +24,59 @@ import "ew-utils-general-contracts/contracts/Msc/Owned.sol";
 
 contract CertificateSpecificDB is CertificateSpecificDBInterface, Owned {
 
-    function addChildrenExternal(uint _certificateId, uint _childId) public onlyOwner {
-        addChildren(_certificateId, _childId);
-    }
-
-
-	/// @notice Adds a certificate-Id as child to an existing certificate
-	/// @param _certificateId The array position in which the parent certificate is stored
-	/// @param _childId The array position in which the child certificate is stored
-    function addChildren(uint _certificateId, uint _childId) public onlyOwner {
-        getCertificateInternally(_certificateId).children.push(_childId);
-    }
-
+    /**
+        abstract function declarations
+     */
     function getCertificateSpecific(uint _certificateId) external view returns (CertificateSpecificContract.CertificateSpecific memory _certificate);
     function getCertificateInternally(uint _certificateId) internal view returns (CertificateSpecificContract.CertificateSpecific  storage _certificate);
     function setCertificateSpecific(uint _certificateId, CertificateSpecificContract.CertificateSpecific memory _certificate) public;
-    
-    function getRetired(uint _certificateId) external onlyOwner returns (bool){
-        return getCertificateInternally(_certificateId).retired;
-    }
 
-    function setRetired(uint _certificateId, bool _retired) external onlyOwner {
-        CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
-        certificate.retired = _retired;
-    }
+    /**
+        external functions 
+     */
 
-    function getDataLog(uint _certificateId) external onlyOwner returns (string memory){
-        return getCertificateInternally(_certificateId).dataLog;
-    }
-
-    function setDataLog(uint _certificateId, string calldata _newDataLog) external onlyOwner {
+    /// @notice sets the datalog (lastSmartMeterReadFileHash) of a certificate
+    /// @param _certificateId the id of a certificate
+    /// @param _newDataLog the new datalog
+    function setDataLog(
+        uint _certificateId, 
+        string calldata _newDataLog
+    ) 
+        external 
+        onlyOwner 
+    {
         CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
         certificate.dataLog = _newDataLog;
     }
 
-    function getMaxOwnerChanges(uint _certificateId) external onlyOwner returns (uint){
-        return getCertificateInternally(_certificateId).maxOwnerChanges;
-    }
-
+    /// @notice sets the max owner changes for a certificate
+    /// @param _certificateId the id of the certificate
+    /// @param _newMaxOwnerChanges the new amount of max owner changes
     function setMaxOwnerChanges(uint _certificateId, uint _newMaxOwnerChanges) external onlyOwner {
         CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
         certificate.maxOwnerChanges = _newMaxOwnerChanges;
     }
 
-    function getOwnerChangeCounter(uint _certificateId) external onlyOwner returns (uint){
-        return getCertificateInternally(_certificateId).ownerChangeCounter;
-    }
-
+    /// @notice sets the owner change counter
+    /// @param _certificateId the id of the certificate
+    /// @param _newOwnerChangeCounter the new counter 
     function setOwnerChangeCounter(uint _certificateId, uint _newOwnerChangeCounter) external {
         require(msg.sender == owner || msg.sender == address(this));
         CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
         certificate.ownerChangeCounter = _newOwnerChangeCounter;
     }
 
+    /// @notice sets the retired flag for a certificate
+    /// @param _certificateId the id of the certificate
+    /// @param _retired flag whether the certificate is retired
+    function setRetired(uint _certificateId, bool _retired) external onlyOwner {
+        CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
+        certificate.retired = _retired;
+    }
+
+    /// @notice returns the number of children of a certificate
+    /// @param _certificateId the certificate-id
+    /// @return the number of children of a certificate
     function getCertificateChildrenLength(uint _certificateId)
         external
         onlyOwner
@@ -84,6 +84,53 @@ contract CertificateSpecificDB is CertificateSpecificDBInterface, Owned {
         returns (uint)
     {
         return getCertificateInternally(_certificateId).children.length;
+    }
+
+
+    /// @notice gets the datalog (lastSmartMeterReadFileHash) of a certificate
+    /// @param _certificateId the id of a certificate
+    /// @return datalog
+    function getDataLog(uint _certificateId) external onlyOwner returns (string memory){
+        return getCertificateInternally(_certificateId).dataLog;
+    }
+
+    /// @notice gets the maximum owner changes of a certificate
+    /// @param _certificateId the id of a certificate
+    /// @return the maximum owner changes
+    function getMaxOwnerChanges(uint _certificateId) external onlyOwner returns (uint){
+        return getCertificateInternally(_certificateId).maxOwnerChanges;
+    }
+
+    /// @notice returns the owner change counter
+    /// @param _certificateId the of a certificate
+    /// @return owner change counter
+    function getOwnerChangeCounter(uint _certificateId) external onlyOwner returns (uint){
+        return getCertificateInternally(_certificateId).ownerChangeCounter;
+    }
+
+    /// @notice gets the flag whether the certificate is retired
+    /// @param _certificateId the id of a certificate
+    /// @return flag whether a certificate is retired
+    function getRetired(uint _certificateId) external onlyOwner returns (bool){
+        return getCertificateInternally(_certificateId).retired;
+    }
+
+    /**
+        public functions
+     */
+
+    /// @notice adds a children to a certificate
+    /// @param _certificateId the id of a certificate
+    /// @param _childId the id of the child
+    function addChildrenExternal(uint _certificateId, uint _childId) public onlyOwner {
+        addChildren(_certificateId, _childId);
+    }
+
+	/// @notice Adds a certificate-Id as child to an existing certificate
+	/// @param _certificateId The array position in which the parent certificate is stored
+	/// @param _childId The array position in which the child certificate is stored
+    function addChildren(uint _certificateId, uint _childId) public onlyOwner {
+        getCertificateInternally(_certificateId).children.push(_childId);
     }
 
 }
