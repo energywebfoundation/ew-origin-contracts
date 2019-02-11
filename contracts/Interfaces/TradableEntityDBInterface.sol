@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it;
 
 pragma solidity ^0.5.2;
 pragma experimental ABIEncoderV2;
@@ -35,15 +35,15 @@ interface TradableEntityDBInterface {
     function setTradableEntityOwnerExternal(uint _entityId, address _owner) external;
 
     /// @notice sets a tradable token for an entity
-    /// @param _entityId the entityId 
+    /// @param _entityId the entityId
     /// @param _token the address of the ERC20 token address
     function setTradableToken(uint _entityId, address _token) external;
 
     /// @notice sets the onchain direct purchase price
     /// @param _entityId the id of the entity
-    /// @param _price the price 
+    /// @param _price the price
     function setOnChainDirectPurchasePrice(uint _entityId, uint _price) external;
-    
+
     /// @notice removes accepted token and onchain direct purchase price for an entity
     /// @param _entityId the id of the entity
     function removeTokenAndPrice(uint _entityId) external;
@@ -52,8 +52,8 @@ interface TradableEntityDBInterface {
     /// @param _entityId the id of the entity
     /// @param _escrow the escrow address to be removed
     /// @return true if the removal was successfull
-    function removeEscrow(uint _entityId, address _escrow) external returns (bool);    
-   
+    function removeEscrow(uint _entityId, address _escrow) external returns (bool);
+
     /// @notice sets the flags whether an escrow can transfer the certificates of a company
     /// @param _company the owner of certificates
     /// @param _escrow the escrow address (matcher)
@@ -94,7 +94,7 @@ interface TradableEntityDBInterface {
 
     /// @notice gets the number of escrows for a tradable entity
     /// @param _entityId the id of the entity
-    /// @return the number of escrows for the tradable entity 
+    /// @return the number of escrows for the tradable entity
     function getTradableEntityEscrowLength(uint _entityId) external view returns (uint);
 
     /// @notice gets the onchain direct purchase price for an entity
@@ -107,5 +107,5 @@ interface TradableEntityDBInterface {
     /// @param _escrow the provided escrow address
     /// @return whether the provided address is an operator/escrow for the company
     function getOwnerToOperators(address _company, address _escrow) external view returns (bool);
-    
+
 }

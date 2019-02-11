@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: Martin Kuechler, martin.kuechler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it;
 
 pragma solidity ^0.5.2;
 pragma experimental ABIEncoderV2;
@@ -32,18 +32,18 @@ contract CertificateSpecificDB is CertificateSpecificDBInterface, Owned {
     function setCertificateSpecific(uint _certificateId, CertificateSpecificContract.CertificateSpecific memory _certificate) public;
 
     /**
-        external functions 
+        external functions
      */
 
     /// @notice sets the datalog (lastSmartMeterReadFileHash) of a certificate
     /// @param _certificateId the id of a certificate
     /// @param _newDataLog the new datalog
     function setDataLog(
-        uint _certificateId, 
+        uint _certificateId,
         string calldata _newDataLog
-    ) 
-        external 
-        onlyOwner 
+    )
+        external
+        onlyOwner
     {
         CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
         certificate.dataLog = _newDataLog;
@@ -59,7 +59,7 @@ contract CertificateSpecificDB is CertificateSpecificDBInterface, Owned {
 
     /// @notice sets the owner change counter
     /// @param _certificateId the id of the certificate
-    /// @param _newOwnerChangeCounter the new counter 
+    /// @param _newOwnerChangeCounter the new counter
     function setOwnerChangeCounter(uint _certificateId, uint _newOwnerChangeCounter) external {
         require(msg.sender == owner || msg.sender == address(this));
         CertificateSpecificContract.CertificateSpecific storage certificate = getCertificateInternally(_certificateId);
@@ -80,7 +80,7 @@ contract CertificateSpecificDB is CertificateSpecificDBInterface, Owned {
     function getCertificateChildrenLength(uint _certificateId)
         external
         onlyOwner
-        view 
+        view
         returns (uint)
     {
         return getCertificateInternally(_certificateId).children.length;

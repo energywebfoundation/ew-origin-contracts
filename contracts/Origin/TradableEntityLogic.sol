@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it;
 
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
@@ -37,7 +37,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     TradableEntityDBInterface public db;
     AssetContractLookupInterface public assetContractLookup;
 
-    /// @notice Logs when a transfer or creation of a tradableEntity occurs 
+    /// @notice Logs when a transfer or creation of a tradableEntity occurs
     event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
     /// @notice Logs when an address gets approved
     event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
@@ -60,9 +60,9 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     constructor(
         AssetContractLookupInterface _assetContractLookup,
         OriginContractLookupInterface _originContractLookup
-    ) 
-        RoleManagement((UserContractLookupInterface((_assetContractLookup.userRegistry()))), address(_originContractLookup)) 
-        public 
+    )
+        RoleManagement((UserContractLookupInterface((_assetContractLookup.userRegistry()))), address(_originContractLookup))
+        public
     {
         assetContractLookup = _assetContractLookup;
     }
@@ -92,15 +92,15 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     /// @param _from sender/owner of the entity
     /// @param _to receiver / new owner of the entity
     /// @param _entityId the entity-id
-    /// @param _data calldata to be passed 
+    /// @param _data calldata to be passed
     function safeTransferFrom(
-        address _from, 
-        address _to, 
-        uint256 _entityId, 
+        address _from,
+        address _to,
+        uint256 _entityId,
         bytes calldata _data
-    ) 
-        external 
-        payable 
+    )
+        external
+        payable
     {
         simpleTransferInternal(_from, _to, _entityId);
         safeTransferChecks(_from, _to, _entityId, _data);
@@ -159,20 +159,20 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
 
     /// @notice returns whether the operator (escrow) is approved for the company
     /// @param _owner the owner / company
-    /// @param _operator the operator / escrow 
+    /// @param _operator the operator / escrow
     /// @return flag whether the operator is approved
     function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
         return db.getOwnerToOperators(_owner, _operator);
     }
 
      /**
-        external non erc721 functions  
+        external non erc721 functions
     */
-    
+
     /// @notice adds a new escrow address to a certificate
     /// @param _certificateId The id of the certificate
     /// @param _escrow The additional escrow address
-    function addEscrowForEntity(uint _certificateId, address _escrow) 
+    function addEscrowForEntity(uint _certificateId, address _escrow)
         external
         onlyEntityOwner(_certificateId)
     {
@@ -192,24 +192,24 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     /// @param _entityId the id of the entity
     /// @param _price the on chain direct purchase price
     function setOnChainDirectPurchasePrice(
-        uint _entityId, 
+        uint _entityId,
         uint _price
-    ) 
-        onlyEntityOwner(_entityId) 
-        external 
+    )
+        onlyEntityOwner(_entityId)
+        external
     {
         db.setOnChainDirectPurchasePrice(_entityId, _price);
     }
 
     /// @notice sets the tradable token (ERC20 contract)
     /// @param _entityId the id of the entity
-    /// @param _tokenContract the ERC20 tokenContract     
+    /// @param _tokenContract the ERC20 tokenContract
     function setTradableToken(
-        uint _entityId, 
+        uint _entityId,
         address _tokenContract
-    ) 
-        onlyEntityOwner(_entityId) 
-        external 
+    )
+        onlyEntityOwner(_entityId)
+        external
     {
         db.setTradableToken(_entityId, _tokenContract);
     }
@@ -217,9 +217,9 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
 
     /// @notice Updates the logic contract
     /// @param _newLogic Address of the new logic contract
-    function update(address _newLogic) 
+    function update(address _newLogic)
         external
-        onlyOwner    
+        onlyOwner
     {
         Owned(address(db)).changeOwner(_newLogic);
     }
@@ -232,13 +232,13 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         return db.getOnChainDirectPurchasePrice(_entityId);
     }
 
-   
-    /// @notice gets the tradableEntity 
+
+    /// @notice gets the tradableEntity
     /// @param _entityId the id of the entity
     /// @return the tradableEntity
-    function getTradableEntity(uint _entityId)  
-        external 
-        view 
+    function getTradableEntity(uint _entityId)
+        external
+        view
         returns (
             TradableEntityContract.TradableEntity memory
         )
@@ -291,11 +291,11 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     /// @param _to receiver / new owner of the entity
     /// @param _entityId the entity-id
     function simpleTransferInternal(
-        address _from, 
-        address _to, 
+        address _from,
+        address _to,
         uint256 _entityId
-    ) 
-        internal 
+    )
+        internal
     {
         TradableEntityContract.TradableEntity memory te = TradableEntityDB(address(db)).getTradableEntity(_entityId);
 
@@ -310,7 +310,7 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
         db.setTradableEntityOwnerAndAddApproval(_entityId, _to,address(0x0));
         db.removeTokenAndPrice(_entityId);
         emit Transfer(_from,_to,_entityId);
-      
+
     }
 
     /// @notice checks requirements for a safe transder
@@ -319,12 +319,12 @@ contract TradableEntityLogic is Updatable, RoleManagement, ERC721, ERC165, Trada
     /// @param _entityId the entity-id
     /// @param _data calldata to be passed
     function safeTransferChecks(
-        address _from, 
-        address _to, 
-        uint256 _entityId, 
+        address _from,
+        address _to,
+        uint256 _entityId,
         bytes memory _data
-    ) 
-        internal 
+    )
+        internal
     {
         require(isContract(_to),"_to is not a contract");
         require(ERC721TokenReceiver(_to).onERC721Received(address(this),_from,_entityId,_data) == 0x150b7a02,"_to did not respond correctly");

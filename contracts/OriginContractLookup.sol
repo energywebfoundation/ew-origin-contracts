@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuchler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it;
 
 pragma solidity ^0.5.0;
 
@@ -25,37 +25,37 @@ import "ew-asset-registry-contracts/contracts/Interfaces/OriginMarketContractLoo
 
 /// @title Contract for storing the current logic-contracts-addresses for the certificate of origin
 contract OriginContractLookup is Owned, OriginContractLookupInterface, OriginMarketContractLookupInterface {
-    
+
     Updatable private originLogicRegistryContract;
     AssetContractLookupInterface private assetContractLookupContract;
 
     uint private maxMatcherPerCertificateNumber;
 
-    /// @notice The constructor 
-    constructor() Owned(msg.sender) public{ 
+    /// @notice The constructor
+    constructor() Owned(msg.sender) public{
         maxMatcherPerCertificateNumber = 10;
-    } 
+    }
 
 	/// @notice function to initialize the contracts, setting the needed contract-addresses
 	/// @param _assetRegistry the asset Registry
 	/// @param _originLogicRegistry the origin Logic Registry
 	/// @param _originDB the origin DB
     function init(
-        AssetContractLookupInterface _assetRegistry, 
-        Updatable _originLogicRegistry, 
-        address _originDB 
-    ) 
+        AssetContractLookupInterface _assetRegistry,
+        Updatable _originLogicRegistry,
+        address _originDB
+    )
         external
         onlyOwner
     {
-        require(    
-            address(_assetRegistry) != address(0) 
+        require(
+            address(_assetRegistry) != address(0)
             && address(_originLogicRegistry) != address(0)
-            && address(originLogicRegistryContract) == address(0) 
+            && address(originLogicRegistryContract) == address(0)
             && address(assetContractLookupContract) == address(0),
             "already initialized"
         );
-        
+
         require(_originDB != address(0), "originDB cannot be 0");
 
         originLogicRegistryContract = _originLogicRegistry;
@@ -67,20 +67,20 @@ contract OriginContractLookup is Owned, OriginContractLookupInterface, OriginMar
 	/// @notice set the amount of maximal matcher per certificate
 	/// @param _new the new amount
     function setMaxMatcherPerCertificate(uint _new)
-        external 
-        onlyOwner 
+        external
+        onlyOwner
     {
         maxMatcherPerCertificateNumber = _new;
     }
 
-   
+
 	/// @notice function to update one or more logic-contracts
 	/// @param _originRegistry address of the new user-registry-logic-contract
     function update(
         Updatable _originRegistry
     )
         external
-        onlyOwner 
+        onlyOwner
     {
         require(address(_originRegistry)!= address(0), "update: cannot set to 0");
         originLogicRegistryContract.update(address(_originRegistry));

@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: Martin Kuechler, martin.kuechler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it;
 
 pragma solidity ^0.5.2;
 pragma experimental ABIEncoderV2;
@@ -32,14 +32,14 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @notice Constructor
     /// @param _certificateLogic The address of the corresbonding logic contract
     constructor(address _certificateLogic) Owned(_certificateLogic) public { }
-    
+
     /**
         abstract function declarations
      */
     function getTradableEntity(uint _entityId) public view returns (TradableEntityContract.TradableEntity memory _entity);
     function getTradableEntityInternally(uint _entityId) internal view returns (TradableEntityContract.TradableEntity storage _entity);
     function setTradableEntity(uint _entityId, TradableEntityContract.TradableEntity memory _entity) public;
-    
+
     /**
         external functions
      */
@@ -48,11 +48,11 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @param _entityId the id of an entity
     /// @param _escrow the escrow to be added
     function addEscrowForEntity(
-        uint _entityId, 
+        uint _entityId,
         address _escrow
-    ) 
-        external 
-        onlyOwner 
+    )
+        external
+        onlyOwner
     {
         TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         te.escrow.push(_escrow);
@@ -62,11 +62,11 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @param _entityId the id of the entity
     /// @param _approve the address to be approved
     function addApprovalExternal(
-        uint _entityId, 
+        uint _entityId,
         address _approve
-    ) 
-        external 
-        onlyOwner 
+    )
+        external
+        onlyOwner
     {
         addApproval(_entityId, _approve);
     }
@@ -88,7 +88,7 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     }
 
     /// @notice removes accepted token and the price for an entity
-    /// @dev should be called after the transfer of an entity 
+    /// @dev should be called after the transfer of an entity
     /// @param _entityId the id of the entity
     function removeTokenAndPrice(uint _entityId) external onlyOwner {
         TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
@@ -109,12 +109,12 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @param _escrow the escrow / matcher
     /// @param _allowed flag whether the escrow is allowed to transfer entities of a company
     function setOwnerToOperators(
-        address _company, 
-        address _escrow, 
+        address _company,
+        address _escrow,
         bool _allowed
     )
-        external 
-        onlyOwner 
+        external
+        onlyOwner
     {
         ownerToOperators[_company][_escrow] = _allowed;
     }
@@ -123,11 +123,11 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @param _entityId the entity-id
     /// @param _owner the new owner of the entity
     function setTradableEntityOwnerExternal(
-        uint _entityId, 
+        uint _entityId,
         address _owner
-    ) 
-        external 
-        onlyOwner 
+    )
+        external
+        onlyOwner
     {
         setTradableEntityOwner(_entityId, _owner);
     }
@@ -143,11 +143,11 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @param _entityId the entity-id
     /// @param _token the ERC20-tokenaddress
     function setTradableToken(
-        uint _entityId, 
+        uint _entityId,
         address _token
     )
-        external 
-        onlyOwner 
+        external
+        onlyOwner
     {
         TradableEntityContract.TradableEntity storage te = getTradableEntityInternally(_entityId);
         te.acceptedToken = _token;
@@ -163,10 +163,10 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @notice gets the balance of tokens for an address
     /// @param _owner the owner of tokens
     /// @return the balane of the owner
-    function getBalanceOf(address _owner) 
-        external 
-        onlyOwner 
-        view 
+    function getBalanceOf(address _owner)
+        external
+        onlyOwner
+        view
         returns (uint)
     {
         return tokenAmountMapping[_owner];
@@ -176,10 +176,10 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @param _entityId the entity-id
     function getOnChainDirectPurchasePrice(
         uint _entityId
-    ) 
-        external 
-        onlyOwner 
-        view 
+    )
+        external
+        onlyOwner
+        view
         returns (uint)
     {
         return getTradableEntity(_entityId).onChainDirectPurchasePrice;
@@ -190,38 +190,38 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @param _escrow the escrow / matcher
     /// @return whether the escrow is allowed to transfer certificates for a company
     function getOwnerToOperators(
-        address _company, 
+        address _company,
         address _escrow
-    ) 
-        external 
-        onlyOwner 
-        view 
+    )
+        external
+        onlyOwner
+        view
         returns (bool)
     {
         return ownerToOperators[_company][_escrow];
     }
 
-    /// @notice gets the ERC20-token address for an entity   
+    /// @notice gets the ERC20-token address for an entity
     /// @param _entityId the entity-id
     /// @return the ERC20-token address
     function getTradableToken(
         uint _entityId
-    ) 
-        external 
-        onlyOwner 
-        view 
-        returns (address) 
+    )
+        external
+        onlyOwner
+        view
+        returns (address)
     {
         return getTradableEntity(_entityId).acceptedToken;
     }
 
-    /// @notice gets the owner of a tradableEntity 
+    /// @notice gets the owner of a tradableEntity
     /// @param _entityId the entity-id
     /// @return the owner of a tradable entity
     function getTradableEntityOwner(uint _entityId) external onlyOwner view returns (address){
         return getTradableEntity(_entityId).owner;
     }
-    
+
     /// @notice gets the number of escrow addresses for a tradable entity
     /// @param _entityId the entitiy-id
     /// @return the number of escrows for an entity
@@ -234,17 +234,17 @@ contract TradableEntityDB is Owned,TradableEntityDBInterface {
     /// @param _owner the new owner of an entity
     /// @param _approve the approved address for an entity
     function setTradableEntityOwnerAndAddApproval(
-        uint _entityId, 
-        address _owner, 
+        uint _entityId,
+        address _owner,
         address _approve
-    ) 
-        external 
-        onlyOwner 
+    )
+        external
+        onlyOwner
     {
         setTradableEntityOwner(_entityId, _owner);
         addApproval(_entityId, _approve);
     }
- 
+
     /**
         internal functions
      */

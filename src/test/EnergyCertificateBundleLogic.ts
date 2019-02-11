@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: slock.it GmbH, Martin Kuechler, martin.kuechler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it;
 
 import { assert } from 'chai';
 import * as fs from 'fs';
@@ -27,7 +27,7 @@ import { TestReceiver } from '../wrappedContracts/TestReceiver';
 import { EnergyCertificateBundleLogic } from '../wrappedContracts/EnergyCertificateBundleLogic';
 import { EnergyCertificateBundleDB } from '../wrappedContracts/EnergyCertificateBundleDB';
 import { Erc20TestToken } from '../wrappedContracts/Erc20TestToken';
-import Web3 = require('web3');
+import Web3 from 'web3';
 import Erc20TestTokenJSON from '../../contract-build/Erc20TestToken.json';
 import Erc721TestReceiverJSON from '../../contract-build/TestReceiver.json';
 import { deploy } from 'ew-deployment';

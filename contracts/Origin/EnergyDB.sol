@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: Martin Kuechler, martin.kuechler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it;
 
 pragma solidity ^0.5.2;
 pragma experimental ABIEncoderV2;
@@ -39,7 +39,7 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     Energy[] private energyList;
   //  mapping(address => uint) private tokenAmountMapping;
   //  mapping(address => mapping (address => bool)) ownerToOperators;
-    
+
     /// @notice Constructor
     /// @param _energyLogic The address of the corresbonding logic contract
     constructor(address _energyLogic) TradableEntityDB(_energyLogic) public { }
@@ -56,7 +56,7 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     }
 
     /*
-    /// @ntoice 
+    /// @ntoice
     function setOwnerToOperators(address _company, address _escrow, bool _allowed) external onlyOwner {
         ownerToOperators[_company][_escrow] = _allowed;
     }
@@ -68,15 +68,15 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     /// @param _powerInW the amount of energy produced
     /// @param _acceptedToken the accepted ERC20-Token
     /// @param _onChainDirectPurchasePrice the price set onchain for direct purchase (using an ERC20 contract)
-    function createTradableEntityEntry(  
-        uint _assetId, 
-        address _owner, 
-        uint _powerInW, 
+    function createTradableEntityEntry(
+        uint _assetId,
+        address _owner,
+        uint _powerInW,
         address _acceptedToken,
         uint _onChainDirectPurchasePrice
-    ) 
-        external 
-        onlyOwner 
+    )
+        external
+        onlyOwner
         returns (uint _entityId)
     {
 
@@ -88,11 +88,11 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
             onChainDirectPurchasePrice: _onChainDirectPurchasePrice,
             escrow: new address[](0),
             approvedAddress: address(0x0)
-        }); 
+        });
         energyList.push(Energy({tradableEntity: te}));
-        _entityId = energyList.length>0?energyList.length-1:0;        
+        _entityId = energyList.length>0?energyList.length-1:0;
         tokenAmountMapping[_owner]++;
-    } 
+    }
 
     /// @notice sets a new array of escrowsfor an entity
     /// @param _entityId the id of the entity
@@ -106,11 +106,11 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     /// @param _owner the new owner
     /// @param _approve the address that has the approval to move the token
     function setTradableEntityOwnerAndAddApproval(
-        uint _entityId, 
-        address _owner, 
+        uint _entityId,
+        address _owner,
         address _approve
-    ) 
-        external 
+    )
+        external
         onlyOwner
     {
         setTradableEntityOwner(_entityId, _owner);
@@ -121,11 +121,11 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     /// @param _entityId the id of the entity
     /// @param _token address of the erc20-token
     function setTradableToken(
-        uint _entityId, 
+        uint _entityId,
         address _token
-    ) 
-        external 
-        onlyOwner 
+    )
+        external
+        onlyOwner
     {
         energyList[_entityId].tradableEntity.acceptedToken = _token;
     }
@@ -134,11 +134,11 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     /// @param _entityId the id of the entity
     /// @param _price the price for a direct onchain purchasement
     function setOnChainDirectPurchasePrice(
-        uint _entityId, 
+        uint _entityId,
         uint _price
-    ) 
-        external 
-        onlyOwner 
+    )
+        external
+        onlyOwner
     {
         energyList[_entityId].tradableEntity.onChainDirectPurchasePrice = _price;
     }
@@ -174,10 +174,10 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     /// @notice gets the owner of a tradableEntity
     /// @param _entityId the id of an entity
     /// @return the owner of a tradableEntity
-    function getTradableEntityOwner(uint _entityId) 
+    function getTradableEntityOwner(uint _entityId)
         external
         onlyOwner
-        view 
+        view
         returns (address)
     {
         return energyList[_entityId].tradableEntity.owner;
@@ -198,10 +198,10 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     /// @param _entityId the id of the entity
     /// @param _entity the new entity
     function setTradableEntity(
-        uint _entityId, 
+        uint _entityId,
         TradableEntityContract.TradableEntity memory _entity
-    ) 
-        public  
+    )
+        public
         onlyOwnerOrSelf
     {
         energyList[_entityId].tradableEntity = _entity;
@@ -215,7 +215,7 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
         return energyList[_entityId].tradableEntity;
     }
 
-    /** 
+    /**
         internal functions
      */
 
@@ -244,10 +244,10 @@ contract EnergyDB is TradableEntityDB, TradableEntityContract {
     /// @return tradableEntity-struct as storage
     function getTradableEntityInternally(
         uint _entityId
-    ) 
+    )
         internal
-        view 
-        returns (TradableEntityContract.TradableEntity storage _entity) 
+        view
+        returns (TradableEntityContract.TradableEntity storage _entity)
     {
         require(msg.sender == owner || msg.sender == address(this));
         return energyList[_entityId].tradableEntity;
