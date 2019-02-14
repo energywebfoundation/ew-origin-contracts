@@ -4,3 +4,4 @@ src/wrappedContracts
 dist
 contract-build
 .vscode
+package-lock.json
