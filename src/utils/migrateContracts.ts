@@ -16,7 +16,6 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { Web3Type } from '../types/web3';
 import { OriginContractLookup } from '../wrappedContracts/OriginContractLookup';
 import { AssetContractLookup } from 'ew-asset-registry-contracts';
 import Web3 from 'web3';
