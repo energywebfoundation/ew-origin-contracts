@@ -12,7 +12,7 @@
       true,
       "spaces"
     ],
-    "max-line-length": false
+    "max-line-length": false,
     "radix": false,
     "ordered-imports": false,
     "no-trailing-whitespace": false,

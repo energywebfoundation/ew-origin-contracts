@@ -1,6 +1,6 @@
 // Copyright 2018 Energy Web Foundation
 // This file is part of the Origin Application brought to you by the Energy Web Foundation,
-// a global non-profit organization focused on accelerating blockchain technology across the energy sector, 
+// a global non-profit organization focused on accelerating blockchain technology across the energy sector,
 // incorporated in Zug, Switzerland.
 //
 // The Origin Application is free software: you can redistribute it and/or modify
@@ -12,9 +12,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details, at <http://www.gnu.org/licenses/>.
 //
-// @authors: Martin Kuechler, martin.kuechler@slock.it
+// @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it;
 
-pragma solidity 0.5.0;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "../../contracts/Interfaces/ERC721TokenReceiver.sol";
@@ -45,13 +45,12 @@ contract TestReceiver is ERC721TokenReceiver {
     }
 
     function safeTransferFrom(address _from, address _to, uint256 _entityId) external payable {
-    
+
         entityContract.safeTransferFrom(_from, _to, _entityId);
     }
 
     function safeTransferFrom(address _from, address _to, uint256 _entityId, bytes calldata _data) external payable {
-    
+
         entityContract.safeTransferFrom(_from, _to, _entityId, _data);
     }
 }
-    
