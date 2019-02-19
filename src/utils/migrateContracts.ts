@@ -19,7 +19,7 @@ import * as path from 'path';
 import { OriginContractLookup } from '../wrappedContracts/OriginContractLookup';
 import { AssetContractLookup } from 'ew-asset-registry-contracts';
 import Web3 from 'web3';
-import { deploy } from 'ew-deployment';
+import { deploy } from 'ew-utils-deployment';
 import {
     OriginContractLookupJSON,
     CertificateLogicJSON,

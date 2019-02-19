@@ -29,7 +29,7 @@ import { Erc20TestToken } from '../wrappedContracts/Erc20TestToken';
 import Web3 from 'web3';
 import Erc20TestTokenJSON from '../../contract-build/Erc20TestToken.json';
 import Erc721TestReceiverJSON from '../../contract-build/TestReceiver.json';
-import { deploy } from 'ew-deployment';
+import { deploy } from 'ew-utils-deployment';
 import { OriginContractLookupJSON, CertificateLogicJSON, CertificateDBJSON } from '..';
 
 describe('CertificateLogic', () => {
