@@ -19,6 +19,13 @@ pragma experimental ABIEncoderV2;
 
 interface TradableEntityInterface {
 
+
+    /// @notice creates a tradable entity
+    /// @param _assetId the id of the asset that produced the energy
+    /// @param _powerInW the amount of energy produced
+    /// @return the id of the newly created entity
+    function createTradableEntity(uint _assetId, uint _powerInW) external returns (uint);
+    
     /// @notice sets the tradable token (ERC20 contract) for an entity
     /// @param _entityId the id of the entity
     /// @param _tokenContract the ERC20 token contract
