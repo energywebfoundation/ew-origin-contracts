@@ -33,10 +33,9 @@ import "ew-asset-registry-contracts/contracts/Interfaces/AssetContractLookupInte
 import "../../contracts/Interfaces/EnergyCertificateBundleInterface.sol";
 import "../../contracts/Origin/CertificateSpecificContract.sol";
 
-import "ew-asset-registry-contracts/contracts/Interfaces/TradableEntityCreationInterface.sol";
 
 
-contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleManagement, TradableEntityLogic, TradableEntityContract, CertificateSpecificContract, TradableEntityCreationInterface {
+contract EnergyCertificateBundleLogic is EnergyCertificateBundleInterface, RoleManagement, TradableEntityLogic, TradableEntityContract, CertificateSpecificContract {
 
     /// @notice Logs the creation of an event
     event LogCreatedBundle(uint indexed _bundleId, uint powerInW, address owner);
