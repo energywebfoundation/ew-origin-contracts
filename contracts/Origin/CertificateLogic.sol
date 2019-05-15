@@ -35,9 +35,8 @@ import "ew-asset-registry-contracts/contracts/Asset/AssetProducingDB.sol";
 
 import "../../contracts/Origin/CertificateSpecificDB.sol";
 
-import "ew-asset-registry-contracts/contracts/Interfaces/TradableEntityCreationInterface.sol";
 
-contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntityLogic, TradableEntityContract, TradableEntityCreationInterface {
+contract CertificateLogic is CertificateInterface, RoleManagement, TradableEntityLogic, TradableEntityContract {
 
     /// @notice Logs the creation of an event
     event LogCreatedCertificate(uint indexed _certificateId, uint powerInW, address owner);
