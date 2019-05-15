@@ -33,7 +33,6 @@ import Erc721TestReceiverJSON from '../../contract-build/TestReceiver.json';
 import { deploy } from 'ew-utils-deployment';
 import { EnergyCertificateBundleLogicJSON, EnergyCertificateBundleDBJSON, OriginContractLookupJSON } from '..';
 
-
 describe('EnergyCertificateBundleLogic', () => {
 
     let assetRegistryContract: AssetContractLookup;
@@ -117,7 +116,6 @@ describe('EnergyCertificateBundleLogic', () => {
                     energyCertificateBundleLogic = new EnergyCertificateBundleLogic(web3, originContracts[key]);
                     tempBytecode = '0x' + EnergyCertificateBundleLogicJSON.deployedBytecode;
                 }
-
 
                 if (key.includes('EnergyCertificateBundleDB')) {
                     energyCertificateBundleDB = new EnergyCertificateBundleDB(web3, originContracts[key]);

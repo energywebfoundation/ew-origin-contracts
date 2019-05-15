@@ -14,7 +14,6 @@
 //
 // @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it;
 
-
 import { assert } from 'chai';
 import * as fs from 'fs';
 import 'mocha';

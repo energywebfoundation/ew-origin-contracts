@@ -1,7 +1,11 @@
 {
   "defaultSeverity": "error",
   "extends": ["tslint:recommended", "tslint-config-prettier", "tslint-sonarts"],
+  "rulesDirectory": [
+    "node_modules/tslint-lines-between-class-members"
+  ],
   "rules": {
+    "no-unused-expression": true,
     "class-name": true,
     "comment-format": [
       true,
@@ -35,6 +39,7 @@
     "react-tsx-curly-spacing": [
       false
     ],
+    "lines-between-class-members": true,
     "curly": true,
     "export-name": false,
     "import-name": false,
@@ -43,6 +48,7 @@
     "no-default-export": true,
     "no-relative-imports": false,
     "no-duplicate-variable": true,
+    "no-consecutive-blank-lines": true,
     "no-eval": true,
     "no-increment-decrement": false,
     "no-internal-module": true,
