@@ -114,8 +114,8 @@ describe('EnergyCertificateBundleLogic', () => {
                 }
 
                 if (key.includes('EnergyCertificateBundleLogic')) {
-                    energyCertificateBundleLogic = new EnergyCertificateBundleLogic(web3, originContracts[key])
-                    tempBytecode = '0x' + EnergyCertificateBundleLogicJSON.deployedBytecode
+                    energyCertificateBundleLogic = new EnergyCertificateBundleLogic(web3, originContracts[key]);
+                    tempBytecode = '0x' + EnergyCertificateBundleLogicJSON.deployedBytecode;
                 }
 
 
@@ -259,7 +259,7 @@ describe('EnergyCertificateBundleLogic', () => {
                 assetSmartmeter,
                 accountAssetOwner,
                 true,
-                (["0x1000000000000000000000000000000000000005"] as any),
+                (['0x1000000000000000000000000000000000000005'] as any),
                 'propertiesDocumentHash',
                 'url',
                 2,
@@ -1183,7 +1183,7 @@ describe('EnergyCertificateBundleLogic', () => {
             it('should set an escrow to the asset', async () => {
                 await assetRegistry.addMatcher(0, matcherAccount, { privateKey: assetOwnerPK });
                 assert.deepEqual(await assetRegistry.getMatcher(0),
-                    ['0x1000000000000000000000000000000000000005', matcherAccount]);
+                                 ['0x1000000000000000000000000000000000000005', matcherAccount]);
             });
 
             it('should throw trying to transfer old certificate with new matcher', async () => {

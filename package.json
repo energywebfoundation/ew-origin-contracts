@@ -31,9 +31,21 @@
     "@types/web3": "1.0.14",
     "chai": "^4.1.2",
     "ganache-cli": "^6.2.5",
+    "lint-staged": "^8.1.7",
     "mocha": "^5.2.0",
+    "prettier": "^1.17.1",
+    "tslint": "^5.16.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-sonarts": "^1.9.0",
     "typescript": "^2.9.2",
     "typescript-json-schema": "^0.31.0"
   },
-  "postinstall": "rm -f node_modules/web3/index.d.ts"
+  "postinstall": "rm -f node_modules/web3/index.d.ts",
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "tslint --fix",
+      "prettier --write --config ./.prettierrc --config-precedence file-override",
+      "git add"
+    ]
+  }
 }
