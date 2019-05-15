@@ -10,7 +10,6 @@ module.exports = {
     tobalaba: {
       host: "https://tobalaba-rpc.slock.it",
       network_id: "*",
-       
       gas: 80000000, 
       gasPrice: 0      
     },

@@ -11,7 +11,7 @@
     export class Owned extends GeneralFunctions {
     web3: Web3;
     buildFile = OwnedJSON;
-    
+
   constructor(web3: Web3, address?: string) {
         super(address ? new web3.eth.Contract(OwnedJSON.abi, address) : new web3.eth.Contract(OwnedJSON.abi, OwnedJSON.networks.length > 0 ? (OwnedJSON.networks[0]) : null));
         this.web3 = web3;
@@ -55,11 +55,11 @@
 
         return await this.web3Contract.getPastEvents('allEvents', filterParams);
     }
-        
+
   async owner(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.owner().call(txParams));
     }
-    
+
   async changeOwner(_newOwner: string, txParams?: SpecialTx) {
 
             let transactionParams;

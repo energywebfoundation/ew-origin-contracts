@@ -11,7 +11,7 @@
     export class RoleManagement extends GeneralFunctions {
     web3: Web3;
     buildFile = RoleManagementJSON;
-    
+
   constructor(web3: Web3, address?: string) {
         super(address ? new web3.eth.Contract(RoleManagementJSON.abi, address) : new web3.eth.Contract(RoleManagementJSON.abi, RoleManagementJSON.networks.length > 0 ? (RoleManagementJSON.networks[0]) : null));
         this.web3 = web3;
@@ -55,15 +55,15 @@
 
         return await this.web3Contract.getPastEvents('allEvents', filterParams);
     }
-        
+
   async userContractLookup(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.userContractLookup().call(txParams));
     }
-    
+
   async owner(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.owner().call(txParams));
     }
-    
+
   async changeOwner(_newOwner: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -136,7 +136,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async isRole(_role: number, _caller: string, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.isRole(_role, _caller).call(txParams));
     }

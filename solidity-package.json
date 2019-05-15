@@ -1,8 +1,8 @@
 {
     "name": "Origin Contract",
     "dependencies": {
-        "ew-asset-registry-contracts": "-b develop https://git.slock.it/ewf/origin/asset-registry/ew-asset-registry-contracts",
-        "ew-user-registry-contracts": "https://git.slock.it/ewf/origin/user-registry/ew-user-registry-contracts",
-        "ew-utils-general-contracts": "https://git.slock.it/ewf/origin/utils/ew-utils-general-contracts"
+        "ew-asset-registry-contracts": "git@github.com:energywebfoundation/ew-asset-registry-contracts.git",
+        "ew-user-registry-contracts": "git@github.com:energywebfoundation/ew-user-registry-contracts.git",
+        "ew-utils-general-contracts": "git@github.com:energywebfoundation/ew-utils-general-contracts.git"
     }
 }

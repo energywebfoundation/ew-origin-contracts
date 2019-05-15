@@ -11,7 +11,7 @@
     export class AssetGeneralStructContract extends GeneralFunctions {
     web3: Web3;
     buildFile = AssetGeneralStructContractJSON;
-    
+
   constructor(web3: Web3, address?: string) {
         super(address ? new web3.eth.Contract(AssetGeneralStructContractJSON.abi, address) : new web3.eth.Contract(AssetGeneralStructContractJSON.abi, AssetGeneralStructContractJSON.networks.length > 0 ? (AssetGeneralStructContractJSON.networks[0]) : null));
         this.web3 = web3;

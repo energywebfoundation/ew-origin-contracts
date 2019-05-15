@@ -11,7 +11,7 @@
     export class CertificateSpecificContract extends GeneralFunctions {
     web3: Web3;
     buildFile = CertificateSpecificContractJSON;
-    
+
   constructor(web3: Web3, address?: string) {
         super(address ? new web3.eth.Contract(CertificateSpecificContractJSON.abi, address) : new web3.eth.Contract(CertificateSpecificContractJSON.abi, CertificateSpecificContractJSON.networks.length > 0 ? (CertificateSpecificContractJSON.networks[0]) : null));
         this.web3 = web3;

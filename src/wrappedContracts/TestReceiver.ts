@@ -11,7 +11,7 @@
     export class TestReceiver extends GeneralFunctions {
     web3: Web3;
     buildFile = TestReceiverJSON;
-    
+
   constructor(web3: Web3, address?: string) {
         super(address ? new web3.eth.Contract(TestReceiverJSON.abi, address) : new web3.eth.Contract(TestReceiverJSON.abi, TestReceiverJSON.networks.length > 0 ? (TestReceiverJSON.networks[0]) : null));
         this.web3 = web3;
@@ -89,7 +89,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async safeTransferFrom(_from, _to, _entityId, _data?, txParams?: SpecialTx) {
 if (_data) {
 {
@@ -236,7 +236,8 @@ if (_data) {
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-}	
+}
+
   async entityContract(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.entityContract().call(txParams));
     }

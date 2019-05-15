@@ -11,7 +11,7 @@
     export class EnergyCertificateBundleDB extends GeneralFunctions {
     web3: Web3;
     buildFile = EnergyCertificateBundleDBJSON;
-    
+
   constructor(web3: Web3, address?: string) {
         super(address ? new web3.eth.Contract(EnergyCertificateBundleDBJSON.abi, address) : new web3.eth.Contract(EnergyCertificateBundleDBJSON.abi, EnergyCertificateBundleDBJSON.networks.length > 0 ? (EnergyCertificateBundleDBJSON.networks[0]) : null));
         this.web3 = web3;
@@ -55,15 +55,15 @@
 
         return await this.web3Contract.getPastEvents('allEvents', filterParams);
     }
-        
+
   async getTradableEntityOwner(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getTradableEntityOwner(_entityId).call(txParams));
     }
-    
+
   async getApproved(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getApproved(_entityId).call(txParams));
     }
-    
+
   async addEscrowForEntity(_entityId: number, _escrow: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -136,7 +136,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setTradableEntityEscrowExternal(_entityId: number, _escrow: string[], txParams?: SpecialTx) {
 
             let transactionParams;
@@ -209,15 +209,15 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getTradableEntityEscrowLength(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getTradableEntityEscrowLength(_entityId).call(txParams));
     }
-    
+
   async getBundleListLength(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.getBundleListLength().call(txParams));
     }
-    
+
   async setDataLog(_certificateId: number, _newDataLog: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -290,7 +290,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getOwnerChangeCounter(_certificateId: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -363,11 +363,11 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getBundle(_bundleID: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getBundle(_bundleID).call(txParams));
     }
-    
+
   async getRetired(_certificateId: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -440,7 +440,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setTradableEntityOwnerAndAddApproval(_entityId: number, _owner: string, _approve: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -513,7 +513,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setOwnerChangeCounter(_certificateId: number, _newOwnerChangeCounter: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -586,7 +586,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async addApprovalExternal(_entityId: number, _approve: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -659,7 +659,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setOnChainDirectPurchasePrice(_entityId: number, _price: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -732,11 +732,11 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getOwnerToOperators(_company: string, _escrow: string, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getOwnerToOperators(_company, _escrow).call(txParams));
     }
-    
+
   async setTradableEntityOwnerExternal(_entityId: number, _owner: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -809,11 +809,11 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getTradableEntity(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getTradableEntity(_entityId).call(txParams));
     }
-    
+
   async addChildrenExternal(_certificateId: number, _childId: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -886,19 +886,19 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async owner(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.owner().call(txParams));
     }
-    
+
   async getCertificateSpecific(_certificateId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getCertificateSpecific(_certificateId).call(txParams));
     }
-    
+
   async getBalanceOf(_owner: string, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getBalanceOf(_owner).call(txParams));
     }
-    
+
   async setRetired(_certificateId: number, _retired: boolean, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -971,7 +971,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setMaxOwnerChanges(_certificateId: number, _newMaxOwnerChanges: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1044,7 +1044,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async changeOwner(_newOwner: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1117,7 +1117,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getMaxOwnerChanges(_certificateId: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1190,7 +1190,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async removeTokenAndPrice(_entityId: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1263,7 +1263,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async addChildren(_certificateId: number, _childId: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1336,7 +1336,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setCertificateSpecific(_certificateId: number, _certificate: any, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1409,7 +1409,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setOwnerToOperators(_company: string, _escrow: string, _allowed: boolean, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1482,11 +1482,11 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getCertificateChildrenLength(_certificateId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getCertificateChildrenLength(_certificateId).call(txParams));
     }
-    
+
   async removeEscrow(_entityId: number, _escrow: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1559,7 +1559,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setTradableEntity(_entityId: number, _entity: any, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1632,7 +1632,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setTradableToken(_entityId: number, _token: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1705,11 +1705,11 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getOnChainDirectPurchasePrice(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getOnChainDirectPurchasePrice(_entityId).call(txParams));
     }
-    
+
   async getDataLog(_certificateId: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1782,11 +1782,11 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getTradableToken(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getTradableToken(_entityId).call(txParams));
     }
-    
+
   async createEnergyCertificateBundle(_tradableEntity: any, _certificateSpecific: any, txParams?: SpecialTx) {
 
             let transactionParams;

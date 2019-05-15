@@ -11,7 +11,7 @@
     export class OriginContractLookup extends GeneralFunctions {
     web3: Web3;
     buildFile = OriginContractLookupJSON;
-    
+
   constructor(web3: Web3, address?: string) {
         super(address ? new web3.eth.Contract(OriginContractLookupJSON.abi, address) : new web3.eth.Contract(OriginContractLookupJSON.abi, OriginContractLookupJSON.networks.length > 0 ? (OriginContractLookupJSON.networks[0]) : null));
         this.web3 = web3;
@@ -55,7 +55,7 @@
 
         return await this.web3Contract.getPastEvents('allEvents', filterParams);
     }
-        
+
   async init(_assetRegistry: string, _originLogicRegistry: string, _originDB: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -128,7 +128,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async update(_originRegistry: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -201,7 +201,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setMaxMatcherPerCertificate(_new: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -274,23 +274,23 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async assetContractLookup(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.assetContractLookup().call(txParams));
     }
-    
+
   async originLogicRegistry(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.originLogicRegistry().call(txParams));
     }
-    
+
   async maxMatcherPerCertificate(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.maxMatcherPerCertificate().call(txParams));
     }
-    
+
   async owner(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.owner().call(txParams));
     }
-    
+
   async changeOwner(_newOwner: string, txParams?: SpecialTx) {
 
             let transactionParams;

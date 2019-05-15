@@ -11,7 +11,7 @@
     export class EnergyDB extends GeneralFunctions {
     web3: Web3;
     buildFile = EnergyDBJSON;
-    
+
   constructor(web3: Web3, address?: string) {
         super(address ? new web3.eth.Contract(EnergyDBJSON.abi, address) : new web3.eth.Contract(EnergyDBJSON.abi, EnergyDBJSON.networks.length > 0 ? (EnergyDBJSON.networks[0]) : null));
         this.web3 = web3;
@@ -55,15 +55,15 @@
 
         return await this.web3Contract.getPastEvents('allEvents', filterParams);
     }
-        
+
   async getTradableEntityOwner(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getTradableEntityOwner(_entityId).call(txParams));
     }
-    
+
   async getApproved(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getApproved(_entityId).call(txParams));
     }
-    
+
   async addEscrowForEntity(_entityId: number, _escrow: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -136,7 +136,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setTradableEntityEscrowExternal(_entityId: number, _escrow: string[], txParams?: SpecialTx) {
 
             let transactionParams;
@@ -209,11 +209,11 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getTradableEntityEscrowLength(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getTradableEntityEscrowLength(_entityId).call(txParams));
     }
-    
+
   async addEscrowForAsset(_entityId: number, _escrow: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -286,7 +286,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setTradableEntityOwnerAndAddApproval(_entityId: number, _owner: string, _approve: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -359,7 +359,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async addApprovalExternal(_entityId: number, _approve: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -432,7 +432,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setOnChainDirectPurchasePrice(_entityId: number, _price: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -505,7 +505,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setEscrow(_entityId: number, _escrow: string[], txParams?: SpecialTx) {
 
             let transactionParams;
@@ -578,11 +578,11 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getOwnerToOperators(_company: string, _escrow: string, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getOwnerToOperators(_company, _escrow).call(txParams));
     }
-    
+
   async setTradableEntityOwnerExternal(_entityId: number, _owner: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -655,7 +655,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async createTradableEntityEntry(_assetId: number, _owner: string, _powerInW: number, _acceptedToken: string, _onChainDirectPurchasePrice: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -728,19 +728,19 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getTradableEntity(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getTradableEntity(_entityId).call(txParams));
     }
-    
+
   async owner(txParams ?: SpecialTx) {
         return (await this.web3Contract.methods.owner().call(txParams));
     }
-    
+
   async getBalanceOf(_owner: string, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getBalanceOf(_owner).call(txParams));
     }
-    
+
   async changeOwner(_newOwner: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -813,7 +813,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async removeTokenAndPrice(_entityId: number, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -886,7 +886,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setOwnerToOperators(_company: string, _escrow: string, _allowed: boolean, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -959,7 +959,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async removeEscrow(_entityId: number, _escrow: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1032,7 +1032,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setTradableEntity(_entityId: number, _entity: any, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1105,7 +1105,7 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async setTradableToken(_entityId: number, _token: string, txParams?: SpecialTx) {
 
             let transactionParams;
@@ -1178,11 +1178,11 @@
                     .send({from: transactionParams.from, gas: transactionParams.gas});
             }
     }
-    
+
   async getOnChainDirectPurchasePrice(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getOnChainDirectPurchasePrice(_entityId).call(txParams));
     }
-    
+
   async getTradableToken(_entityId: number, txParams?: SpecialTx) {
         return (await this.web3Contract.methods.getTradableToken(_entityId).call(txParams));
     }

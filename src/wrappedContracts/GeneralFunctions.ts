@@ -47,11 +47,11 @@ export async function replayTransaction(web3: Web3, txHash: string) {
 
 export class GeneralFunctions {
     web3Contract: any;
-    
+
   constructor(web3Contract) {
         this.web3Contract = web3Contract;
     }
-    
+
   async sendRaw(web3: Web3, privateKey: string, txParams: Tx): Promise<TransactionReceipt> {
         const txData = {
             nonce: txParams.nonce,
@@ -66,7 +66,7 @@ export class GeneralFunctions {
 
         return (await web3.eth.sendSignedTransaction((txObject as any).rawTransaction));
     }
-    
+
   getWeb3Contract() {
         return this.web3Contract;
     }

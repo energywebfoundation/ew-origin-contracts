@@ -7,7 +7,8 @@
     "test": "npm run build-ts && mocha dist/js/src/test/ --timeout 90000",
     "build-ts": "rm -rf dist/js && node_modules/typescript/bin/tsc",
     "start-ganache": "ganache-cli -m 'chalk park staff buzz chair purchase wise oak receive avoid avoid home' -g 0 -l 80000000 -e 1000000 -a 20",
-    "compile": "solpm -c -y --nowarnings --v byzantium",
+    "install-contracts": "solpm -i -y",
+    "compile": "npm run install-contracts && solpm -c -y --nowarnings --v byzantium",
     "parity-docker": "docker pull docker.slock.it/build-images/parity:v1.11.8-tobalaba && docker run --name 'parityDocker' -p 8180:8180 -p 8545:8545 -p 8546:8546 -p 8090:8091 docker.slock.it/build-images/parity:v1.11.8-tobalaba",
     "dockerstop": "docker kill 'parityDocker' && docker container rm 'parityDocker'"
   },
