@@ -11,7 +11,8 @@
     "compile": "npm run install-contracts && solpm -c -y --nowarnings --v byzantium",
     "parity-docker": "docker pull docker.slock.it/build-images/parity:v1.11.8-tobalaba && docker run --name 'parityDocker' -p 8180:8180 -p 8545:8545 -p 8546:8546 -p 8090:8091 docker.slock.it/build-images/parity:v1.11.8-tobalaba",
     "dockerstop": "docker kill 'parityDocker' && docker container rm 'parityDocker'",
-    "prettier": "prettier --write --config-precedence file-override './src/**/*'"
+    "prettier": "prettier --write --config-precedence file-override './src/**/*'",
+    "lint": "./node_modules/.bin/tslint --fix  'src/**/*{.ts,.tsx}'"
   },
   "repository": {
     "type": "git",
