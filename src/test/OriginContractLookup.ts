@@ -27,13 +27,15 @@ import { CertificateLogic } from '../wrappedContracts/CertificateLogic';
 import { OriginContractLookupJSON, CertificateLogicJSON, CertificateDBJSON } from '..';
 
 describe('OriginContractLookup', () => {
-
-    const configFile = JSON.parse(fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8'));
+    const configFile = JSON.parse(
+        fs.readFileSync(process.cwd() + '/connection-config.json', 'utf8')
+    );
 
     const web3: Web3 = new Web3(configFile.develop.web3);
 
-    const privateKeyDeployment = configFile.develop.deployKey.startsWith('0x') ?
-        configFile.develop.deployKey : '0x' + configFile.develop.deployKey;
+    const privateKeyDeployment = configFile.develop.deployKey.startsWith('0x')
+        ? configFile.develop.deployKey
+        : '0x' + configFile.develop.deployKey;
 
     const accountDeployment = web3.eth.accounts.privateKeyToAccount(privateKeyDeployment).address;
 
@@ -44,24 +46,30 @@ describe('OriginContractLookup', () => {
     let isGanache: boolean;
 
     it('should deploy the contracts', async () => {
-
         // isGanache = (await getClientVersion(web3)).includes('EthereumJS');
 
         const userContracts = await migrateUserRegistryContracts(web3, privateKeyDeployment);
 
         const userContractLookupAddr = (userContracts as any).UserContractLookup;
 
-        const assetContracts = await migrateAssetRegistryContracts(web3, userContractLookupAddr, privateKeyDeployment);
+        const assetContracts = await migrateAssetRegistryContracts(
+            web3,
+            userContractLookupAddr,
+            privateKeyDeployment
+        );
 
         const assetRegistryLookupAddr = (assetContracts as any).AssetContractLookup;
 
         const assetProducingAddr = (assetContracts as any).AssetProducingRegistryLogic;
-        const originContracts = await migrateCertificateRegistryContracts(web3, assetRegistryLookupAddr, privateKeyDeployment);
+        const originContracts = await migrateCertificateRegistryContracts(
+            web3,
+            assetRegistryLookupAddr,
+            privateKeyDeployment
+        );
 
         assetRegistryContract = new AssetContractLookup(web3, assetRegistryLookupAddr);
 
-        Object.keys(originContracts).forEach(async (key) => {
-
+        Object.keys(originContracts).forEach(async key => {
             let tempBytecode;
 
             if (key.includes('OriginContractLookup')) {
@@ -82,21 +90,22 @@ describe('OriginContractLookup', () => {
             const deployedBytecode = await web3.eth.getCode(originContracts[key]);
             assert.isTrue(deployedBytecode.length > 0);
             assert.equal(deployedBytecode, tempBytecode);
-
         });
     });
 
     it('should have the right owner', async () => {
-
         assert.equal(await originRegistryContract.owner(), accountDeployment);
-
     });
 
     it('should have the right registries', async () => {
-
-        assert.equal(await originRegistryContract.originLogicRegistry(), certificateLogic.web3Contract._address);
-        assert.equal(await originRegistryContract.assetContractLookup(), assetRegistryContract.web3Contract._address);
-
+        assert.equal(
+            await originRegistryContract.originLogicRegistry(),
+            certificateLogic.web3Contract._address
+        );
+        assert.equal(
+            await originRegistryContract.assetContractLookup(),
+            assetRegistryContract.web3Contract._address
+        );
     });
 
     it('should fail when trying to call init again', async () => {
@@ -107,9 +116,9 @@ describe('OriginContractLookup', () => {
                 '0x1000000000000000000000000000000000000005',
                 '0x1000000000000000000000000000000000000005',
                 '0x1000000000000000000000000000000000000005',
-                { privateKey: privateKeyDeployment });
-        }
-        catch (ex) {
+                { privateKey: privateKeyDeployment }
+            );
+        } catch (ex) {
             failed = true;
             assert.include(ex.message, 'already initialized');
         }
@@ -117,54 +126,53 @@ describe('OriginContractLookup', () => {
     });
 
     it('should throw an error when calling update as non Owner', async () => {
-
         let failed = false;
         try {
-            await originRegistryContract.update('0x1000000000000000000000000000000000000005',
-                                                { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
-        }
-        catch (ex) {
+            await originRegistryContract.update('0x1000000000000000000000000000000000000005', {
+                privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c'
+            });
+        } catch (ex) {
             failed = true;
             assert.include(ex.message, 'msg.sender is not owner');
-
         }
         assert.isTrue(failed);
     });
 
     it('should be able to update as owner', async () => {
+        await originRegistryContract.update('0x1000000000000000000000000000000000000005', {
+            privateKey: privateKeyDeployment
+        });
 
-        await originRegistryContract.update('0x1000000000000000000000000000000000000005',
-                                            { privateKey: privateKeyDeployment });
-
-        assert.equal(await originRegistryContract.originLogicRegistry(), '0x1000000000000000000000000000000000000005');
+        assert.equal(
+            await originRegistryContract.originLogicRegistry(),
+            '0x1000000000000000000000000000000000000005'
+        );
         assert.equal(await certificateDB.owner(), '0x1000000000000000000000000000000000000005');
-
     });
 
     it('should throw when trying to change owner as non-owner', async () => {
-
         let failed = false;
 
         try {
-            await originRegistryContract.changeOwner('0x1000000000000000000000000000000000000005',
-                                                     { privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c' });
-        }
-        catch (ex) {
+            await originRegistryContract.changeOwner('0x1000000000000000000000000000000000000005', {
+                privateKey: '0x191c4b074672d9eda0ce576cfac79e44e320ffef5e3aadd55e000de57341d36c'
+            });
+        } catch (ex) {
             failed = true;
             assert.include(ex.message, 'msg.sender is not owner');
-
         }
 
         assert.isTrue(failed);
-
     });
 
     it('should be able to change owner ', async () => {
+        await originRegistryContract.changeOwner('0x1000000000000000000000000000000000000005', {
+            privateKey: privateKeyDeployment
+        });
 
-        await originRegistryContract.changeOwner('0x1000000000000000000000000000000000000005',
-                                                 { privateKey: privateKeyDeployment });
-
-        assert.equal(await originRegistryContract.owner(), '0x1000000000000000000000000000000000000005');
+        assert.equal(
+            await originRegistryContract.owner(),
+            '0x1000000000000000000000000000000000000005'
+        );
     });
-
 });

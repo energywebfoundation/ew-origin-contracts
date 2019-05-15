@@ -14,7 +14,10 @@
 //
 // @authors: slock.it GmbH; Martin Kuechler, martin.kuchler@slock.it; Heiko Burkhardt, heiko.burkhardt@slock.it;
 
-export { migrateCertificateRegistryContracts, migrateEnergyBundleContracts } from './utils/migrateContracts';
+export {
+    migrateCertificateRegistryContracts,
+    migrateEnergyBundleContracts
+} from './utils/migrateContracts';
 export { CertificateLogic } from './wrappedContracts/CertificateLogic';
 export { EnergyCertificateBundleLogic } from './wrappedContracts/EnergyCertificateBundleLogic';
 
@@ -45,5 +48,5 @@ export {
     OriginContractLookupJSON,
     TradableEntityContractJSON,
     TradableEntityDBJSON,
-    TradableEntityLogicJSON,
+    TradableEntityLogicJSON
 };
